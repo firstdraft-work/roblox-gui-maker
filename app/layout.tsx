@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Script from "next/script";
+import { Analytics } from "./components/Analytics";
 import "@fontsource/inter/400.css";
 import "@fontsource/inter/500.css";
 import "@fontsource/inter/600.css";
@@ -6,6 +8,10 @@ import "@fontsource/inter/700.css";
 import "@fontsource/jetbrains-mono/400.css";
 import "@fontsource/jetbrains-mono/500.css";
 import "./globals.css";
+
+// Google Analytics 4. Measurement IDs are public (visible in every visitor's
+// page source), so hardcoding is fine; override with NEXT_PUBLIC_GA_ID if needed.
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? "G-BWJ7NSR55P";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://robloxguimaker.app"),
@@ -29,7 +35,26 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full antialiased">
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full">
+        {children}
+        {process.env.NODE_ENV === "production" && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="ga-init" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${GA_ID}');
+              `}
+            </Script>
+            <Analytics />
+          </>
+        )}
+      </body>
     </html>
   );
 }
