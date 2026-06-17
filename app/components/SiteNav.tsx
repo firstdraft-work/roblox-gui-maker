@@ -25,6 +25,12 @@ export function SiteNav() {
           Templates
         </Link>
         <Link
+          href="/guides"
+          className="px-3 py-1.5 rounded-md text-ink-dim hover:text-ink hover:bg-raised transition-colors"
+        >
+          Guides
+        </Link>
+        <Link
           href="/editor"
           className="ml-2 px-4 py-1.5 rounded-md font-semibold bg-primary text-on-primary hover:brightness-110 transition"
         >

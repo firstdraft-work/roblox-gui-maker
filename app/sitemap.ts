@@ -1,10 +1,11 @@
 import type { MetadataRoute } from "next";
 import { TEMPLATES } from "./editor/templates";
+import { GUIDES } from "./guides/guides-data";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = "https://robloxguimaker.app";
   const lastModified = new Date();
-  const fixed = ["", "/editor", "/templates"].map((p) => ({
+  const fixed = ["", "/editor", "/templates", "/guides"].map((p) => ({
     url: `${base}${p}`,
     lastModified,
     changeFrequency: "weekly" as const,
@@ -16,5 +17,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     changeFrequency: "monthly" as const,
     priority: 0.6,
   }));
-  return [...fixed, ...templates];
+  const guides = GUIDES.map((g) => ({
+    url: `${base}/guides/${g.slug}`,
+    lastModified,
+    changeFrequency: "monthly" as const,
+    priority: 0.6,
+  }));
+  return [...fixed, ...templates, ...guides];
 }
