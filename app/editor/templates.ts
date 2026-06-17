@@ -70,11 +70,11 @@ const settingsTpl = (() => {
   const title = mk("TextLabel", { name: "Title", parentId: panel.id, pos: FLOW, size: { x: 1, y: 0.14 }, color: "#000000", transparency: 1, text: "SETTINGS", font: "GothamBold", textSize: 24, textColor: "#e1e1ef" });
   const rows = ["Music", "Sound Effects", "Particles"].map((label, i) => {
     const row = mk("Frame", { name: `Row${i}`, parentId: panel.id, pos: FLOW, size: { x: 1, y: 0.16 }, color: "#1d1f29", cornerRadius: 8 });
-    mk("TextLabel", { name: "Label", parentId: row.id, pos: { x: 0.04, y: 0.3 }, size: { x: 0.6, y: 0.4 }, color: "#000000", transparency: 1, text: label, font: "GothamMedium", textSize: 16, textColor: "#e1e1ef" });
-    mk("Frame", { name: "Toggle", parentId: row.id, pos: { x: 0.82, y: 0.3 }, size: { x: 0.12, y: 0.4 }, color: i === 2 ? "#3a3d48" : "#4cddb1", cornerRadius: 999 });
-    return row;
+    const lbl = mk("TextLabel", { name: "Label", parentId: row.id, pos: { x: 0.04, y: 0.3 }, size: { x: 0.6, y: 0.4 }, color: "#000000", transparency: 1, text: label, font: "GothamMedium", textSize: 16, textColor: "#e1e1ef" });
+    const toggle = mk("Frame", { name: "Toggle", parentId: row.id, pos: { x: 0.82, y: 0.3 }, size: { x: 0.12, y: 0.4 }, color: i === 2 ? "#3a3d48" : "#4cddb1", cornerRadius: 999 });
+    return [row, lbl, toggle];
   });
-  return [root, panel, title, ...rows.flatMap((r) => [r])];
+  return [root, panel, title, ...rows.flat()];
 })();
 
 const inventory = (() => {
@@ -108,12 +108,12 @@ const leaderboard = (() => {
     ["4", "Zoe", "6,330"],
   ].map(([rank, name, score], i) => {
     const row = mk("Frame", { name: `Row${i}`, parentId: panel.id, pos: FLOW, size: { x: 1, y: 0.14 }, color: i === 0 ? "#103048" : "#1d1f29", cornerRadius: 8 });
-    mk("TextLabel", { name: "Rank", parentId: row.id, pos: { x: 0.04, y: 0.25 }, size: { x: 0.12, y: 0.5 }, color: "#000000", transparency: 1, text: rank, font: "GothamBold", textSize: 18, textColor: i === 0 ? "#99cbff" : "#bec7d4" });
-    mk("TextLabel", { name: "Name", parentId: row.id, pos: { x: 0.2, y: 0.3 }, size: { x: 0.5, y: 0.4 }, color: "#000000", transparency: 1, text: name, font: "GothamMedium", textSize: 16, textColor: "#e1e1ef" });
-    mk("TextLabel", { name: "Score", parentId: row.id, pos: { x: 0.66, y: 0.3 }, size: { x: 0.3, y: 0.4 }, color: "#000000", transparency: 1, text: score, font: "GothamMedium", textSize: 15, textColor: "#4cddb1" });
-    return row;
+    const rankEl = mk("TextLabel", { name: "Rank", parentId: row.id, pos: { x: 0.04, y: 0.25 }, size: { x: 0.12, y: 0.5 }, color: "#000000", transparency: 1, text: rank, font: "GothamBold", textSize: 18, textColor: i === 0 ? "#99cbff" : "#bec7d4" });
+    const nameEl = mk("TextLabel", { name: "Name", parentId: row.id, pos: { x: 0.2, y: 0.3 }, size: { x: 0.5, y: 0.4 }, color: "#000000", transparency: 1, text: name, font: "GothamMedium", textSize: 16, textColor: "#e1e1ef" });
+    const scoreEl = mk("TextLabel", { name: "Score", parentId: row.id, pos: { x: 0.66, y: 0.3 }, size: { x: 0.3, y: 0.4 }, color: "#000000", transparency: 1, text: score, font: "GothamMedium", textSize: 15, textColor: "#4cddb1" });
+    return [row, rankEl, nameEl, scoreEl];
   });
-  return [root, panel, title, ...rows];
+  return [root, panel, title, ...rows.flat()];
 })();
 
 export const TEMPLATES: Template[] = [

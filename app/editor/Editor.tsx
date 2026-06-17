@@ -7,7 +7,7 @@ import { Canvas } from "./Canvas";
 import { PropertiesPanel } from "./PropertiesPanel";
 import { CodePanel } from "./CodePanel";
 import { SAMPLE_SCENE, type DeviceKind, type RobloxClass, type SceneNode } from "./catalog";
-import { createNode, duplicateSubtree, generateLuau, shade } from "./scene";
+import { createNode, duplicateSubtree, FONTS, generateLuau, shade } from "./scene";
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 const cloneScene = (s: SceneNode[]): SceneNode[] =>
@@ -21,13 +21,97 @@ const cloneScene = (s: SceneNode[]): SceneNode[] =>
 // ---- persistence (localStorage) -------------------------------------------
 const STORAGE_KEY = "rgm:scene:v1";
 type Saved = { scene: SceneNode[]; selectedId: string | null };
+// Only renderable GUI objects can be saved nodes — decorators (UICorner,
+// UIGradient, UIListLayout, UIGridLayout, UIPadding) are properties, never
+// standalone nodes, so a persisted decorator cls is corrupt and gets dropped.
+const VALID_CLS: ReadonlySet<RobloxClass> = new Set<RobloxClass>([
+  "ScreenGui", "Frame", "TextLabel", "TextButton", "TextBox",
+  "ImageLabel", "ScrollingFrame",
+]);
+const isFiniteNum = (v: unknown): v is number =>
+  typeof v === "number" && Number.isFinite(v);
+const isHex = (v: unknown): boolean =>
+  typeof v === "string" && /^#[0-9a-f]{6}$/i.test(v);
+
+// Validate + sanitize a node loaded from localStorage so malformed saved state
+// can't crash the renderer or emit invalid Luau (e.g. Instance.new("Bogus")).
+function sanitizeNode(raw: unknown): SceneNode | null {
+  if (!raw || typeof raw !== "object") return null;
+  const n = raw as Record<string, unknown>;
+  if (typeof n.id !== "string" || !n.id) return null;
+  if (typeof n.cls !== "string" || !VALID_CLS.has(n.cls as RobloxClass)) return null;
+  if (typeof n.name !== "string") return null;
+  const pos = n.pos as Record<string, unknown> | undefined;
+  const size = n.size as Record<string, unknown> | undefined;
+  if (!pos || !isFiniteNum(pos.x) || !isFiniteNum(pos.y)) return null;
+  if (!size || !isFiniteNum(size.x) || !isFiniteNum(size.y)) return null;
+  if (!isHex(n.color) || !isFiniteNum(n.transparency) || !isFiniteNum(n.cornerRadius) || !isFiniteNum(n.zindex))
+    return null;
+
+  const parentId =
+    typeof n.parentId === "string" || n.parentId === null ? n.parentId : null;
+  const node: SceneNode = {
+    id: n.id,
+    cls: n.cls as RobloxClass,
+    name: n.name,
+    parentId,
+    pos: { x: clamp01(pos.x as number), y: clamp01(pos.y as number) },
+    size: { x: clamp01(size.x as number), y: clamp01(size.y as number) },
+    color: n.color as string,
+    transparency: clamp01(n.transparency as number),
+    cornerRadius: Math.max(0, n.cornerRadius as number),
+    zindex: Math.round(n.zindex as number),
+  };
+  if (typeof n.text === "string") node.text = n.text;
+  if (typeof n.font === "string" && (FONTS as readonly string[]).includes(n.font)) node.font = n.font;
+  if (isFiniteNum(n.textSize)) node.textSize = Math.max(1, n.textSize);
+  if (isHex(n.textColor)) node.textColor = n.textColor as string;
+  const g = n.gradient as Record<string, unknown> | undefined;
+  if (g && isHex(g.from) && isHex(g.to)) node.gradient = { from: g.from as string, to: g.to as string };
+  if (n.layout === "list" || n.layout === "grid") node.layout = n.layout;
+  if (isFiniteNum(n.padding)) node.padding = Math.max(0, n.padding);
+  return node;
+}
+
+// Drop orphan parentIds and break cycles so the scene graph is always a forest.
+function repairParents(scene: SceneNode[]): void {
+  const ids = new Set(scene.map((n) => n.id));
+  for (const n of scene) {
+    if (n.parentId && !ids.has(n.parentId)) n.parentId = null;
+  }
+  for (const n of scene) {
+    const chain = new Set<string>([n.id]);
+    let cur = n.parentId;
+    let guard = scene.length + 1;
+    while (cur && guard-- > 0) {
+      if (chain.has(cur)) {
+        n.parentId = null;
+        break;
+      }
+      chain.add(cur);
+      cur = scene.find((x) => x.id === cur)?.parentId ?? null;
+    }
+  }
+}
+
 function loadSaved(): Saved | null {
   if (typeof window === "undefined") return null;
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
-    const parsed = JSON.parse(raw) as Saved;
-    return Array.isArray(parsed?.scene) ? parsed : null;
+    const parsed = JSON.parse(raw) as Partial<Saved>;
+    if (!Array.isArray(parsed?.scene)) return null;
+    const scene = parsed.scene
+      .map(sanitizeNode)
+      .filter((n): n is SceneNode => n !== null);
+    if (scene.length === 0) return null;
+    repairParents(scene);
+    const ids = new Set(scene.map((n) => n.id));
+    const selectedId =
+      typeof parsed.selectedId === "string" && ids.has(parsed.selectedId)
+        ? parsed.selectedId
+        : null;
+    return { scene, selectedId };
   } catch {
     return null;
   }
@@ -79,12 +163,19 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
   // immediate=true commits now (discrete); otherwise debounced (continuous).
   const mutate = useCallback(
     (updater: (prev: SceneNode[]) => SceneNode[], immediate = false) => {
+      // any new edit invalidates the redo branch — drop it now (not after the
+      // 350ms debounce) so a redo before the timer fires can't restore stale state.
+      const h = history.current;
+      if (h.index < h.stack.length - 1) h.stack = h.stack.slice(0, h.index + 1);
       const next = updater(scene);
       setScene(next);
       if (immediate) {
         if (commitTimer.current) {
+          // a debounced edit (e.g. a drag) is still pending — commit it first
+          // so undo can reach the pre-mutation state, then clear the timer.
           clearTimeout(commitTimer.current);
           commitTimer.current = null;
+          commit(scene);
         }
         commit(next);
       } else {

@@ -21,7 +21,7 @@ const STEPS = [
   {
     n: "2",
     title: "Tweak properties",
-    body: "Edit real Roblox properties — BackgroundColor3, transparency, anchor, text, font, corner radius. Everything uses the names you already know from Studio.",
+    body: "Edit real Roblox properties — BackgroundColor3, transparency, text, font, corner radius. Everything uses the names you already know from Studio.",
   },
   {
     n: "3",
@@ -151,7 +151,7 @@ export default function Home() {
             Most &ldquo;AI GUI&rdquo; tools spit out placeholder layouts you then
             have to clean up. This tool is the opposite: a precise, visual canvas
             where you stay in control. Property names match Roblox exactly
-            (BackgroundColor3, BackgroundTransparency, AnchorPoint, ZIndex), you
+            (BackgroundColor3, BackgroundTransparency, ZIndex), you
             can nest containers and auto-arrange children with UIListLayout and
             UIGridLayout, and the exported Luau is clean enough to ship as-is —
             real <code className="text-focus">Instance.new</code> calls,{" "}

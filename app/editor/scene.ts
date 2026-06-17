@@ -87,9 +87,11 @@ export function duplicateSubtree(
   if (!target) return null;
 
   const subtree: SceneNode[] = [target];
+  const seen = new Set<string>([target.id]);
   const collect = (parentId: string) => {
     for (const n of scene) {
-      if ((n.parentId ?? null) === parentId) {
+      if ((n.parentId ?? null) === parentId && !seen.has(n.id)) {
+        seen.add(n.id);
         subtree.push(n);
         collect(n.id);
       }
@@ -117,7 +119,13 @@ export function duplicateSubtree(
 // ---- Luau generation -------------------------------------------------------
 
 const fmt = (n: number) => Number(n.toFixed(3)).toString();
-const luaStr = (s: string) => `"${s.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+const luaStr = (s: string) =>
+  `"${s
+    .replace(/\\/g, "\\\\")
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, "\\n")
+    .replace(/\r/g, "\\r")
+    .replace(/\t/g, "\\t")}"`;
 
 function color3(hex: string): string {
   const m = /^#?([0-9a-f]{6})$/i.exec((hex ?? "").trim());
@@ -127,7 +135,7 @@ function color3(hex: string): string {
 }
 
 const fontEnum = (font?: string) =>
-  `Enum.Font.${font && font.length ? font : "GothamMedium"}`;
+  `Enum.Font.${font && (FONTS as readonly string[]).includes(font) ? font : "GothamMedium"}`;
 
 // Lighten (pct > 0) or darken (pct < 0) a hex color by a percentage of 255.
 export function shade(hex: string, pct: number): string {
@@ -173,7 +181,29 @@ export function generateLuau(scene: SceneNode[]): string {
   }
   out.push('gui.Parent = player:WaitForChild("PlayerGui")');
 
+  // ScreenGui has no background in Roblox; if the root carried visual styling
+  // (e.g. the loading-screen gradient), reproduce it on a full-screen Frame.
+  if (rootGui && (rootGui.transparency < 1 || rootGui.gradient)) {
+    out.push("");
+    out.push('local gui_bg = Instance.new("Frame")');
+    out.push("gui_bg.Size = UDim2.fromScale(1, 1)");
+    out.push("gui_bg.Position = UDim2.fromScale(0, 0)");
+    out.push(`gui_bg.BackgroundColor3 = ${color3(rootGui.color)}`);
+    out.push(`gui_bg.BackgroundTransparency = ${fmt(rootGui.transparency)}`);
+    out.push("gui_bg.ZIndex = 0");
+    if (rootGui.gradient) {
+      out.push('local gui_bg_grad = Instance.new("UIGradient")');
+      out.push(`gui_bg_grad.Color = ColorSequence.new(${color3(rootGui.gradient.from)}, ${color3(rootGui.gradient.to)})`);
+      out.push("gui_bg_grad.Rotation = 45");
+      out.push("gui_bg_grad.Parent = gui_bg");
+    }
+    out.push("gui_bg.Parent = gui");
+  }
+
+  const visited = new Set<string>();
   const emit = (node: SceneNode, parentVar: string) => {
+    if (visited.has(node.id)) return; // cycle guard against malformed scenes
+    visited.add(node.id);
     const v = nameOf(node.id);
     out.push("");
     out.push(`local ${v} = Instance.new(${luaStr(node.cls)})`);
@@ -215,7 +245,7 @@ export function generateLuau(scene: SceneNode[]): string {
       out.push("");
       out.push(`local ${v}_grid = Instance.new("UIGridLayout")`);
       out.push(`${v}_grid.CellSize = UDim2.fromOffset(100, 100)`);
-      out.push(`${v}_grid.CellPadding = UDim.new(0, 8)`);
+      out.push(`${v}_grid.CellPadding = UDim2.fromOffset(8, 8)`);
       out.push(`${v}_grid.SortOrder = Enum.SortOrder.LayoutOrder`);
       out.push(`${v}_grid.Parent = ${v}`);
     }
