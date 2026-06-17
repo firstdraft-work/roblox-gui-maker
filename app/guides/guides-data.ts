@@ -326,6 +326,255 @@ secondButton.LayoutOrder = 2`,
       },
     ],
   },
+  {
+    slug: "how-to-make-a-roblox-global-leaderboard-gui",
+    title: "How to Make a Roblox Global Leaderboard GUI",
+    description:
+      "Build a global Roblox leaderboard that ranks all players across servers with OrderedDataStore, then displays the top entries in a GUI — with the full Luau for saving, sorting and showing rows.",
+    category: "Data",
+    relatedTemplate: "leaderboard",
+    intro:
+      "A global leaderboard ranks every player by a stat like total coins, and the ranking persists across servers. The hard part isn't the GUI — it's storing sorted data with OrderedDataStore and reading the top players back. This guide covers the full loop: save a score, fetch the top 10, and render them as rows. Start from the leaderboard template for the row layout.",
+    sections: [
+      {
+        heading: "1. Store ranked data with OrderedDataStore",
+        paragraphs: [
+          "An OrderedDataStore keeps values sortable. Use the player's UserId as the key and their score as the value, so each player appears once.",
+        ],
+        code: `local DataStoreService = game:GetService("DataStoreService")
+local scores = DataStoreService:GetOrderedDataStore("CoinsLeaderboard")
+
+local function saveScore(player, coins)
+\tscores:UpdateAsync(tostring(player.UserId), function(old)
+\t\treturn math.max(old or 0, coins)
+\tend)
+end`,
+      },
+      {
+        heading: "2. Read the top players",
+        paragraphs: [
+          "GetSortedAsync returns the entries in order. Pass false for descending (highest first) and a page size. GetCurrentPage gives the ranked list of { key, value }.",
+        ],
+        code: `local function getTop(n)
+\tlocal page = scores:GetSortedAsync(false, n)
+\tlocal entries = {}
+\tfor _, entry in ipairs(page:GetCurrentPage()) do
+\t\tlocal userId = tonumber(entry.key)
+\t\tlocal player = game:GetService("Players"):GetNameFromUserIdAsync(userId)
+\t\ttable.insert(entries, { name = player, score = entry.value })
+\tend
+\treturn entries
+end`,
+        tip: "GetNameFromUserIdAsync is a web call — cache names so you don't re-fetch the same player every refresh.",
+      },
+      {
+        heading: "3. Send the list to clients and build rows",
+        paragraphs: [
+          "Fire a RemoteEvent with the top list; each client builds a row per entry. Because the panel has a UIListLayout, parenting each row stacks it automatically.",
+        ],
+        code: `-- Server
+local remote = game.ReplicatedStorage:WaitForChild("LeaderboardUpdate")
+task.spawn(function()
+\twhile true do
+\t\tremote:FireAllClients(getTop(10))
+\t\ttask.wait(60) -- refresh once a minute
+\tend
+end)
+
+-- Client: make one row per entry, parented to the panel
+local function makeRow(rank, name, score)
+\tlocal row = Instance.new("Frame")
+\trow.Size = UDim2.fromScale(1, 0.14)
+\trow.Parent = panel
+\t-- ...rank label, name label, score label...
+\treturn row
+end`,
+      },
+    ],
+    faq: [
+      {
+        q: "How often should I refresh a global leaderboard?",
+        a: "OrderedDataStore has tight rate limits. Cache the top list and refresh every 30–60 seconds via a server loop, never on every score change.",
+      },
+      {
+        q: "Why does a player appear twice?",
+        a: "You're using something other than UserId as the key. Always key by tostring(player.UserId) so each player maps to exactly one entry.",
+      },
+    ],
+  },
+  {
+    slug: "how-to-animate-roblox-guis-with-tweenservice",
+    title: "How to Animate Roblox GUIs with TweenService",
+    description:
+      "Make Roblox GUIs feel polished: slide panels in from off-screen, fade and pop them, and chain animations — all with TweenService and the right EasingStyle.",
+    category: "Animation",
+    relatedTemplate: "main-menu",
+    intro:
+      "Static GUIs feel flat. TweenService interpolates properties like Position, Size and transparency over time, so a menu can slide in, a button can pop, and a notification can fade. This guide covers the three patterns behind almost every animated Roblox UI.",
+    sections: [
+      {
+        heading: "1. Slide a panel into place",
+        paragraphs: [
+          "Start the panel off-screen, then tween its Position to the final spot. TweenInfo controls duration and easing.",
+        ],
+        code: `local TweenService = game:GetService("TweenService")
+panel.Position = UDim2.fromScale(0.5, -0.5) -- start above the screen
+
+local info = TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+TweenService:Create(panel, info, { Position = UDim2.fromScale(0.5, 0.5) }):Play()`,
+      },
+      {
+        heading: "2. Fade and pop with Size",
+        paragraphs: [
+          "Tween Size from small to full and BackgroundTransparency from 1 to 0 for a pop-in effect. Multiple properties can go in one tween.",
+        ],
+        code: `panel.Size = UDim2.fromScale(0.2, 0.2)
+panel.BackgroundTransparency = 1
+TweenService:Create(panel, TweenInfo.new(0.3), {
+\tSize = UDim2.fromScale(0.4, 0.6),
+\tBackgroundTransparency = 0,
+}):Play()`,
+      },
+      {
+        heading: "3. Chain animations with Completed",
+        paragraphs: [
+          "Connect to a tween's Completed signal to start the next one — useful for an intro then a reveal.",
+        ],
+        code: `local slide = TweenService:Create(panel, TweenInfo.new(0.4), { Position = UDim2.fromScale(0.5, 0.5) })
+slide.Completed:Connect(function()
+\tTweenService:Create(panel, TweenInfo.new(0.2), { BackgroundTransparency = 0 }):Play()
+end)
+slide:Play()`,
+        tip: "EasingStyle changes the feel a lot: Back overshoots (playful), Quad is smooth, Elastic bounces. Pick by mood, not randomly.",
+      },
+    ],
+    faq: [
+      {
+        q: "Can I tween TextColor3 or a color?",
+        a: "Yes — TweenService animates Color3 properties like TextColor3 and BackgroundColor3 the same way it animates Position.",
+      },
+      {
+        q: "How do I make an animation loop forever?",
+        a: "Set TweenInfo with Reverses = true and RepeatCount = -1, so the tween runs back and forth indefinitely.",
+      },
+    ],
+  },
+  {
+    slug: "how-to-make-a-draggable-roblox-gui",
+    title: "How to Make a Draggable Roblox GUI",
+    description:
+      "Let players drag a Roblox GUI Frame around the screen with the mouse or touch, using UserInputService — including the offset fix so it doesn't jump to the cursor.",
+    category: "Interaction",
+    intro:
+      "A draggable window, inventory or settings panel feels native. The trick is UserInputService: start dragging on press, move the Frame on InputChanged, and stop on release. The key detail is recording the offset between the cursor and the Frame at the start, so it doesn't snap to the corner.",
+    sections: [
+      {
+        heading: "1. Track press, move and release",
+        paragraphs: [
+          "Listen on the title bar (not the whole panel) so buttons inside still work. InputBegan starts the drag; UserInputService.InputChanged moves it; InputEnded stops it.",
+        ],
+        code: `local UserInputService = game:GetService("UserInputService")
+local dragging, dragStart, startPos
+
+titleBar.InputBegan:Connect(function(input)
+\tif input.UserInputType == Enum.UserInputType.MouseButton1
+\tor input.UserInputType == Enum.UserInputType.Touch then
+\t\tdragging = true
+\t\tdragStart = input.Position
+\t\tstartPos = frame.Position
+\tend
+end)`,
+      },
+      {
+        heading: "2. Move the Frame with the cursor",
+        paragraphs: [
+          "On InputChanged, add the cursor's travel since dragStart to the Frame's start position. Mixing Scale and Offset in UDim2.new keeps it working regardless of how the Frame was positioned.",
+        ],
+        code: `UserInputService.InputChanged:Connect(function(input)
+\tif not dragging then return end
+\tif input.UserInputType == Enum.UserInputType.MouseMovement
+\tor input.UserInputType == Enum.UserInputType.Touch then
+\t\tlocal delta = input.Position - dragStart
+\t\tframe.Position = UDim2.new(
+\t\t\tstartPos.X.Scale, startPos.X.Offset + delta.X,
+\t\t\tstartPos.Y.Scale, startPos.Y.Offset + delta.Y
+\t\t)
+\tend
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+\tif input.UserInputType == Enum.UserInputType.MouseButton1
+\tor input.UserInputType == Enum.UserInputType.Touch then
+\t\tdragging = false
+\tend
+end)`,
+        tip: "Drag by a title-bar Frame, not the whole panel — otherwise the drag swallows clicks on the buttons inside it.",
+      },
+    ],
+    faq: [
+      {
+        q: "Why does the Frame jump to the cursor when I grab it?",
+        a: "You're setting Position to the cursor directly. Instead, record startPos = frame.Position at drag start and add the cursor's delta to it, so the Frame keeps its grab point.",
+      },
+      {
+        q: "Does this work on mobile?",
+        a: "Yes — handle Enum.UserInputType.Touch the same way as MouseButton1 in InputBegan and InputEnded, and Touch in InputChanged.",
+      },
+    ],
+  },
+  {
+    slug: "how-to-make-a-responsive-roblox-gui",
+    title: "How to Make a Responsive Roblox GUI",
+    description:
+      "Make a Roblox GUI that looks right on phone, tablet and desktop: size with Scale not Offset, center with AnchorPoint, cap text with UITextSizeConstraint, and shrink whole sections with UIScale.",
+    category: "Layouts",
+    relatedTemplate: "main-menu",
+    intro:
+      "Roblox runs on everything from phones to 4K monitors, so a GUI built with fixed pixel sizes breaks on the wrong screen. The fix is to think in Scale (fractions of the screen) instead of Offset (pixels), anchor elements so they recenter, and cap text so it stays readable. This guide covers the four habits behind every responsive Roblox UI.",
+    sections: [
+      {
+        heading: "1. Size with Scale, not Offset",
+        paragraphs: [
+          "UDim2 has a Scale and an Offset component. fromScale(0.4, 0.6) means 40%/60% of the screen — it adapts. fromOffset(400, 600) means fixed pixels — it doesn't.",
+        ],
+        code: `-- Responsive (adapts to every screen)
+panel.Size = UDim2.fromScale(0.4, 0.6)
+panel.Position = UDim2.fromScale(0.5, 0.5)
+
+-- Avoid: fixed pixels look wrong on phones or 4K
+panel.Size = UDim2.fromOffset(400, 600)`,
+      },
+      {
+        heading: "2. Center with AnchorPoint",
+        paragraphs: [
+          "Position 0.5, 0.5 puts the top-left corner at the screen center. Set AnchorPoint 0.5, 0.5 and the element centers on its own middle instead.",
+        ],
+        code: `panel.AnchorPoint = Vector2.new(0.5, 0.5)
+panel.Position = UDim2.fromScale(0.5, 0.5)`,
+      },
+      {
+        heading: "3. Keep text readable",
+        paragraphs: [
+          "TextScaled grows text to fill its box, which gets huge on big screens. A UITextSizeConstraint caps the max size so it stays tidy.",
+        ],
+        code: `label.TextScaled = true
+local cap = Instance.new("UITextSizeConstraint")
+cap.MaxTextSize = 24
+cap.Parent = label`,
+        tip: "The editor's Desktop / Tablet / Mobile toggle previews the same GUI at each viewport — build with Scale and check all three.",
+      },
+    ],
+    faq: [
+      {
+        q: "Why does my GUI look tiny on a phone?",
+        a: "It's sized in Offset (pixels). Switch to Scale via UDim2.fromScale so the GUI is a fraction of the screen and adapts to every device.",
+      },
+      {
+        q: "How do I shrink a whole GUI on small screens?",
+        a: "Parent a UIScale to the ScreenGui and set its Scale property (e.g., 0.8) to shrink every descendant together — useful for fitting dense HUDs on phones.",
+      },
+    ],
+  },
 ];
 
 export function getGuide(slug: string): Guide | undefined {
