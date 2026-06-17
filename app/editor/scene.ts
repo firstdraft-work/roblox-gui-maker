@@ -76,6 +76,44 @@ export function createNode(
   };
 }
 
+// Deep-clone a node and its descendants with fresh ids, remapping parentId
+// within the subtree so cloned children point to cloned parents. Offset and
+// raise z so the duplicate sits beside and on top of the original.
+export function duplicateSubtree(
+  scene: SceneNode[],
+  id: string
+): { nodes: SceneNode[]; newId: string } | null {
+  const target = scene.find((n) => n.id === id);
+  if (!target) return null;
+
+  const subtree: SceneNode[] = [target];
+  const collect = (parentId: string) => {
+    for (const n of scene) {
+      if ((n.parentId ?? null) === parentId) {
+        subtree.push(n);
+        collect(n.id);
+      }
+    }
+  };
+  collect(target.id);
+
+  const idMap = new Map<string, string>();
+  for (const n of subtree) idMap.set(n.id, crypto.randomUUID());
+
+  const maxZ = scene.reduce((m, n) => Math.max(m, n.zindex), 0);
+  const nodes = subtree.map((n) => ({
+    ...n,
+    pos: { x: clamp01(n.pos.x + 0.03), y: clamp01(n.pos.y + 0.03) },
+    size: { ...n.size },
+    ...(n.gradient ? { gradient: { ...n.gradient } } : {}),
+    id: idMap.get(n.id)!,
+    parentId: n.parentId ? idMap.get(n.parentId) ?? n.parentId : n.parentId,
+    zindex: maxZ + 1,
+  }));
+
+  return { nodes, newId: idMap.get(target.id)! };
+}
+
 // ---- Luau generation -------------------------------------------------------
 
 const fmt = (n: number) => Number(n.toFixed(3)).toString();

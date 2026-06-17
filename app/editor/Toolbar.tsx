@@ -7,6 +7,8 @@ import {
   LayoutTemplate,
   Download,
   Check,
+  Undo2,
+  Redo2,
 } from "lucide-react";
 import type { DeviceKind } from "./catalog";
 
@@ -21,22 +23,53 @@ type Props = {
   onDevice: (d: DeviceKind) => void;
   onExport: () => void;
   copied: boolean;
+  onUndo: () => void;
+  onRedo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
 };
 
-export function Toolbar({ device, onDevice, onExport, copied }: Props) {
+export function Toolbar({
+  device,
+  onDevice,
+  onExport,
+  copied,
+  onUndo,
+  onRedo,
+  canUndo,
+  canRedo,
+}: Props) {
   return (
     <header className="h-12 shrink-0 flex items-center justify-between px-4 bg-panel border-b border-line select-none">
-      {/* wordmark — exact-match brand text for SEO */}
-      <div className="flex items-center gap-2">
-        <span className="grid place-items-center w-7 h-7 rounded-md bg-primary text-on-primary font-bold text-sm">
-          R
-        </span>
-        <span className="font-semibold tracking-tight">
-          Roblox<span className="text-ink-dim"> GUI Maker</span>
-        </span>
+      <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <span className="grid place-items-center w-7 h-7 rounded-md bg-primary text-on-primary font-bold text-sm">
+            R
+          </span>
+          <span className="font-semibold tracking-tight">
+            Roblox<span className="text-ink-dim"> GUI Maker</span>
+          </span>
+        </div>
+        <div className="flex items-center gap-0.5 ml-1">
+          <button
+            onClick={onUndo}
+            disabled={!canUndo}
+            title="Undo (⌘Z / Ctrl+Z)"
+            className="grid place-items-center w-8 h-8 rounded-md text-ink-dim hover:text-ink hover:bg-raised disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-ink-dim transition-colors"
+          >
+            <Undo2 className="w-4 h-4" />
+          </button>
+          <button
+            onClick={onRedo}
+            disabled={!canRedo}
+            title="Redo (⌘⇧Z / Ctrl+Y)"
+            className="grid place-items-center w-8 h-8 rounded-md text-ink-dim hover:text-ink hover:bg-raised disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-ink-dim transition-colors"
+          >
+            <Redo2 className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
-      {/* device toggle */}
       <div className="flex items-center gap-1 p-1 rounded-md bg-input">
         {DEVICES.map((d) => {
           const Icon = d.icon;
@@ -46,9 +79,7 @@ export function Toolbar({ device, onDevice, onExport, copied }: Props) {
               key={d.id}
               onClick={() => onDevice(d.id)}
               className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-medium transition-colors ${
-                active
-                  ? "bg-raised text-ink"
-                  : "text-ink-dim hover:text-ink"
+                active ? "bg-raised text-ink" : "text-ink-dim hover:text-ink"
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
@@ -58,7 +89,6 @@ export function Toolbar({ device, onDevice, onExport, copied }: Props) {
         })}
       </div>
 
-      {/* actions */}
       <div className="flex items-center gap-2">
         <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-ink-dim hover:text-ink hover:bg-raised transition-colors">
           <LayoutTemplate className="w-4 h-4" />

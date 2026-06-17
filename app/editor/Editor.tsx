@@ -1,22 +1,106 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { Toolbar } from "./Toolbar";
 import { Palette } from "./Palette";
 import { Canvas } from "./Canvas";
 import { PropertiesPanel } from "./PropertiesPanel";
 import { CodePanel } from "./CodePanel";
 import { SAMPLE_SCENE, type DeviceKind, type RobloxClass, type SceneNode } from "./catalog";
-import { createNode, generateLuau, shade } from "./scene";
+import { createNode, duplicateSubtree, generateLuau, shade } from "./scene";
+
+const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
+const cloneScene = (s: SceneNode[]): SceneNode[] =>
+  s.map((n) => ({
+    ...n,
+    pos: { ...n.pos },
+    size: { ...n.size },
+    ...(n.gradient ? { gradient: { ...n.gradient } } : {}),
+  }));
 
 export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
+  const start = initialScene ?? SAMPLE_SCENE;
   const [device, setDevice] = useState<DeviceKind>("desktop");
-  const [scene, setScene] = useState<SceneNode[]>(() => initialScene ?? SAMPLE_SCENE);
+  const [scene, setScene] = useState<SceneNode[]>(start);
   const [selectedId, setSelectedId] = useState<string | null>("play");
   const [copied, setCopied] = useState(false);
 
+  // Undo/redo: snapshot stack + pointer. Discrete ops commit immediately;
+  // continuous edits (drag/typing/nudge) commit on a debounced timer so a
+  // whole gesture becomes a single undo step.
+  const history = useRef<{ stack: SceneNode[][]; index: number }>({
+    stack: [cloneScene(start)],
+    index: 0,
+  });
+  const commitTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [, force] = useReducer((x) => x + 1, 0);
+
   const selected = scene.find((n) => n.id === selectedId) ?? null;
   const code = generateLuau(scene);
+  const canUndo = history.current.index > 0;
+  const canRedo = history.current.index < history.current.stack.length - 1;
+
+  const commit = useCallback((next: SceneNode[]) => {
+    const h = history.current;
+    const stack = h.stack.slice(0, h.index + 1);
+    stack.push(cloneScene(next));
+    while (stack.length > 100) stack.shift();
+    h.stack = stack;
+    h.index = stack.length - 1;
+    force();
+  }, []);
+
+  const scheduleCommit = useCallback(
+    (next: SceneNode[]) => {
+      if (commitTimer.current) clearTimeout(commitTimer.current);
+      commitTimer.current = setTimeout(() => {
+        commitTimer.current = null;
+        commit(next);
+      }, 350);
+    },
+    [commit]
+  );
+
+  // immediate=true commits now (discrete); otherwise debounced (continuous).
+  const mutate = useCallback(
+    (updater: (prev: SceneNode[]) => SceneNode[], immediate = false) => {
+      const next = updater(scene);
+      setScene(next);
+      if (immediate) {
+        if (commitTimer.current) {
+          clearTimeout(commitTimer.current);
+          commitTimer.current = null;
+        }
+        commit(next);
+      } else {
+        scheduleCommit(next);
+      }
+    },
+    [scene, commit, scheduleCommit]
+  );
+
+  function undo() {
+    if (commitTimer.current) {
+      clearTimeout(commitTimer.current);
+      commitTimer.current = null;
+      commit(scene);
+    }
+    const h = history.current;
+    if (h.index > 0) {
+      h.index--;
+      setScene(cloneScene(h.stack[h.index]));
+      force();
+    }
+  }
+
+  function redo() {
+    const h = history.current;
+    if (h.index < h.stack.length - 1) {
+      h.index++;
+      setScene(cloneScene(h.stack[h.index]));
+      force();
+    }
+  }
 
   function addNode(cls: RobloxClass) {
     if (cls === "ScreenGui" && scene.some((n) => n.cls === "ScreenGui")) return;
@@ -25,47 +109,31 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
         ? selected.id
         : null;
     const node = createNode(cls, scene, parentId);
-    setScene((s) => [...s, node]);
+    mutate((s) => [...s, node], true);
     setSelectedId(node.id);
   }
 
   function applyDecorator(cls: RobloxClass) {
     if (!selectedId) return;
-    if (cls === "UICorner") {
-      setScene((s) =>
-        s.map((n) =>
-          n.id === selectedId ? { ...n, cornerRadius: n.cornerRadius > 0 ? 0 : 12 } : n
-        )
-      );
-    } else if (cls === "UIGradient") {
-      setScene((s) =>
-        s.map((n) => {
-          if (n.id !== selectedId) return n;
-          if (n.gradient) return { ...n, gradient: undefined };
-          return { ...n, gradient: { from: shade(n.color, 22), to: shade(n.color, -22) } };
-        })
-      );
-    } else if (cls === "UIListLayout") {
-      setScene((s) =>
-        s.map((n) => (n.id === selectedId ? { ...n, layout: n.layout === "list" ? undefined : "list" } : n))
-      );
-    } else if (cls === "UIGridLayout") {
-      setScene((s) =>
-        s.map((n) => (n.id === selectedId ? { ...n, layout: n.layout === "grid" ? undefined : "grid" } : n))
-      );
-    } else if (cls === "UIPadding") {
-      setScene((s) =>
-        s.map((n) => (n.id === selectedId ? { ...n, padding: n.padding ? undefined : 12 } : n))
-      );
-    }
+    mutate((s) => {
+      const map = (fn: (n: SceneNode) => SceneNode) => s.map((n) => (n.id === selectedId ? fn(n) : n));
+      if (cls === "UICorner") return map((n) => ({ ...n, cornerRadius: n.cornerRadius > 0 ? 0 : 12 }));
+      if (cls === "UIGradient")
+        return map((n) =>
+          n.gradient ? { ...n, gradient: undefined } : { ...n, gradient: { from: shade(n.color, 22), to: shade(n.color, -22) } }
+        );
+      if (cls === "UIListLayout") return map((n) => ({ ...n, layout: n.layout === "list" ? undefined : "list" }));
+      if (cls === "UIGridLayout") return map((n) => ({ ...n, layout: n.layout === "grid" ? undefined : "grid" }));
+      if (cls === "UIPadding") return map((n) => ({ ...n, padding: n.padding ? undefined : 12 }));
+      return s;
+    }, true);
   }
 
   function updateNode(id: string, patch: Partial<SceneNode>) {
-    setScene((s) => s.map((n) => (n.id === id ? { ...n, ...patch } : n)));
+    mutate((s) => s.map((n) => (n.id === id ? { ...n, ...patch } : n)));
   }
 
   function deleteNode(id: string) {
-    // cascade: remove descendants too, so no orphaned children remain
     const doomed = new Set<string>([id]);
     let changed = true;
     while (changed) {
@@ -77,9 +145,69 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
         }
       }
     }
-    setScene((s) => s.filter((n) => !doomed.has(n.id)));
+    mutate((s) => s.filter((n) => !doomed.has(n.id)), true);
     setSelectedId((cur) => (doomed.has(cur ?? "") ? null : cur));
   }
+
+  function duplicateSelected() {
+    if (!selectedId) return;
+    const result = duplicateSubtree(scene, selectedId);
+    if (!result) return;
+    mutate((s) => [...s, ...result.nodes], true);
+    setSelectedId(result.newId);
+  }
+
+  // keyboard shortcuts (⌘/Ctrl + Z/Y/D, Delete, Esc, arrows)
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      const t = e.target as HTMLElement | null;
+      const typing =
+        !!t &&
+        (t.tagName === "INPUT" ||
+          t.tagName === "TEXTAREA" ||
+          t.tagName === "SELECT" ||
+          t.isContentEditable);
+      const mod = e.metaKey || e.ctrlKey;
+      if (mod && e.key.toLowerCase() === "z") {
+        e.preventDefault();
+        e.shiftKey ? redo() : undo();
+        return;
+      }
+      if (mod && e.key.toLowerCase() === "y") {
+        e.preventDefault();
+        redo();
+        return;
+      }
+      if (mod && e.key.toLowerCase() === "d") {
+        e.preventDefault();
+        duplicateSelected();
+        return;
+      }
+      if (typing) return;
+      if (e.key === "Delete" || e.key === "Backspace") {
+        e.preventDefault();
+        if (selectedId) deleteNode(selectedId);
+        return;
+      }
+      if (e.key === "Escape") {
+        setSelectedId(null);
+        return;
+      }
+      if (selectedId && e.key.startsWith("Arrow")) {
+        e.preventDefault();
+        const node = scene.find((n) => n.id === selectedId);
+        if (!node) return;
+        const step = e.shiftKey ? 0.05 : 0.01;
+        const dx = e.key === "ArrowLeft" ? -step : e.key === "ArrowRight" ? step : 0;
+        const dy = e.key === "ArrowUp" ? -step : e.key === "ArrowDown" ? step : 0;
+        updateNode(selectedId, {
+          pos: { x: clamp01(node.pos.x + dx), y: clamp01(node.pos.y + dy) },
+        });
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
 
   async function handleExport() {
     try {
@@ -98,6 +226,10 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
         onDevice={setDevice}
         onExport={handleExport}
         copied={copied}
+        onUndo={undo}
+        onRedo={redo}
+        canUndo={canUndo}
+        canRedo={canRedo}
       />
       <div className="flex-1 min-h-0 flex">
         <Palette onAdd={addNode} onApply={applyDecorator} />
@@ -108,7 +240,12 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
           onSelect={setSelectedId}
           onChange={updateNode}
         />
-        <PropertiesPanel node={selected} onChange={updateNode} onDelete={deleteNode} />
+        <PropertiesPanel
+          node={selected}
+          onChange={updateNode}
+          onDelete={deleteNode}
+          onDuplicate={duplicateSelected}
+        />
       </div>
       <CodePanel code={code} copied={copied} onCopy={handleExport} />
     </div>

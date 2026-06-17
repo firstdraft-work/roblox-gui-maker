@@ -1,6 +1,6 @@
 "use client";
 
-import { Move, Palette as PaletteIcon, Type, Layers, Box, Trash2, Rows3 } from "lucide-react";
+import { Move, Palette as PaletteIcon, Type, Layers, Box, Trash2, Rows3, Copy } from "lucide-react";
 import type { SceneNode } from "./catalog";
 import { FONTS } from "./scene";
 
@@ -8,11 +8,12 @@ type Props = {
   node: SceneNode | null;
   onChange: (id: string, patch: Partial<SceneNode>) => void;
   onDelete: (id: string) => void;
+  onDuplicate: (id: string) => void;
 };
 
 const round2 = (v: number) => Math.round(v * 100) / 100;
 
-export function PropertiesPanel({ node, onChange, onDelete }: Props) {
+export function PropertiesPanel({ node, onChange, onDelete, onDuplicate }: Props) {
   return (
     <aside className="w-72 shrink-0 bg-panel border-l border-line flex flex-col">
       <div className="h-9 shrink-0 flex items-center px-3 border-b border-line">
@@ -35,13 +36,22 @@ export function PropertiesPanel({ node, onChange, onDelete }: Props) {
               />
               <p className="text-[11px] text-ink-mute font-mono px-1">{node.cls}</p>
             </div>
-            <button
-              onClick={() => onDelete(node.id)}
-              title="Delete element"
-              className="grid place-items-center w-7 h-7 rounded text-ink-mute hover:text-danger hover:bg-raised transition-colors"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => onDuplicate(node.id)}
+                title="Duplicate (⌘D / Ctrl+D)"
+                className="grid place-items-center w-7 h-7 rounded text-ink-mute hover:text-ink hover:bg-raised transition-colors"
+              >
+                <Copy className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => onDelete(node.id)}
+                title="Delete (Delete)"
+                className="grid place-items-center w-7 h-7 rounded text-ink-mute hover:text-danger hover:bg-raised transition-colors"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
           <Group icon={Move} label="Layout">
