@@ -197,7 +197,7 @@ function ChildrenWrapper({
   if (node.layout === "list") {
     return (
       <div
-        className="absolute inset-0 flex flex-col gap-1 overflow-hidden"
+        className="absolute inset-0 flex flex-col gap-2 overflow-hidden"
         style={{ padding: pad }}
       >
         {children}
@@ -207,7 +207,7 @@ function ChildrenWrapper({
   if (node.layout === "grid") {
     return (
       <div
-        className="absolute inset-0 grid grid-cols-3 gap-1 overflow-hidden"
+        className="absolute inset-0 grid grid-cols-3 gap-2 overflow-hidden"
         style={{ padding: pad }}
       >
         {children}

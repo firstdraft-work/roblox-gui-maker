@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   Monitor,
   Tablet,
@@ -9,6 +10,7 @@ import {
   Check,
   Undo2,
   Redo2,
+  FilePlus2,
 } from "lucide-react";
 import type { DeviceKind } from "./catalog";
 
@@ -27,6 +29,7 @@ type Props = {
   onRedo: () => void;
   canUndo: boolean;
   canRedo: boolean;
+  onNew: () => void;
 };
 
 export function Toolbar({
@@ -38,6 +41,7 @@ export function Toolbar({
   onRedo,
   canUndo,
   canRedo,
+  onNew,
 }: Props) {
   return (
     <header className="h-12 shrink-0 flex items-center justify-between px-4 bg-panel border-b border-line select-none">
@@ -90,10 +94,21 @@ export function Toolbar({
       </div>
 
       <div className="flex items-center gap-2">
-        <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-ink-dim hover:text-ink hover:bg-raised transition-colors">
+        <button
+          onClick={onNew}
+          title="Start a new GUI (clears the current one)"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-ink-dim hover:text-ink hover:bg-raised transition-colors"
+        >
+          <FilePlus2 className="w-4 h-4" />
+          New
+        </button>
+        <Link
+          href="/templates"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-ink-dim hover:text-ink hover:bg-raised transition-colors"
+        >
           <LayoutTemplate className="w-4 h-4" />
           Templates
-        </button>
+        </Link>
         <button
           onClick={onExport}
           className="flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold bg-primary text-on-primary hover:brightness-110 transition"

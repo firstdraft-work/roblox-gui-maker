@@ -18,6 +18,21 @@ const cloneScene = (s: SceneNode[]): SceneNode[] =>
     ...(n.gradient ? { gradient: { ...n.gradient } } : {}),
   }));
 
+// ---- persistence (localStorage) -------------------------------------------
+const STORAGE_KEY = "rgm:scene:v1";
+type Saved = { scene: SceneNode[]; selectedId: string | null };
+function loadSaved(): Saved | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Saved;
+    return Array.isArray(parsed?.scene) ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
 export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
   const start = initialScene ?? SAMPLE_SCENE;
   const [device, setDevice] = useState<DeviceKind>("desktop");
@@ -157,6 +172,38 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
     setSelectedId(result.newId);
   }
 
+  // Restore the saved workspace on mount — only when no template was requested
+  // via ?template=. Runs after mount (client-only) so SSR HTML isn't mismatched.
+  useEffect(() => {
+    if (initialScene) return;
+    const saved = loadSaved();
+    if (!saved) return;
+    setScene(saved.scene);
+    setSelectedId(saved.selectedId);
+    history.current = { stack: [cloneScene(saved.scene)], index: 0 };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Autosave (debounced) so refresh doesn't lose work.
+  useEffect(() => {
+    const id = setTimeout(() => {
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ scene, selectedId }));
+      } catch {
+        // storage full / blocked — ignore, the tool still works in-session
+      }
+    }, 400);
+    return () => clearTimeout(id);
+  }, [scene, selectedId]);
+
+  function newWorkspace() {
+    if (typeof window !== "undefined" && !window.confirm("Start a new GUI? Your current one will be cleared.")) return;
+    setScene(SAMPLE_SCENE);
+    setSelectedId("play");
+    history.current = { stack: [cloneScene(SAMPLE_SCENE)], index: 0 };
+    force();
+  }
+
   // keyboard shortcuts (⌘/Ctrl + Z/Y/D, Delete, Esc, arrows)
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
@@ -230,6 +277,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
         onRedo={redo}
         canUndo={canUndo}
         canRedo={canRedo}
+        onNew={newWorkspace}
       />
       <div className="flex-1 min-h-0 flex">
         <Palette onAdd={addNode} onApply={applyDecorator} />

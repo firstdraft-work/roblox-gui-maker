@@ -206,6 +206,8 @@ export function generateLuau(scene: SceneNode[]): string {
     if (node.layout === "list") {
       out.push("");
       out.push(`local ${v}_list = Instance.new("UIListLayout")`);
+      out.push(`${v}_list.FillDirection = Enum.FillDirection.Vertical`);
+      out.push(`${v}_list.Padding = UDim.new(0, 8)`);
       out.push(`${v}_list.SortOrder = Enum.SortOrder.LayoutOrder`);
       out.push(`${v}_list.Parent = ${v}`);
     }
@@ -213,6 +215,8 @@ export function generateLuau(scene: SceneNode[]): string {
       out.push("");
       out.push(`local ${v}_grid = Instance.new("UIGridLayout")`);
       out.push(`${v}_grid.CellSize = UDim2.fromOffset(100, 100)`);
+      out.push(`${v}_grid.CellPadding = UDim.new(0, 8)`);
+      out.push(`${v}_grid.SortOrder = Enum.SortOrder.LayoutOrder`);
       out.push(`${v}_grid.Parent = ${v}`);
     }
     if (node.padding) {
