@@ -73,6 +73,49 @@ describe("button actions", () => {
   });
 });
 
+describe("responsive Luau geometry", () => {
+  it("exports offsets, anchor, aspect ratio, and size constraints", () => {
+    const code = generateLuau([
+      node({ id: "root", cls: "ScreenGui", name: "Gui" }),
+      node({
+        id: "panel",
+        parentId: "root",
+        pos: { x: 0.5, y: 0.25 },
+        posOffset: { x: 12, y: -4 },
+        size: { x: 0.4, y: 0.2 },
+        sizeOffset: { x: 20, y: 10 },
+        anchor: { x: 0.5, y: 1 },
+        aspectRatio: 1.778,
+        minSize: { x: 320, y: 180 },
+        maxSize: { x: 960, y: 540 },
+      }),
+    ]);
+
+    expect(code).toContain("el0.Position = UDim2.new(0.5, 12, 0.25, -4)");
+    expect(code).toContain("el0.Size = UDim2.new(0.4, 20, 0.2, 10)");
+    expect(code).toContain("el0.AnchorPoint = Vector2.new(0.5, 1)");
+    expect(code).toContain('local el0_aspect = Instance.new("UIAspectRatioConstraint")');
+    expect(code).toContain("el0_aspect.AspectRatio = 1.778");
+    expect(code).toContain("el0_aspect.DominantAxis = Enum.DominantAxis.Width");
+    expect(code).toContain('local el0_size = Instance.new("UISizeConstraint")');
+    expect(code).toContain("el0_size.MinSize = Vector2.new(320, 180)");
+    expect(code).toContain("el0_size.MaxSize = Vector2.new(960, 540)");
+  });
+
+  it("exports scale-only geometry without constraint instances", () => {
+    const code = generateLuau([
+      node({ id: "root", cls: "ScreenGui", name: "Gui" }),
+      node({ id: "panel", parentId: "root", pos: { x: 0.2, y: 0.3 }, size: { x: 0.4, y: 0.5 } }),
+    ]);
+
+    expect(code).toContain("el0.Position = UDim2.new(0.2, 0, 0.3, 0)");
+    expect(code).toContain("el0.Size = UDim2.new(0.4, 0, 0.5, 0)");
+    expect(code).not.toContain("UIAspectRatioConstraint");
+    expect(code).not.toContain("UISizeConstraint");
+    expect(code).not.toContain("AnchorPoint");
+  });
+});
+
 describe("scene action state", () => {
   it("clears actions that target a deleted subtree", () => {
     const scene = actionScene({ type: "show", targetId: "panel" });

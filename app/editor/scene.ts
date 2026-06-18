@@ -278,6 +278,13 @@ export function reorderSibling(
 // ---- Luau generation -------------------------------------------------------
 
 const fmt = (n: number) => Number(n.toFixed(3)).toString();
+const vector2 = (vector: { x: number; y: number }) =>
+  `Vector2.new(${fmt(vector.x)}, ${fmt(vector.y)})`;
+const udim2 = (
+  scale: { x: number; y: number },
+  offset: { x: number; y: number } = { x: 0, y: 0 }
+) =>
+  `UDim2.new(${fmt(scale.x)}, ${fmt(offset.x)}, ${fmt(scale.y)}, ${fmt(offset.y)})`;
 const luaStr = (s: string) =>
   `"${s
     .replace(/\\/g, "\\\\")
@@ -366,8 +373,11 @@ export function generateLuau(scene: SceneNode[]): string {
     out.push("");
     out.push(`local ${v} = Instance.new(${luaStr(node.cls)})`);
     out.push(`${v}.Name = ${luaStr(node.name)}`);
-    out.push(`${v}.Size = UDim2.fromScale(${fmt(node.size.x)}, ${fmt(node.size.y)})`);
-    out.push(`${v}.Position = UDim2.fromScale(${fmt(node.pos.x)}, ${fmt(node.pos.y)})`);
+    out.push(`${v}.Size = ${udim2(node.size, node.sizeOffset)}`);
+    out.push(`${v}.Position = ${udim2(node.pos, node.posOffset)}`);
+    if (node.anchor && (node.anchor.x !== 0 || node.anchor.y !== 0)) {
+      out.push(`${v}.AnchorPoint = ${vector2(node.anchor)}`);
+    }
     if (node.transparency >= 1) {
       out.push(`${v}.BackgroundTransparency = 1`);
     } else {
@@ -425,6 +435,21 @@ export function generateLuau(scene: SceneNode[]): string {
       out.push(`${v}.TextColor3 = ${color3(node.textColor ?? "#e1e1ef")}`);
     }
     if (node.initialVisible === false) out.push(`${v}.Visible = false`);
+
+    if (node.aspectRatio) {
+      out.push("");
+      out.push(`local ${v}_aspect = Instance.new("UIAspectRatioConstraint")`);
+      out.push(`${v}_aspect.AspectRatio = ${fmt(node.aspectRatio)}`);
+      out.push(`${v}_aspect.DominantAxis = Enum.DominantAxis.Width`);
+      out.push(`${v}_aspect.Parent = ${v}`);
+    }
+    if (node.minSize || node.maxSize) {
+      out.push("");
+      out.push(`local ${v}_size = Instance.new("UISizeConstraint")`);
+      if (node.minSize) out.push(`${v}_size.MinSize = ${vector2(node.minSize)}`);
+      if (node.maxSize) out.push(`${v}_size.MaxSize = ${vector2(node.maxSize)}`);
+      out.push(`${v}_size.Parent = ${v}`);
+    }
 
     out.push(`${v}.Parent = ${parentVar}`);
 
