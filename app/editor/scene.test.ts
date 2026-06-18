@@ -110,6 +110,24 @@ describe("button actions", () => {
     expect(code.match(/\.Activated:Connect/g)).toHaveLength(1);
   });
 
+  it("does not look up a different event from a skipped duplicate id", () => {
+    const scene = actionScene({ type: "remoteEvent", eventName: "ShopAction", argument: "first" });
+    scene.push(node({
+      id: "button",
+      cls: "TextButton",
+      name: "Duplicate",
+      parentId: "root",
+      action: { type: "remoteEvent", eventName: "AdminAction", argument: "second" },
+    }));
+
+    const code = generateLuau(scene);
+
+    expect(code).toContain('remotes:WaitForChild("ShopAction")');
+    expect(code).toContain('remote0:FireServer("first")');
+    expect(code).not.toContain("AdminAction");
+    expect(code).not.toContain('FireServer("second")');
+  });
+
   it.each([
     { type: "remoteEvent", argument: "buy_sword" },
     { type: "remoteEvent", eventName: "ShopAction" },
