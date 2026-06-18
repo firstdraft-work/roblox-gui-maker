@@ -40,6 +40,9 @@ function PreviewNode({
   getChild: (id: string | null) => SceneNode[];
   containerLayout: "none" | "list" | "grid";
 }) {
+  // A node hidden at start (initialVisible: false) isn't shown in a static
+  // preview — rendering it would overlap the initially-visible layer.
+  if (node.initialVisible === false) return null;
   const isFlow = containerLayout !== "none";
   const kids = getChild(node.id);
   const background = node.gradient
