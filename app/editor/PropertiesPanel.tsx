@@ -1,7 +1,7 @@
 "use client";
 
 import { Move, Palette as PaletteIcon, Type, Layers, Box, Trash2, Rows3, Copy, Zap, Eye } from "lucide-react";
-import type { SceneNode } from "./catalog";
+import type { NodeAction, SceneNode } from "./catalog";
 import {
   alignNode,
   setAnchorPreservingPosition,
@@ -9,6 +9,7 @@ import {
   validSizeConstraints,
 } from "./geometry";
 import { FONTS } from "./scene";
+import { RemoteEventActionFields } from "./RemoteEventActionFields";
 
 type Props = {
   node: SceneNode | null;
@@ -31,6 +32,17 @@ const ALIGNMENTS = [
   { x: 0.5, y: 1, label: "Bottom center" },
   { x: 1, y: 1, label: "Bottom right" },
 ] as const;
+
+function createAction(type: string): NodeAction | undefined {
+  if (type === "show") return { type: "show" };
+  if (type === "hide") return { type: "hide" };
+  if (type === "toggle") return { type: "toggle" };
+  if (type === "hideGui") return { type: "hideGui" };
+  if (type === "remoteEvent") {
+    return { type: "remoteEvent", eventName: "RemoteAction", argument: "" };
+  }
+  return undefined;
+}
 
 export function PropertiesPanel({ node, scene, onChange, onDelete, onDuplicate }: Props) {
   const actionTargets = scene.filter(
@@ -341,18 +353,9 @@ export function PropertiesPanel({ node, scene, onChange, onDelete, onDuplicate }
               <Row label="On click" stacked>
                 <select
                   value={node.action?.type ?? "none"}
-                  onChange={(event) => {
-                    const type = event.target.value;
-                    const action: SceneNode["action"] =
-                      type === "show" || type === "hide" || type === "toggle"
-                        ? { type }
-                        : type === "hideGui"
-                          ? { type }
-                          : undefined;
-                    onChange(node.id, {
-                      action,
-                    });
-                  }}
+                  onChange={(event) =>
+                    onChange(node.id, { action: createAction(event.target.value) })
+                  }
                   className="w-full px-2 py-1 rounded bg-input text-ink text-xs outline-none focus:ring-1 focus:ring-focus"
                 >
                   <option value="none">None</option>
@@ -360,11 +363,13 @@ export function PropertiesPanel({ node, scene, onChange, onDelete, onDuplicate }
                   <option value="hide">Hide panel</option>
                   <option value="toggle">Toggle panel</option>
                   <option value="hideGui">Hide entire GUI</option>
+                  <option value="remoteEvent">Fire RemoteEvent</option>
                 </select>
               </Row>
               {node.action &&
-                node.action.type !== "hideGui" &&
-                node.action.type !== "remoteEvent" && (
+                (node.action.type === "show" ||
+                  node.action.type === "hide" ||
+                  node.action.type === "toggle") && (
                 <Row label="Target" stacked>
                   <select
                     value={node.action.targetId ?? ""}
@@ -390,6 +395,13 @@ export function PropertiesPanel({ node, scene, onChange, onDelete, onDuplicate }
                     ))}
                   </select>
                 </Row>
+              )}
+              {node.action?.type === "remoteEvent" && (
+                <RemoteEventActionFields
+                  key={node.id}
+                  action={node.action}
+                  onCommit={(action) => onChange(node.id, { action })}
+                />
               )}
             </Group>
           )}

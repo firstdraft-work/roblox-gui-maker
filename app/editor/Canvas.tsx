@@ -31,6 +31,7 @@ type Props = {
   onSelect: (id: string | null) => void;
   onChange: (id: string, patch: Partial<SceneNode>) => void;
   previewVisibility: PreviewVisibility | null;
+  previewNotice: string | null;
   onPreviewAction: (id: string) => void;
 };
 
@@ -41,6 +42,7 @@ export function Canvas({
   onSelect,
   onChange,
   previewVisibility,
+  previewNotice,
   onPreviewAction,
 }: Props) {
   const { startMove, startResize } = useInteraction(onChange);
@@ -65,6 +67,14 @@ export function Canvas({
         <div
           className={`relative rounded-xl overflow-hidden bg-base ring-1 ring-line-soft shadow-2xl shadow-black/50 ${FRAME_CLASS[device]}`}
         >
+          {previewNotice && (
+            <div
+              role="status"
+              className="pointer-events-none absolute left-1/2 top-3 z-[100] -translate-x-1/2 rounded-md border border-line bg-panel/95 px-3 py-2 text-xs text-ink shadow-lg"
+            >
+              {previewNotice}
+            </div>
+          )}
           {getChild(null).map((node) => (
             <NodeView
               key={node.id}

@@ -74,6 +74,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
   const [copied, setCopied] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const [previewVisibility, setPreviewVisibility] = useState<PreviewVisibility | null>(null);
+  const [previewNotice, setPreviewNotice] = useState<string | null>(null);
   const sceneRef = useRef(scene);
   const importRequest = useRef(0);
 
@@ -270,6 +271,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
     sceneRef.current = SAMPLE_SCENE;
     setScene(SAMPLE_SCENE);
     setSelectedId("play");
+    setPreviewNotice(null);
     history.current = { stack: [cloneScene(SAMPLE_SCENE)], index: 0 };
     force();
   }
@@ -371,6 +373,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
           imported[0].id
       );
       setPreviewVisibility(null);
+      setPreviewNotice(null);
       const currentUrl = new URL(window.location.href);
       if (currentUrl.searchParams.has("template")) {
         currentUrl.searchParams.delete("template");
@@ -391,6 +394,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
   }
 
   function togglePreview() {
+    setPreviewNotice(null);
     setPreviewVisibility((current) =>
       current ? null : createPreviewVisibility(scene)
     );
@@ -459,11 +463,18 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
           onSelect={setSelectedId}
           onChange={updateNode}
           previewVisibility={previewVisibility}
-          onPreviewAction={(id) =>
+          previewNotice={previewNotice}
+          onPreviewAction={(id) => {
+            const action = scene.find((node) => node.id === id)?.action;
+            if (action?.type === "remoteEvent") {
+              setPreviewNotice("RemoteEvent actions run in Roblox Studio.");
+              return;
+            }
+            setPreviewNotice(null);
             setPreviewVisibility((current) =>
               current ? applyPreviewAction(scene, current, id) : current
-            )
-          }
+            );
+          }}
         />
         <PropertiesPanel
           node={selected}
