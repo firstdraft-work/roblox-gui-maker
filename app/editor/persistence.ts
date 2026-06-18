@@ -190,6 +190,7 @@ export function sceneDocumentFilename(scene: SceneNode[]): string {
   const slug = root?.name
     .normalize("NFKD")
     .replace(/[^\x00-\x7F]/g, "")
+    .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");

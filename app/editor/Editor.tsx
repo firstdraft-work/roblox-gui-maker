@@ -371,6 +371,15 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
           imported[0].id
       );
       setPreviewVisibility(null);
+      const currentUrl = new URL(window.location.href);
+      if (currentUrl.searchParams.has("template")) {
+        currentUrl.searchParams.delete("template");
+        window.history.replaceState(
+          window.history.state,
+          "",
+          `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`
+        );
+      }
     } catch (error) {
       if (request !== importRequest.current) return;
       setImportError(

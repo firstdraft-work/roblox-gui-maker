@@ -157,6 +157,12 @@ describe("sceneDocumentFilename", () => {
     ).toBe("main-menu.json");
   });
 
+  it("separates camel-cased template names", () => {
+    expect(
+      sceneDocumentFilename([node({ cls: "ScreenGui", name: "MainMenu" })])
+    ).toBe("main-menu.json");
+  });
+
   it("uses the fallback without a root ScreenGui", () => {
     expect(sceneDocumentFilename([node({ cls: "Frame" })])).toBe(
       "roblox-gui-project.json"
