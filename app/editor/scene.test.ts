@@ -190,12 +190,36 @@ describe("hierarchy mutations", () => {
   });
 
   it("appends a duplicated subtree after its siblings", () => {
-    const scene = hierarchyScene();
+    const scene = hierarchyScene().map((item) =>
+      item.id === "first"
+        ? {
+            ...item,
+            posOffset: { x: 1, y: 2 },
+            sizeOffset: { x: 3, y: 4 },
+            anchor: { x: 0.5, y: 1 },
+            minSize: { x: 100, y: 50 },
+            maxSize: { x: 500, y: 250 },
+          }
+        : item
+    );
 
     const result = duplicateSubtree(scene, "first");
     const combined = result ? [...scene, ...result.nodes] : scene;
+    const source = scene.find((item) => item.id === "first")!;
+    const clone = result?.nodes.find((item) => item.id === result.newId)!;
+
+    clone.posOffset!.x = 99;
+    clone.sizeOffset!.x = 99;
+    clone.anchor!.x = 0;
+    clone.minSize!.x = 0;
+    clone.maxSize!.x = 0;
 
     expect(orderedChildren(combined, "left").at(-1)?.id).toBe(result?.newId);
+    expect(source.posOffset?.x).toBe(1);
+    expect(source.sizeOffset?.x).toBe(3);
+    expect(source.anchor?.x).toBe(0.5);
+    expect(source.minSize?.x).toBe(100);
+    expect(source.maxSize?.x).toBe(500);
   });
 
   it("appends a new node after siblings without explicit order", () => {

@@ -7,6 +7,7 @@ import { Palette } from "./Palette";
 import { Canvas } from "./Canvas";
 import { PropertiesPanel } from "./PropertiesPanel";
 import { CodePanel } from "./CodePanel";
+import { sanitizeResponsiveGeometry } from "./geometry";
 import { SAMPLE_SCENE, type DeviceKind, type RobloxClass, type SceneNode } from "./catalog";
 import {
   applyPreviewAction,
@@ -28,6 +29,11 @@ const cloneScene = (s: SceneNode[]): SceneNode[] =>
     ...n,
     pos: { ...n.pos },
     size: { ...n.size },
+    ...(n.posOffset ? { posOffset: { ...n.posOffset } } : {}),
+    ...(n.sizeOffset ? { sizeOffset: { ...n.sizeOffset } } : {}),
+    ...(n.anchor ? { anchor: { ...n.anchor } } : {}),
+    ...(n.minSize ? { minSize: { ...n.minSize } } : {}),
+    ...(n.maxSize ? { maxSize: { ...n.maxSize } } : {}),
     ...(n.gradient ? { gradient: { ...n.gradient } } : {}),
     ...(n.action ? { action: { ...n.action } } : {}),
   }));
@@ -75,6 +81,7 @@ function sanitizeNode(raw: unknown): SceneNode | null {
     transparency: clamp01(n.transparency as number),
     cornerRadius: Math.max(0, n.cornerRadius as number),
     zindex: Math.round(n.zindex as number),
+    ...sanitizeResponsiveGeometry(n),
   };
   if (typeof n.text === "string") node.text = n.text;
   if (typeof n.font === "string" && (FONTS as readonly string[]).includes(n.font)) node.font = n.font;

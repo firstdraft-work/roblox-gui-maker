@@ -9,6 +9,12 @@ type GeometryNode = Pick<SceneNode, "pos" | "size"> &
       "posOffset" | "sizeOffset" | "anchor" | "aspectRatio" | "minSize" | "maxSize"
     >
   >;
+type ResponsiveGeometry = Partial<
+  Pick<
+    SceneNode,
+    "posOffset" | "sizeOffset" | "anchor" | "aspectRatio" | "minSize" | "maxSize"
+  >
+>;
 
 const ZERO: Vector2 = { x: 0, y: 0 };
 const finite = (value: number) => Number.isFinite(value);
@@ -104,4 +110,71 @@ export function validSizeConstraints(minSize: Vector2, maxSize: Vector2): boolea
     maxSize.x >= minSize.x &&
     maxSize.y >= minSize.y
   );
+}
+
+function finiteVector(raw: unknown): Vector2 | null {
+  if (!raw || typeof raw !== "object") return null;
+  const vector = raw as Record<string, unknown>;
+  return typeof vector.x === "number" &&
+    finite(vector.x) &&
+    typeof vector.y === "number" &&
+    finite(vector.y)
+    ? { x: vector.x, y: vector.y }
+    : null;
+}
+
+function sanitizedBound(raw: unknown): Vector2 | null {
+  const vector = finiteVector(raw);
+  return vector && vector.x >= 0 && vector.y >= 0
+    ? { x: roundPixel(vector.x), y: roundPixel(vector.y) }
+    : null;
+}
+
+export function sanitizeResponsiveGeometry(raw: unknown): ResponsiveGeometry {
+  if (!raw || typeof raw !== "object") return {};
+  const source = raw as Record<string, unknown>;
+  const geometry: ResponsiveGeometry = {};
+  const posOffset = finiteVector(source.posOffset);
+  const sizeOffset = finiteVector(source.sizeOffset);
+  const anchor = finiteVector(source.anchor);
+
+  if (posOffset) {
+    geometry.posOffset = {
+      x: roundPixel(posOffset.x),
+      y: roundPixel(posOffset.y),
+    };
+  }
+  if (sizeOffset) {
+    geometry.sizeOffset = {
+      x: roundPixel(sizeOffset.x),
+      y: roundPixel(sizeOffset.y),
+    };
+  }
+  if (anchor) {
+    geometry.anchor = {
+      x: roundScale(clamp01(anchor.x)),
+      y: roundScale(clamp01(anchor.y)),
+    };
+  }
+  if (
+    typeof source.aspectRatio === "number" &&
+    finite(source.aspectRatio) &&
+    source.aspectRatio > 0
+  ) {
+    geometry.aspectRatio = source.aspectRatio;
+  }
+
+  const minSize = sanitizedBound(source.minSize);
+  const maxSize = sanitizedBound(source.maxSize);
+  if (minSize && maxSize) {
+    if (validSizeConstraints(minSize, maxSize)) {
+      geometry.minSize = minSize;
+      geometry.maxSize = maxSize;
+    }
+  } else {
+    if (minSize) geometry.minSize = minSize;
+    if (maxSize) geometry.maxSize = maxSize;
+  }
+
+  return geometry;
 }
