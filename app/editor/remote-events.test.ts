@@ -3,6 +3,9 @@ import type { SceneNode } from "./catalog";
 import {
   MAX_REMOTE_ARGUMENT,
   MAX_REMOTE_EVENT_NAME,
+  collectRemoteEventBindings,
+  generateServerLuau,
+  luauString,
   remoteEventButtons,
   remoteEventNameError,
   sanitizeRemoteEventAction,
@@ -19,6 +22,71 @@ const button = (overrides: Partial<SceneNode> = {}): SceneNode => ({
   cornerRadius: 0,
   zindex: 1,
   ...overrides,
+});
+
+describe("luauString", () => {
+  it("escapes supported Luau string characters", () => {
+    expect(luauString('path\\"\n\r\tend')).toBe('"path\\\\\\"\\n\\r\\tend"');
+  });
+});
+
+describe("collectRemoteEventBindings", () => {
+  it("deduplicates events and arguments in first-seen order", () => {
+    const scene = [
+      button({ id: "buy-sword", action: { type: "remoteEvent", eventName: "ShopAction", argument: "buy_sword" } }),
+      button({ id: "ban", action: { type: "remoteEvent", eventName: "AdminAction", argument: "ban" } }),
+      button({ id: "buy-shield", action: { type: "remoteEvent", eventName: "ShopAction", argument: "buy_shield" } }),
+      button({ id: "buy-sword-again", action: { type: "remoteEvent", eventName: "ShopAction", argument: "buy_sword" } }),
+    ];
+
+    expect(collectRemoteEventBindings(scene)).toEqual([
+      { eventName: "ShopAction", variable: "remote0", arguments: ["buy_sword", "buy_shield"] },
+      { eventName: "AdminAction", variable: "remote1", arguments: ["ban"] },
+    ]);
+  });
+});
+
+describe("generateServerLuau", () => {
+  it("returns null without RemoteEvent actions", () => {
+    expect(generateServerLuau([button({ action: { type: "hideGui" } })])).toBeNull();
+  });
+
+  it("creates owned instances, validates conflicts, and connects each event once", () => {
+    const code = generateServerLuau([
+      button({ id: "one", action: { type: "remoteEvent", eventName: "ShopAction", argument: "buy_sword" } }),
+      button({ id: "two", action: { type: "remoteEvent", eventName: "ShopAction", argument: "buy_shield" } }),
+      button({ id: "three", action: { type: "remoteEvent", eventName: "AdminAction", argument: "ban" } }),
+    ]);
+
+    expect(code).toContain('local ReplicatedStorage = game:GetService("ReplicatedStorage")');
+    expect(code).toContain('local remotes = ReplicatedStorage:FindFirstChild("Remotes")');
+    expect(code).toContain('if not remotes:IsA("Folder") then');
+    expect(code).toContain('error("ReplicatedStorage.Remotes must be a Folder")');
+    expect(code).toContain('local remote0 = remotes:FindFirstChild("ShopAction")');
+    expect(code).toContain('remote0 = Instance.new("RemoteEvent")');
+    expect(code).toContain('if not remote0:IsA("RemoteEvent") then');
+    expect(code?.match(/remote0\.OnServerEvent:Connect/g)).toHaveLength(1);
+    expect(code?.match(/remote1\.OnServerEvent:Connect/g)).toHaveLength(1);
+    expect(code).toContain('if action == "buy_sword" then');
+    expect(code).toContain('elseif action == "buy_shield" then');
+    expect(code).toContain("-- Validate the player and action before changing game state.");
+    expect(code).toContain(
+      'warn("Unexpected " .. "ShopAction" .. " action from " .. player.Name .. ": " .. tostring(action))'
+    );
+    expect(code).not.toMatch(/leaderstats|Destroy\(|Kick\(/);
+  });
+
+  it("escapes event names and arguments in generated literals", () => {
+    const code = generateServerLuau([
+      button({ action: { type: "remoteEvent", eventName: 'Shop"\\\n', argument: 'buy"\\\n\r\t' } }),
+    ]);
+
+    expect(code).toContain('FindFirstChild("Shop\\"\\\\\\n")');
+    expect(code).toContain('action == "buy\\"\\\\\\n\\r\\t"');
+    expect(code).toContain(
+      'warn("Unexpected " .. "Shop\\"\\\\\\n" .. " action from " .. player.Name .. ": " .. tostring(action))'
+    );
+  });
 });
 
 describe("remoteEventNameError", () => {

@@ -71,6 +71,34 @@ describe("button actions", () => {
 
     expect(code).not.toContain("Activated:Connect");
   });
+
+  it("looks up each remote once and fires from every remote button", () => {
+    const scene = actionScene({ type: "remoteEvent", eventName: "ShopAction", argument: "buy_sword" });
+    scene.push(node({
+      id: "second-button",
+      cls: "TextButton",
+      name: "Second",
+      parentId: "root",
+      action: { type: "remoteEvent", eventName: "ShopAction", argument: 'buy"shield' },
+    }));
+
+    const code = generateLuau(scene);
+
+    expect(code).toContain('local ReplicatedStorage = game:GetService("ReplicatedStorage")');
+    expect(code).toContain('local remotes = ReplicatedStorage:WaitForChild("Remotes")');
+    expect(code.match(/local remote0 = remotes:WaitForChild\("ShopAction"\)/g)).toHaveLength(1);
+    expect(code).toContain('remote0:FireServer("buy_sword")');
+    expect(code).toContain('remote0:FireServer("buy\\"shield")');
+    expect(code.match(/remote0:FireServer/g)).toHaveLength(2);
+    expect(code).not.toContain('Instance.new("RemoteEvent")');
+  });
+
+  it("does not emit remote services for visibility-only actions", () => {
+    const code = generateLuau(actionScene({ type: "toggle", targetId: "panel" }));
+
+    expect(code).toContain("el0.Visible = not el0.Visible");
+    expect(code).not.toContain("ReplicatedStorage");
+  });
 });
 
 describe("responsive Luau geometry", () => {
@@ -142,6 +170,36 @@ describe("scene action state", () => {
     const next = applyPreviewAction(scene, createPreviewVisibility(scene), "button");
 
     expect(next.root).toBe(false);
+  });
+
+  it("returns the same preview visibility reference for a remote action", () => {
+    const scene = actionScene({ type: "remoteEvent", eventName: "ShopAction", argument: "buy_sword" });
+    const visibility = createPreviewVisibility(scene);
+
+    expect(applyPreviewAction(scene, visibility, "button")).toBe(visibility);
+  });
+
+  it("keeps remote actions when their argument matches a deleted node id", () => {
+    const scene = actionScene({ type: "remoteEvent", eventName: "ShopAction", argument: "panel" });
+
+    const remaining = removeSubtree(scene, "panel");
+
+    expect(remaining.find((item) => item.id === "button")?.action).toEqual({
+      type: "remoteEvent",
+      eventName: "ShopAction",
+      argument: "panel",
+    });
+  });
+
+  it("deep-clones RemoteEvent actions when duplicating a button", () => {
+    const scene = actionScene({ type: "remoteEvent", eventName: "ShopAction", argument: "buy_sword" });
+
+    const result = duplicateSubtree(scene, "button");
+    const sourceAction = scene.find((item) => item.id === "button")!.action;
+    const cloneAction = result?.nodes[0].action;
+
+    expect(cloneAction).toEqual(sourceAction);
+    expect(cloneAction).not.toBe(sourceAction);
   });
 });
 
