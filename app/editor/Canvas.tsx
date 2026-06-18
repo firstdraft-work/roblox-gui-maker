@@ -1,6 +1,7 @@
 "use client";
 
 import type { DeviceKind, SceneNode } from "./catalog";
+import { canvasGeometryStyle } from "./geometry";
 import { orderedChildren, type PreviewVisibility } from "./scene";
 import { useInteraction, type Corner } from "./useInteraction";
 
@@ -121,6 +122,7 @@ function NodeView({
     : node.transparency >= 1
       ? "transparent"
       : hexToRgba(node.color, 1 - node.transparency);
+  const geometryStyle = canvasGeometryStyle(node);
 
   return (
     <div
@@ -140,9 +142,8 @@ function NodeView({
           : "absolute select-none touch-none cursor-move"
       }
       style={{
-        ...(isFlow ? {} : { left: `${node.pos.x * 100}%`, top: `${node.pos.y * 100}%` }),
-        width: `${node.size.x * 100}%`,
-        height: `${node.size.y * 100}%`,
+        ...geometryStyle,
+        ...(isFlow ? { left: undefined, top: undefined, transform: undefined } : {}),
         background,
         borderRadius: node.cornerRadius,
         zIndex: node.zindex,
