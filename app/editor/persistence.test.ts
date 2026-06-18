@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 import type { SceneNode } from "./catalog";
-import { sanitizeScene } from "./persistence";
+import {
+  parseSceneDocument,
+  sanitizeScene,
+  sceneDocumentFilename,
+  serializeSceneDocument,
+} from "./persistence";
 
 const node = (overrides: Partial<SceneNode> = {}): SceneNode => ({
   id: "node",
@@ -81,5 +86,86 @@ describe("sanitizeScene", () => {
     expect(sanitizeScene({ scene: [] })).toBeNull();
     expect(sanitizeScene([])).toBeNull();
     expect(sanitizeScene([null, { id: "invalid", cls: "Bogus" }])).toBeNull();
+  });
+});
+
+describe("scene project documents", () => {
+  it("round-trips a versioned scene document", () => {
+    const scene: SceneNode[] = [
+      node({
+        id: "screen",
+        cls: "ScreenGui",
+        name: "Main Menu",
+      }),
+      node({
+        id: "play-button",
+        cls: "TextButton",
+        name: "Play",
+        parentId: "screen",
+        posOffset: { x: 12, y: -4 },
+        sizeOffset: { x: 20, y: 10 },
+        anchor: { x: 0.5, y: 1 },
+        aspectRatio: 16 / 9,
+        minSize: { x: 320, y: 180 },
+        maxSize: { x: 960, y: 540 },
+        action: { type: "hideGui" },
+      }),
+    ];
+
+    const serialized = serializeSceneDocument(scene);
+
+    expect(JSON.parse(serialized)).toMatchObject({
+      format: "roblox-gui-maker",
+      version: 1,
+      scene,
+    });
+    expect(parseSceneDocument(serialized)).toEqual(scene);
+  });
+
+  it.each([
+    ["invalid JSON", "{", "This file is not valid JSON."],
+    [
+      "wrong format",
+      JSON.stringify({ format: "other", version: 1, scene: [node()] }),
+      "This is not a Roblox GUI Maker project.",
+    ],
+    [
+      "unsupported version",
+      JSON.stringify({
+        format: "roblox-gui-maker",
+        version: 2,
+        scene: [node()],
+      }),
+      "Project version 2 is not supported.",
+    ],
+    [
+      "empty scene",
+      JSON.stringify({ format: "roblox-gui-maker", version: 1, scene: [] }),
+      "The project contains no valid GUI elements.",
+    ],
+  ])("rejects %s", (_label, text, message) => {
+    expect(() => parseSceneDocument(text)).toThrowError(message);
+  });
+});
+
+describe("sceneDocumentFilename", () => {
+  it("slugifies the root ScreenGui name", () => {
+    expect(
+      sceneDocumentFilename([
+        node({ cls: "ScreenGui", name: "Main Menu!" }),
+      ])
+    ).toBe("main-menu.json");
+  });
+
+  it("uses the fallback without a root ScreenGui", () => {
+    expect(sceneDocumentFilename([node({ cls: "Frame" })])).toBe(
+      "roblox-gui-project.json"
+    );
+  });
+
+  it("uses the fallback when the root name has no ASCII letters or digits", () => {
+    expect(
+      sceneDocumentFilename([node({ cls: "ScreenGui", name: "主菜单" })])
+    ).toBe("roblox-gui-project.json");
   });
 });

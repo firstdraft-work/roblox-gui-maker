@@ -2,6 +2,9 @@ import type { RobloxClass, SceneNode } from "./catalog";
 import { sanitizeResponsiveGeometry } from "./geometry";
 import { FONTS } from "./scene";
 
+const PROJECT_FORMAT = "roblox-gui-maker";
+const PROJECT_VERSION = 1;
+
 // Decorators are properties on saved nodes, never standalone scene objects.
 const VALID_CLS: ReadonlySet<RobloxClass> = new Set<RobloxClass>([
   "ScreenGui",
@@ -139,4 +142,57 @@ export function sanitizeScene(raw: unknown): SceneNode[] | null {
   if (scene.length === 0) return null;
   repairParents(scene);
   return scene;
+}
+
+export function parseSceneDocument(text: string): SceneNode[] {
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch {
+    throw new Error("This file is not valid JSON.");
+  }
+
+  if (
+    !parsed ||
+    typeof parsed !== "object" ||
+    Array.isArray(parsed) ||
+    (parsed as Record<string, unknown>).format !== PROJECT_FORMAT
+  ) {
+    throw new Error("This is not a Roblox GUI Maker project.");
+  }
+
+  const document = parsed as Record<string, unknown>;
+  if (document.version !== PROJECT_VERSION) {
+    throw new Error(
+      `Project version ${String(document.version)} is not supported.`
+    );
+  }
+
+  const scene = sanitizeScene(document.scene);
+  if (!scene) {
+    throw new Error("The project contains no valid GUI elements.");
+  }
+  return scene;
+}
+
+export function serializeSceneDocument(scene: SceneNode[]): string {
+  return JSON.stringify(
+    { format: PROJECT_FORMAT, version: PROJECT_VERSION, scene },
+    null,
+    2
+  );
+}
+
+export function sceneDocumentFilename(scene: SceneNode[]): string {
+  const root = scene.find(
+    (node) => node.cls === "ScreenGui" && !node.parentId
+  );
+  const slug = root?.name
+    .normalize("NFKD")
+    .replace(/[^\x00-\x7F]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  return slug ? `${slug}.json` : "roblox-gui-project.json";
 }
