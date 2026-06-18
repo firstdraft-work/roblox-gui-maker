@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { RemoteEventAction } from "./catalog";
 import {
   MAX_REMOTE_ARGUMENT,
@@ -15,10 +15,19 @@ type Props = {
 export function RemoteEventActionFields({ action, onCommit }: Props) {
   const [eventName, setEventName] = useState(action.eventName);
   const [argument, setArgument] = useState(action.argument);
+  const pendingLocalCommit = useRef<RemoteEventAction | null>(null);
   const eventNameId = useId();
   const argumentId = useId();
 
   useEffect(() => {
+    const pending = pendingLocalCommit.current;
+    pendingLocalCommit.current = null;
+    if (
+      pending?.eventName === action.eventName &&
+      pending.argument === action.argument
+    ) {
+      return;
+    }
     setEventName(action.eventName);
     setArgument(action.argument);
   }, [action.eventName, action.argument]);
@@ -33,11 +42,13 @@ export function RemoteEventActionFields({ action, onCommit }: Props) {
     if (remoteEventNameError(nextEventName) || nextArgument.length > MAX_REMOTE_ARGUMENT) {
       return;
     }
-    onCommit({
+    const nextAction: RemoteEventAction = {
       type: "remoteEvent",
       eventName: nextEventName.trim(),
       argument: nextArgument,
-    });
+    };
+    pendingLocalCommit.current = nextAction;
+    onCommit(nextAction);
   }
 
   return (
