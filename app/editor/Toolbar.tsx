@@ -59,12 +59,12 @@ export function Toolbar({
 }: Props) {
   return (
     <header className="relative h-12 shrink-0 flex items-center justify-between px-4 bg-panel border-b border-line select-none">
-      <div className="flex items-center gap-3">
+      <div className="flex shrink-0 items-center gap-2 xl:gap-3">
         <div className="flex items-center gap-2">
           <span className="grid place-items-center w-7 h-7 rounded-md bg-primary text-on-primary font-bold text-sm">
             R
           </span>
-          <span className="font-semibold tracking-tight">
+          <span className="hidden font-semibold tracking-tight xl:inline">
             Roblox<span className="text-ink-dim"> GUI Maker</span>
           </span>
         </div>
@@ -72,6 +72,7 @@ export function Toolbar({
           <button
             onClick={onUndo}
             disabled={!canUndo}
+            aria-label="Undo"
             title="Undo (⌘Z / Ctrl+Z)"
             className="grid place-items-center w-8 h-8 rounded-md text-ink-dim hover:text-ink hover:bg-raised disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-ink-dim transition-colors"
           >
@@ -80,6 +81,7 @@ export function Toolbar({
           <button
             onClick={onRedo}
             disabled={!canRedo}
+            aria-label="Redo"
             title="Redo (⌘⇧Z / Ctrl+Y)"
             className="grid place-items-center w-8 h-8 rounded-md text-ink-dim hover:text-ink hover:bg-raised disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-ink-dim transition-colors"
           >
@@ -88,7 +90,7 @@ export function Toolbar({
         </div>
       </div>
 
-      <div className="flex items-center gap-1 p-1 rounded-md bg-input">
+      <div className="flex shrink-0 items-center gap-1 p-1 rounded-md bg-input">
         {DEVICES.map((d) => {
           const Icon = d.icon;
           const active = device === d.id;
@@ -96,41 +98,52 @@ export function Toolbar({
             <button
               key={d.id}
               onClick={() => onDevice(d.id)}
-              className={`flex items-center gap-1.5 px-3 py-1 rounded text-xs font-medium transition-colors ${
+              aria-label={d.label}
+              aria-pressed={active}
+              title={d.label}
+              className={`flex h-7 w-7 shrink-0 items-center justify-center gap-1.5 rounded text-xs font-medium transition-colors xl:w-auto xl:px-3 ${
                 active ? "bg-raised text-ink" : "text-ink-dim hover:text-ink"
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
-              {d.label}
+              <span className="hidden xl:inline">{d.label}</span>
             </button>
           );
         })}
       </div>
 
-      <div className="flex items-center gap-1 xl:gap-2">
+      <div className="flex shrink-0 items-center gap-1 xl:gap-2">
         <button
           onClick={onPreview}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+          aria-label={previewing ? "Stop preview" : "Preview"}
+          aria-pressed={previewing}
+          title={previewing ? "Stop preview" : "Preview"}
+          className={`flex h-8 w-8 shrink-0 items-center justify-center gap-1.5 rounded-md text-sm font-medium transition-colors xl:w-auto xl:px-3 ${
             previewing ? "bg-success text-base" : "text-ink-dim hover:text-ink hover:bg-raised"
           }`}
         >
           {previewing ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-          {previewing ? "Stop preview" : "Preview"}
+          <span className="hidden xl:inline">
+            {previewing ? "Stop preview" : "Preview"}
+          </span>
         </button>
         <button
           onClick={onNew}
+          aria-label="New"
           title="Start a new GUI (clears the current one)"
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-ink-dim hover:text-ink hover:bg-raised transition-colors"
+          className="flex h-8 w-8 shrink-0 items-center justify-center gap-1.5 rounded-md text-sm text-ink-dim transition-colors hover:bg-raised hover:text-ink xl:w-auto xl:px-3"
         >
           <FilePlus2 className="w-4 h-4" />
-          New
+          <span className="hidden xl:inline">New</span>
         </button>
         <Link
           href="/templates"
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm text-ink-dim hover:text-ink hover:bg-raised transition-colors"
+          aria-label="Templates"
+          title="Templates"
+          className="flex h-8 w-8 shrink-0 items-center justify-center gap-1.5 rounded-md text-sm text-ink-dim transition-colors hover:bg-raised hover:text-ink xl:w-auto xl:px-3"
         >
           <LayoutTemplate className="w-4 h-4" />
-          Templates
+          <span className="hidden xl:inline">Templates</span>
         </Link>
         <label
           title="Import JSON"
@@ -161,10 +174,14 @@ export function Toolbar({
         </button>
         <button
           onClick={onExport}
-          className="flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold bg-primary text-on-primary hover:brightness-110 transition"
+          aria-label={copied ? "Copied" : "Export Luau"}
+          title={copied ? "Copied" : "Export Luau"}
+          className="flex h-8 w-8 shrink-0 items-center justify-center gap-1.5 rounded-md bg-primary text-sm font-semibold text-on-primary transition hover:brightness-110 xl:w-auto xl:px-4"
         >
           {copied ? <Check className="w-4 h-4" /> : <Download className="w-4 h-4" />}
-          {copied ? "Copied" : "Export Luau"}
+          <span className="hidden xl:inline">
+            {copied ? "Copied" : "Export Luau"}
+          </span>
         </button>
       </div>
       {importError && (
