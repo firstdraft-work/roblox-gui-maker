@@ -8,6 +8,7 @@ import { Canvas } from "./Canvas";
 import { PropertiesPanel } from "./PropertiesPanel";
 import { CodePanel } from "./CodePanel";
 import { SAMPLE_SCENE, type DeviceKind, type RobloxClass, type SceneNode } from "./catalog";
+import { appendSceneHistory, cloneScene, type SceneHistory } from "./history";
 import {
   parseSceneDocument,
   sanitizeScene,
@@ -28,20 +29,6 @@ import {
 } from "./scene";
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
-const cloneScene = (s: SceneNode[]): SceneNode[] =>
-  s.map((n) => ({
-    ...n,
-    pos: { ...n.pos },
-    size: { ...n.size },
-    ...(n.posOffset ? { posOffset: { ...n.posOffset } } : {}),
-    ...(n.sizeOffset ? { sizeOffset: { ...n.sizeOffset } } : {}),
-    ...(n.anchor ? { anchor: { ...n.anchor } } : {}),
-    ...(n.minSize ? { minSize: { ...n.minSize } } : {}),
-    ...(n.maxSize ? { maxSize: { ...n.maxSize } } : {}),
-    ...(n.gradient ? { gradient: { ...n.gradient } } : {}),
-    ...(n.action ? { action: { ...n.action } } : {}),
-  }));
-
 // ---- persistence (localStorage) -------------------------------------------
 const STORAGE_KEY = "rgm:scene:v1";
 type Saved = { scene: SceneNode[]; selectedId: string | null };
@@ -78,7 +65,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
   // Undo/redo: snapshot stack + pointer. Discrete ops commit immediately;
   // continuous edits (drag/typing/nudge) commit on a debounced timer so a
   // whole gesture becomes a single undo step.
-  const history = useRef<{ stack: SceneNode[][]; index: number }>({
+  const history = useRef<SceneHistory>({
     stack: [cloneScene(start)],
     index: 0,
   });
@@ -90,13 +77,8 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
   const canUndo = history.current.index > 0;
   const canRedo = history.current.index < history.current.stack.length - 1;
 
-  const commit = useCallback((next: SceneNode[]) => {
-    const h = history.current;
-    const stack = h.stack.slice(0, h.index + 1);
-    stack.push(cloneScene(next));
-    while (stack.length > 100) stack.shift();
-    h.stack = stack;
-    h.index = stack.length - 1;
+  const commit = useCallback((scene: SceneNode[], ...scenes: SceneNode[][]) => {
+    history.current = appendSceneHistory(history.current, scene, ...scenes);
     force();
   }, []);
 
@@ -122,13 +104,14 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
       setScene(next);
       if (immediate) {
         if (commitTimer.current) {
-          // a debounced edit (e.g. a drag) is still pending — commit it first
-          // so undo can reach the pre-mutation state, then clear the timer.
+          // Record the pending edit and immediate change atomically so one undo
+          // restores the exact pre-mutation scene.
           clearTimeout(commitTimer.current);
           commitTimer.current = null;
-          commit(scene);
+          commit(scene, next);
+        } else {
+          commit(next);
         }
-        commit(next);
       } else {
         scheduleCommit(next);
       }
