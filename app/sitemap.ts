@@ -1,16 +1,19 @@
 import type { MetadataRoute } from "next";
 import { TEMPLATES } from "./editor/templates";
 import { GUIDES } from "./guides/guides-data";
+import { USE_CASES } from "./for/usecases";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = "https://robloxguimaker.app";
   const lastModified = new Date();
-  const fixed = ["", "/editor", "/templates", "/guides"].map((p) => ({
-    url: `${base}${p}`,
-    lastModified,
-    changeFrequency: "weekly" as const,
-    priority: p === "" ? 1 : 0.8,
-  }));
+  const fixed = ["", "/editor", "/templates", "/guides", "/for", "/about", "/zh"].map(
+    (p) => ({
+      url: `${base}${p}`,
+      lastModified,
+      changeFrequency: "weekly" as const,
+      priority: p === "" ? 1 : 0.8,
+    })
+  );
   const templates = TEMPLATES.map((t) => ({
     url: `${base}/templates/${t.slug}`,
     lastModified,
@@ -23,5 +26,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     changeFrequency: "monthly" as const,
     priority: 0.6,
   }));
-  return [...fixed, ...templates, ...guides];
+  const usecases = USE_CASES.map((u) => ({
+    url: `${base}/for/${u.slug}`,
+    lastModified,
+    changeFrequency: "monthly" as const,
+    priority: 0.6,
+  }));
+  return [...fixed, ...templates, ...guides, ...usecases];
 }

@@ -30,6 +30,16 @@ export function SiteFooter() {
                 GUI templates
               </Link>
             </li>
+            <li>
+              <Link className="hover:text-ink" href="/about">
+                About
+              </Link>
+            </li>
+            <li>
+              <Link className="hover:text-ink" href="/for">
+                Use cases
+              </Link>
+            </li>
           </ul>
         </div>
         <div>
@@ -42,7 +52,14 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="border-t border-line py-4 text-center text-xs text-ink-mute">
-        © {year} robloxguimaker.app
+        © {year} robloxguimaker.app ·{" "}
+        <Link className="hover:text-ink" href="/">
+          English
+        </Link>{" "}
+        ·{" "}
+        <Link className="hover:text-ink" href="/zh">
+          中文
+        </Link>
       </div>
     </footer>
   );

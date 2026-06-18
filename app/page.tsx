@@ -9,7 +9,13 @@ export const metadata: Metadata = {
   title: "Roblox GUI Maker — Build Roblox UIs Visually, Export Clean Luau",
   description:
     "Free Roblox GUI maker: drag and drop ScreenGui, Frame, buttons and more, then export clean Luau you can paste into Studio. No login. Templates for menus, shops, HUDs and loading screens.",
-  alternates: { canonical: "/" },
+  alternates: {
+    canonical: "/",
+    languages: {
+      en: "https://robloxguimaker.app",
+      zh: "https://robloxguimaker.app/zh",
+    },
+  },
 };
 
 const STEPS = [
@@ -116,9 +122,14 @@ export default function Home() {
         <section className="max-w-6xl mx-auto px-6 py-12">
           <div className="flex items-end justify-between mb-8">
             <h2 className="text-2xl md:text-3xl font-semibold">Start from a template</h2>
-            <Link href="/templates" className="text-sm text-focus hover:underline">
-              All templates →
-            </Link>
+            <div className="flex items-center gap-4 text-sm">
+              <Link href="/for" className="text-ink-dim hover:text-ink">
+                By use case
+              </Link>
+              <Link href="/templates" className="text-focus hover:underline">
+                All templates →
+              </Link>
+            </div>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {TEMPLATES.map((t) => (
