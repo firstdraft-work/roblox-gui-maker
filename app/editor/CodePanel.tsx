@@ -25,7 +25,10 @@ export function CodePanel({
   const isAvailable = activeCode !== null;
 
   return (
-    <footer className="h-52 shrink-0 flex flex-col bg-panel border-t border-line">
+    <footer
+      data-editor-shortcuts="ignore"
+      className="h-52 shrink-0 flex flex-col bg-panel border-t border-line"
+    >
       <div className="h-9 shrink-0 flex items-center justify-between px-4 border-b border-line">
         <div className="flex items-center gap-2">
           <span className="text-[11px] font-bold uppercase tracking-wider text-ink-dim">

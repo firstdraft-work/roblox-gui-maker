@@ -284,6 +284,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       const t = e.target as HTMLElement | null;
+      if (t?.closest('[data-editor-shortcuts="ignore"]')) return;
       const typing =
         !!t &&
         (t.tagName === "INPUT" ||
