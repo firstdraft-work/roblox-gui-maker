@@ -61,9 +61,13 @@ export function Toolbar({
     <header className="relative h-12 shrink-0 flex items-center justify-between px-4 bg-panel border-b border-line select-none">
       <div className="flex shrink-0 items-center gap-2 xl:gap-3">
         <div className="flex items-center gap-2">
-          <span className="grid place-items-center w-7 h-7 rounded-md bg-primary text-on-primary font-bold text-sm">
-            R
-          </span>
+          <img
+            src="/logo.png"
+            alt="Roblox GUI Maker"
+            width={28}
+            height={28}
+            className="h-7 w-auto rounded-md"
+          />
           <span className="hidden font-semibold tracking-tight xl:inline">
             Roblox<span className="text-ink-dim"> GUI Maker</span>
           </span>
