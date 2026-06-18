@@ -343,11 +343,14 @@ export function PropertiesPanel({ node, scene, onChange, onDelete, onDuplicate }
                   value={node.action?.type ?? "none"}
                   onChange={(event) => {
                     const type = event.target.value;
+                    const action: SceneNode["action"] =
+                      type === "show" || type === "hide" || type === "toggle"
+                        ? { type }
+                        : type === "hideGui"
+                          ? { type }
+                          : undefined;
                     onChange(node.id, {
-                      action:
-                        type === "none"
-                          ? undefined
-                          : { type: type as NonNullable<SceneNode["action"]>["type"] },
+                      action,
                     });
                   }}
                   className="w-full px-2 py-1 rounded bg-input text-ink text-xs outline-none focus:ring-1 focus:ring-focus"
@@ -359,15 +362,24 @@ export function PropertiesPanel({ node, scene, onChange, onDelete, onDuplicate }
                   <option value="hideGui">Hide entire GUI</option>
                 </select>
               </Row>
-              {node.action && node.action.type !== "hideGui" && (
+              {node.action &&
+                node.action.type !== "hideGui" &&
+                node.action.type !== "remoteEvent" && (
                 <Row label="Target" stacked>
                   <select
                     value={node.action.targetId ?? ""}
-                    onChange={(event) =>
+                    onChange={(event) => {
+                      if (
+                        !node.action ||
+                        node.action.type === "hideGui" ||
+                        node.action.type === "remoteEvent"
+                      ) {
+                        return;
+                      }
                       onChange(node.id, {
                         action: { ...node.action!, targetId: event.target.value || undefined },
-                      })
-                    }
+                      });
+                    }}
                     className={`w-full px-2 py-1 rounded bg-input text-xs outline-none focus:ring-1 focus:ring-focus ${
                       node.action.targetId ? "text-ink" : "text-warning"
                     }`}

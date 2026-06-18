@@ -146,6 +146,7 @@ export function applyPreviewAction(
     const root = scene.find((node) => node.cls === "ScreenGui" && !node.parentId);
     return root ? { ...visibility, [root.id]: false } : visibility;
   }
+  if (action.type === "remoteEvent") return visibility;
 
   const target = scene.find(
     (node) =>
@@ -177,7 +178,11 @@ export function removeSubtree(scene: SceneNode[], id: string): SceneNode[] {
   return scene
     .filter((node) => !doomed.has(node.id))
     .map((node) =>
-      node.action?.targetId && doomed.has(node.action.targetId)
+      node.action &&
+      node.action.type !== "hideGui" &&
+      node.action.type !== "remoteEvent" &&
+      node.action.targetId &&
+      doomed.has(node.action.targetId)
         ? { ...node, action: undefined }
         : node
     );
@@ -473,18 +478,19 @@ export function generateLuau(scene: SceneNode[]): string {
     let statement: string | null = null;
     if (node.action.type === "hideGui") {
       statement = "gui.Enabled = false";
-    } else {
+    } else if (node.action.type !== "remoteEvent") {
+      const action = node.action;
       const target = scene.find(
         (candidate) =>
-          candidate.id === node.action?.targetId &&
+          candidate.id === action.targetId &&
           (candidate.cls === "Frame" || candidate.cls === "ScrollingFrame")
       );
       const targetVar = target ? varNames.get(target.id) : undefined;
       if (targetVar) {
         statement =
-          node.action.type === "show"
+          action.type === "show"
             ? `${targetVar}.Visible = true`
-            : node.action.type === "hide"
+            : action.type === "hide"
               ? `${targetVar}.Visible = false`
               : `${targetVar}.Visible = not ${targetVar}.Visible`;
       }

@@ -22,6 +22,54 @@ const node = (overrides: Partial<SceneNode> = {}): SceneNode => ({
 });
 
 describe("sanitizeScene", () => {
+  it("preserves a valid RemoteEvent action with a trimmed event name", () => {
+    const scene = sanitizeScene([
+      node({
+        cls: "TextButton",
+        action: {
+          type: "remoteEvent",
+          eventName: "  ShopAction  ",
+          argument: "buy_sword",
+        },
+      }),
+    ]);
+
+    expect(scene?.[0].action).toEqual({
+      type: "remoteEvent",
+      eventName: "ShopAction",
+      argument: "buy_sword",
+    });
+  });
+
+  it("removes an invalid RemoteEvent action without removing its button", () => {
+    const scene = sanitizeScene([
+      node({
+        id: "shop-button",
+        cls: "TextButton",
+        action: {
+          type: "remoteEvent",
+          eventName: "Shop-Action",
+          argument: "buy_sword",
+        },
+      }),
+    ]);
+
+    expect(scene).toHaveLength(1);
+    expect(scene?.[0].id).toBe("shop-button");
+    expect(scene?.[0].action).toBeUndefined();
+  });
+
+  it.each([
+    { type: "show" as const, targetId: "panel" },
+    { type: "hide" as const, targetId: "panel" },
+    { type: "toggle" as const, targetId: "panel" },
+    { type: "hideGui" as const },
+  ])("keeps the existing $type action compatible", (action) => {
+    expect(
+      sanitizeScene([node({ cls: "TextButton", action })])?.[0].action
+    ).toEqual(action);
+  });
+
   it("sanitizes responsive geometry without sharing optional vectors", () => {
     const raw = node({
       posOffset: { x: 12.4, y: -3.6 },
@@ -90,6 +138,25 @@ describe("sanitizeScene", () => {
 });
 
 describe("scene project documents", () => {
+  it("round-trips a RemoteEvent action without changing document version 1", () => {
+    const scene: SceneNode[] = [
+      node({
+        id: "shop-button",
+        cls: "TextButton",
+        action: {
+          type: "remoteEvent",
+          eventName: "ShopAction",
+          argument: "buy_sword",
+        },
+      }),
+    ];
+
+    const serialized = serializeSceneDocument(scene);
+
+    expect(JSON.parse(serialized).version).toBe(1);
+    expect(parseSceneDocument(serialized)).toEqual(scene);
+  });
+
   it("round-trips a versioned scene document", () => {
     const scene: SceneNode[] = [
       node({

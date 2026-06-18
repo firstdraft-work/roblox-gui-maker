@@ -17,10 +17,17 @@ export type RobloxClass =
 
 export type DeviceKind = "desktop" | "tablet" | "mobile";
 
-export type NodeAction = {
-  type: "show" | "hide" | "toggle" | "hideGui";
-  targetId?: string;
+export type VisibilityAction =
+  | { type: "show" | "hide" | "toggle"; targetId?: string }
+  | { type: "hideGui" };
+
+export type RemoteEventAction = {
+  type: "remoteEvent";
+  eventName: string;
+  argument: string;
 };
+
+export type NodeAction = VisibilityAction | RemoteEventAction;
 
 // How a palette item behaves:
 //  - add:    drops a new positioned node onto the canvas

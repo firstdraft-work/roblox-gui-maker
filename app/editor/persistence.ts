@@ -1,5 +1,6 @@
 import type { RobloxClass, SceneNode } from "./catalog";
 import { sanitizeResponsiveGeometry } from "./geometry";
+import { sanitizeRemoteEventAction } from "./remote-events";
 import { FONTS } from "./scene";
 
 const PROJECT_FORMAT = "roblox-gui-maker";
@@ -89,21 +90,26 @@ function sanitizeNode(raw: unknown): SceneNode | null {
     node.initialVisible = source.initialVisible;
   }
 
-  const action = source.action as Record<string, unknown> | undefined;
-  if (
-    source.cls === "TextButton" &&
-    action &&
-    (action.type === "show" ||
-      action.type === "hide" ||
-      action.type === "toggle" ||
-      action.type === "hideGui")
-  ) {
-    node.action = {
-      type: action.type,
-      ...(typeof action.targetId === "string"
-        ? { targetId: action.targetId }
-        : {}),
-    };
+  if (source.cls === "TextButton") {
+    const action = source.action as Record<string, unknown> | undefined;
+    if (
+      action &&
+      (action.type === "show" ||
+        action.type === "hide" ||
+        action.type === "toggle")
+    ) {
+      node.action = {
+        type: action.type,
+        ...(typeof action.targetId === "string"
+          ? { targetId: action.targetId }
+          : {}),
+      };
+    } else if (action?.type === "hideGui") {
+      node.action = { type: "hideGui" };
+    } else {
+      const remoteEventAction = sanitizeRemoteEventAction(action);
+      if (remoteEventAction) node.action = remoteEventAction;
+    }
   }
 
   return node;
