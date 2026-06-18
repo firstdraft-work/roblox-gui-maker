@@ -1,5 +1,10 @@
 import Link from "next/link";
 
+// Reciprocal badge for the Launch directory listing (launchsoar.com).
+// Rendered verbatim so the directory's required attributes (data-launch-badge)
+// survive for verification.
+const LAUNCH_BADGE = `<a href="https://launchsoar.com" target="_blank" rel="noopener noreferrer" data-launch-badge="true" style="display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border:1px solid #e5e7eb;border-radius:9999px;background:#ffffff;color:#111827;text-decoration:none;font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica Neue,Arial;line-height:1;"><img src="https://launchsoar.com/logo.png" alt="Launch" style="height:18px;width:auto;" /><span style="display:flex;flex-direction:column;gap:2px;line-height:1.1;"><span style="font-size:12px;opacity:0.8;">Listed on</span><span style="font-size:14px;font-weight:700;">Launch</span></span></a>`;
+
 export function SiteFooter() {
   const year = new Date().getFullYear();
   return (
@@ -50,6 +55,9 @@ export function SiteFooter() {
             Corporation.
           </p>
         </div>
+      </div>
+      <div className="max-w-6xl mx-auto px-6 pb-6 flex justify-center">
+        <span dangerouslySetInnerHTML={{ __html: LAUNCH_BADGE }} />
       </div>
       <div className="border-t border-line py-4 text-center text-xs text-ink-mute">
         © {year} robloxguimaker.app ·{" "}
