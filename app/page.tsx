@@ -30,9 +30,32 @@ const STEPS = [
   },
 ];
 
+const webAppSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  name: "Roblox GUI Maker",
+  url: "https://robloxguimaker.app",
+  description:
+    "Free visual builder for Roblox game GUIs. Drag and drop ScreenGui, Frame, buttons and more, then export clean Luau to paste into Roblox Studio.",
+  applicationCategory: "DeveloperApplication",
+  operatingSystem: "Web",
+  browserRequirements: "Requires JavaScript",
+  offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+  featureList: [
+    "Visual drag-and-drop GUI editor",
+    "Parent-child nesting with UIListLayout, UIGridLayout, UIGradient, UICorner, UIPadding",
+    "Exports clean Luau (Instance.new, UDim2.fromScale)",
+    "Roblox GUI templates and how-to guides",
+  ],
+};
+
 export default function Home() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(webAppSchema) }}
+      />
       <SiteNav />
       <main>
         {/* hero */}

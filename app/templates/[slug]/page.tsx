@@ -34,10 +34,23 @@ export default async function TemplatePage({
   const t = getTemplate(slug);
   if (!t) notFound();
   const related = TEMPLATES.filter((x) => x.slug !== slug).slice(0, 3);
+  const breadcrumb = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://robloxguimaker.app" },
+      { "@type": "ListItem", position: 2, name: "Templates", item: "https://robloxguimaker.app/templates" },
+      { "@type": "ListItem", position: 3, name: t.title, item: `https://robloxguimaker.app/templates/${slug}` },
+    ],
+  };
 
   return (
     <>
       <SiteNav />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
+      />
       <main className="max-w-4xl mx-auto px-6 py-12">
         <Link
           href="/templates"

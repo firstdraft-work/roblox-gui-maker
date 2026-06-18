@@ -46,12 +46,26 @@ export default async function GuidePage({
     })),
   };
 
+  const breadcrumb = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: "https://robloxguimaker.app" },
+      { "@type": "ListItem", position: 2, name: "Guides", item: "https://robloxguimaker.app/guides" },
+      { "@type": "ListItem", position: 3, name: g.title, item: `https://robloxguimaker.app/guides/${slug}` },
+    ],
+  };
+
   return (
     <>
       <SiteNav />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
       />
       <main className="max-w-3xl mx-auto px-6 py-12">
         <Link
