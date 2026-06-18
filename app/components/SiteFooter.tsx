@@ -59,9 +59,20 @@ export function SiteFooter() {
           </p>
         </div>
       </div>
-      <div className="max-w-6xl mx-auto px-6 pb-6 flex justify-center items-center gap-4">
+      <div className="max-w-6xl mx-auto px-6 pb-6 flex justify-center items-center gap-4 flex-wrap">
         <span dangerouslySetInnerHTML={{ __html: LAUNCH_BADGE }} />
         <span dangerouslySetInnerHTML={{ __html: INDIE_DEALS_BADGE }} />
+        <a
+          href="https://neeed.directory/products/roblox-gui-maker?utm_source=roblox-gui-maker"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img
+            src="https://neeed.directory/badges/neeed-badge-light.svg"
+            alt="Featured on neeed.directory"
+            className="h-10 w-auto"
+          />
+        </a>
       </div>
       <div className="border-t border-line py-4 text-center text-xs text-ink-mute">
         © {year} robloxguimaker.app ·{" "}
