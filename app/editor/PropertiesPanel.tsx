@@ -1,11 +1,12 @@
 "use client";
 
-import { Move, Palette as PaletteIcon, Type, Layers, Box, Trash2, Rows3, Copy } from "lucide-react";
+import { Move, Palette as PaletteIcon, Type, Layers, Box, Trash2, Rows3, Copy, Zap, Eye } from "lucide-react";
 import type { SceneNode } from "./catalog";
 import { FONTS } from "./scene";
 
 type Props = {
   node: SceneNode | null;
+  scene: SceneNode[];
   onChange: (id: string, patch: Partial<SceneNode>) => void;
   onDelete: (id: string) => void;
   onDuplicate: (id: string) => void;
@@ -13,7 +14,10 @@ type Props = {
 
 const round2 = (v: number) => Math.round(v * 100) / 100;
 
-export function PropertiesPanel({ node, onChange, onDelete, onDuplicate }: Props) {
+export function PropertiesPanel({ node, scene, onChange, onDelete, onDuplicate }: Props) {
+  const actionTargets = scene.filter(
+    (item) => item.cls === "Frame" || item.cls === "ScrollingFrame"
+  );
   return (
     <aside className="w-72 shrink-0 bg-panel border-l border-line flex flex-col">
       <div className="h-9 shrink-0 flex items-center px-3 border-b border-line">
@@ -168,6 +172,67 @@ export function PropertiesPanel({ node, onChange, onDelete, onDuplicate }: Props
                   onValue={(v) => onChange(node.id, { textColor: v })}
                 />
               </Row>
+            </Group>
+          )}
+
+          {(node.cls === "Frame" || node.cls === "ScrollingFrame") && (
+            <Group icon={Eye} label="Visibility">
+              <Row label="Initially visible">
+                <input
+                  type="checkbox"
+                  checked={node.initialVisible !== false}
+                  onChange={(event) =>
+                    onChange(node.id, { initialVisible: event.target.checked })
+                  }
+                  className="h-4 w-4 accent-focus"
+                />
+              </Row>
+            </Group>
+          )}
+
+          {node.cls === "TextButton" && (
+            <Group icon={Zap} label="Action">
+              <Row label="On click" stacked>
+                <select
+                  value={node.action?.type ?? "none"}
+                  onChange={(event) => {
+                    const type = event.target.value;
+                    onChange(node.id, {
+                      action:
+                        type === "none"
+                          ? undefined
+                          : { type: type as NonNullable<SceneNode["action"]>["type"] },
+                    });
+                  }}
+                  className="w-full px-2 py-1 rounded bg-input text-ink text-xs outline-none focus:ring-1 focus:ring-focus"
+                >
+                  <option value="none">None</option>
+                  <option value="show">Show panel</option>
+                  <option value="hide">Hide panel</option>
+                  <option value="toggle">Toggle panel</option>
+                  <option value="hideGui">Hide entire GUI</option>
+                </select>
+              </Row>
+              {node.action && node.action.type !== "hideGui" && (
+                <Row label="Target" stacked>
+                  <select
+                    value={node.action.targetId ?? ""}
+                    onChange={(event) =>
+                      onChange(node.id, {
+                        action: { ...node.action!, targetId: event.target.value || undefined },
+                      })
+                    }
+                    className={`w-full px-2 py-1 rounded bg-input text-xs outline-none focus:ring-1 focus:ring-focus ${
+                      node.action.targetId ? "text-ink" : "text-warning"
+                    }`}
+                  >
+                    <option value="">Choose a target</option>
+                    {actionTargets.map((target) => (
+                      <option key={target.id} value={target.id}>{target.name}</option>
+                    ))}
+                  </select>
+                </Row>
+              )}
             </Group>
           )}
 

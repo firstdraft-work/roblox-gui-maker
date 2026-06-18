@@ -36,6 +36,8 @@ function mk(cls: RobloxClass, overrides: Partial<SceneNode> = {}): SceneNode {
     ...(overrides.gradient ? { gradient: overrides.gradient } : {}),
     ...(overrides.layout ? { layout: overrides.layout } : {}),
     ...(overrides.padding ? { padding: overrides.padding } : {}),
+    ...(overrides.initialVisible !== undefined ? { initialVisible: overrides.initialVisible } : {}),
+    ...(overrides.action ? { action: overrides.action } : {}),
   };
 }
 
@@ -45,10 +47,13 @@ const mainMenu = (() => {
   const root = mk("ScreenGui", { name: "MainMenu", pos: { x: 0, y: 0 }, size: { x: 1, y: 1 }, color: "#0b0d14", transparency: 1, cornerRadius: 0 });
   const panel = mk("Frame", { name: "Panel", parentId: root.id, pos: { x: 0.3, y: 0.16 }, size: { x: 0.4, y: 0.68 }, color: "#15171f", cornerRadius: 18, layout: "list", padding: 20 });
   const title = mk("TextLabel", { name: "Title", parentId: panel.id, pos: FLOW, size: { x: 1, y: 0.18 }, color: "#000000", transparency: 1, text: "GAME TITLE", font: "GothamBlack", textSize: 30, textColor: "#99cbff" });
-  const play = mk("TextButton", { name: "Play", parentId: panel.id, pos: FLOW, size: { x: 1, y: 0.14 }, color: "#00a2ff", cornerRadius: 10, text: "PLAY", font: "GothamBold", textSize: 20, textColor: "#001d34" });
-  const settings = mk("TextButton", { name: "Settings", parentId: panel.id, pos: FLOW, size: { x: 1, y: 0.14 }, color: "#282933", cornerRadius: 10, text: "SETTINGS", font: "GothamMedium", textSize: 16, textColor: "#e1e1ef" });
+  const play = mk("TextButton", { name: "Play", parentId: panel.id, pos: FLOW, size: { x: 1, y: 0.14 }, color: "#00a2ff", cornerRadius: 10, text: "PLAY", font: "GothamBold", textSize: 20, textColor: "#001d34", action: { type: "hideGui" } });
+  const settingsPanel = mk("Frame", { name: "SettingsPanel", parentId: root.id, pos: { x: 0.3, y: 0.24 }, size: { x: 0.4, y: 0.52 }, color: "#15171f", cornerRadius: 18, initialVisible: false, layout: "list", padding: 20, zindex: 5 });
+  const settings = mk("TextButton", { name: "Settings", parentId: panel.id, pos: FLOW, size: { x: 1, y: 0.14 }, color: "#282933", cornerRadius: 10, text: "SETTINGS", font: "GothamMedium", textSize: 16, textColor: "#e1e1ef", action: { type: "show", targetId: settingsPanel.id } });
   const quit = mk("TextButton", { name: "Quit", parentId: panel.id, pos: FLOW, size: { x: 1, y: 0.14 }, color: "#282933", cornerRadius: 10, text: "QUIT", font: "GothamMedium", textSize: 16, textColor: "#e1e1ef" });
-  return [root, panel, title, play, settings, quit];
+  const settingsTitle = mk("TextLabel", { name: "SettingsTitle", parentId: settingsPanel.id, pos: FLOW, size: { x: 1, y: 0.25 }, color: "#000000", transparency: 1, text: "SETTINGS", font: "GothamBold", textSize: 24, textColor: "#e1e1ef", zindex: 6 });
+  const close = mk("TextButton", { name: "CloseSettings", parentId: settingsPanel.id, pos: FLOW, size: { x: 1, y: 0.18 }, color: "#282933", cornerRadius: 10, text: "CLOSE", font: "GothamMedium", textSize: 16, textColor: "#e1e1ef", action: { type: "hide", targetId: settingsPanel.id }, zindex: 6 });
+  return [root, panel, title, play, settings, quit, settingsPanel, settingsTitle, close];
 })();
 
 const shop = (() => {

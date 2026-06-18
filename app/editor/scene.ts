@@ -108,12 +108,68 @@ export function duplicateSubtree(
     pos: { x: clamp01(n.pos.x + 0.03), y: clamp01(n.pos.y + 0.03) },
     size: { ...n.size },
     ...(n.gradient ? { gradient: { ...n.gradient } } : {}),
+    ...(n.action ? { action: { ...n.action } } : {}),
     id: idMap.get(n.id)!,
     parentId: n.parentId ? idMap.get(n.parentId) ?? n.parentId : n.parentId,
     zindex: maxZ + 1,
   }));
 
   return { nodes, newId: idMap.get(target.id)! };
+}
+
+export type PreviewVisibility = Record<string, boolean>;
+
+export function createPreviewVisibility(scene: SceneNode[]): PreviewVisibility {
+  return Object.fromEntries(scene.map((node) => [node.id, node.initialVisible !== false]));
+}
+
+export function applyPreviewAction(
+  scene: SceneNode[],
+  visibility: PreviewVisibility,
+  buttonId: string
+): PreviewVisibility {
+  const action = scene.find((node) => node.id === buttonId)?.action;
+  if (!action) return visibility;
+
+  if (action.type === "hideGui") {
+    const root = scene.find((node) => node.cls === "ScreenGui" && !node.parentId);
+    return root ? { ...visibility, [root.id]: false } : visibility;
+  }
+
+  const target = scene.find(
+    (node) =>
+      node.id === action.targetId &&
+      (node.cls === "Frame" || node.cls === "ScrollingFrame")
+  );
+  if (!target) return visibility;
+
+  const visible = visibility[target.id] ?? target.initialVisible !== false;
+  return {
+    ...visibility,
+    [target.id]: action.type === "show" ? true : action.type === "hide" ? false : !visible,
+  };
+}
+
+export function removeSubtree(scene: SceneNode[], id: string): SceneNode[] {
+  const doomed = new Set<string>([id]);
+  let foundChild = true;
+  while (foundChild) {
+    foundChild = false;
+    for (const node of scene) {
+      if (node.parentId && doomed.has(node.parentId) && !doomed.has(node.id)) {
+        doomed.add(node.id);
+        foundChild = true;
+      }
+    }
+  }
+
+  return scene
+    .filter((node) => !doomed.has(node.id))
+    .map((node) =>
+      node.action?.targetId && doomed.has(node.action.targetId)
+        ? { ...node, action: undefined }
+        : node
+    );
 }
 
 // ---- Luau generation -------------------------------------------------------
@@ -264,6 +320,7 @@ export function generateLuau(scene: SceneNode[]): string {
       out.push(`${v}.TextSize = ${node.textSize ?? 14}`);
       out.push(`${v}.TextColor3 = ${color3(node.textColor ?? "#e1e1ef")}`);
     }
+    if (node.initialVisible === false) out.push(`${v}.Visible = false`);
 
     out.push(`${v}.Parent = ${parentVar}`);
 
@@ -277,6 +334,38 @@ export function generateLuau(scene: SceneNode[]): string {
     } else {
       emit(n, "gui");
     }
+  }
+
+  for (const node of scene) {
+    if (node.cls !== "TextButton" || !node.action) continue;
+    const buttonVar = varNames.get(node.id);
+    if (!buttonVar) continue;
+
+    let statement: string | null = null;
+    if (node.action.type === "hideGui") {
+      statement = "gui.Enabled = false";
+    } else {
+      const target = scene.find(
+        (candidate) =>
+          candidate.id === node.action?.targetId &&
+          (candidate.cls === "Frame" || candidate.cls === "ScrollingFrame")
+      );
+      const targetVar = target ? varNames.get(target.id) : undefined;
+      if (targetVar) {
+        statement =
+          node.action.type === "show"
+            ? `${targetVar}.Visible = true`
+            : node.action.type === "hide"
+              ? `${targetVar}.Visible = false`
+              : `${targetVar}.Visible = not ${targetVar}.Visible`;
+      }
+    }
+    if (!statement) continue;
+
+    out.push("");
+    out.push(`${buttonVar}.Activated:Connect(function()`);
+    out.push(`\t${statement}`);
+    out.push("end)");
   }
 
   return out.join("\n");

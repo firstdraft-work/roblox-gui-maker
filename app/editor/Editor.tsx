@@ -8,7 +8,17 @@ import { Canvas } from "./Canvas";
 import { PropertiesPanel } from "./PropertiesPanel";
 import { CodePanel } from "./CodePanel";
 import { SAMPLE_SCENE, type DeviceKind, type RobloxClass, type SceneNode } from "./catalog";
-import { createNode, duplicateSubtree, FONTS, generateLuau, shade } from "./scene";
+import {
+  applyPreviewAction,
+  createNode,
+  createPreviewVisibility,
+  duplicateSubtree,
+  FONTS,
+  generateLuau,
+  removeSubtree,
+  shade,
+  type PreviewVisibility,
+} from "./scene";
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 const cloneScene = (s: SceneNode[]): SceneNode[] =>
@@ -17,6 +27,7 @@ const cloneScene = (s: SceneNode[]): SceneNode[] =>
     pos: { ...n.pos },
     size: { ...n.size },
     ...(n.gradient ? { gradient: { ...n.gradient } } : {}),
+    ...(n.action ? { action: { ...n.action } } : {}),
   }));
 
 // ---- persistence (localStorage) -------------------------------------------
@@ -71,6 +82,21 @@ function sanitizeNode(raw: unknown): SceneNode | null {
   if (g && isHex(g.from) && isHex(g.to)) node.gradient = { from: g.from as string, to: g.to as string };
   if (n.layout === "list" || n.layout === "grid") node.layout = n.layout;
   if (isFiniteNum(n.padding)) node.padding = Math.max(0, n.padding);
+  if (typeof n.initialVisible === "boolean") node.initialVisible = n.initialVisible;
+  const action = n.action as Record<string, unknown> | undefined;
+  if (
+    n.cls === "TextButton" &&
+    action &&
+    (action.type === "show" ||
+      action.type === "hide" ||
+      action.type === "toggle" ||
+      action.type === "hideGui")
+  ) {
+    node.action = {
+      type: action.type,
+      ...(typeof action.targetId === "string" ? { targetId: action.targetId } : {}),
+    };
+  }
   return node;
 }
 
@@ -124,6 +150,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
   const [scene, setScene] = useState<SceneNode[]>(start);
   const [selectedId, setSelectedId] = useState<string | null>("play");
   const [copied, setCopied] = useState(false);
+  const [previewVisibility, setPreviewVisibility] = useState<PreviewVisibility | null>(null);
 
   // Undo/redo: snapshot stack + pointer. Discrete ops commit immediately;
   // continuous edits (drag/typing/nudge) commit on a debounced timer so a
@@ -241,19 +268,9 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
   }
 
   function deleteNode(id: string) {
-    const doomed = new Set<string>([id]);
-    let changed = true;
-    while (changed) {
-      changed = false;
-      for (const n of scene) {
-        if (n.parentId && doomed.has(n.parentId) && !doomed.has(n.id)) {
-          doomed.add(n.id);
-          changed = true;
-        }
-      }
-    }
-    mutate((s) => s.filter((n) => !doomed.has(n.id)), true);
-    setSelectedId((cur) => (doomed.has(cur ?? "") ? null : cur));
+    const next = removeSubtree(scene, id);
+    mutate(() => next, true);
+    setSelectedId((cur) => (cur && next.some((node) => node.id === cur) ? cur : null));
   }
 
   function duplicateSelected() {
@@ -358,6 +375,22 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
     }
   }
 
+  function downloadLuau() {
+    const url = URL.createObjectURL(new Blob([code], { type: "text/plain;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "roblox-gui.lua";
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function togglePreview() {
+    setPreviewVisibility((current) =>
+      current ? null : createPreviewVisibility(scene)
+    );
+    setSelectedId(null);
+  }
+
   return (
     <>
       <main className="flex min-h-screen flex-col items-center justify-center gap-5 px-6 text-center md:hidden">
@@ -396,6 +429,8 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
         canUndo={canUndo}
         canRedo={canRedo}
         onNew={newWorkspace}
+        previewing={previewVisibility !== null}
+        onPreview={togglePreview}
       />
       <div className="flex-1 min-h-0 flex">
         <Palette onAdd={addNode} onApply={applyDecorator} />
@@ -405,15 +440,22 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
           device={device}
           onSelect={setSelectedId}
           onChange={updateNode}
+          previewVisibility={previewVisibility}
+          onPreviewAction={(id) =>
+            setPreviewVisibility((current) =>
+              current ? applyPreviewAction(scene, current, id) : current
+            )
+          }
         />
         <PropertiesPanel
           node={selected}
+          scene={scene}
           onChange={updateNode}
           onDelete={deleteNode}
           onDuplicate={duplicateSelected}
         />
       </div>
-      <CodePanel code={code} copied={copied} onCopy={handleExport} />
+      <CodePanel code={code} copied={copied} onCopy={handleExport} onDownload={downloadLuau} />
       </div>
     </>
   );

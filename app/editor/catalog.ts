@@ -17,6 +17,11 @@ export type RobloxClass =
 
 export type DeviceKind = "desktop" | "tablet" | "mobile";
 
+export type NodeAction = {
+  type: "show" | "hide" | "toggle" | "hideGui";
+  targetId?: string;
+};
+
 // How a palette item behaves:
 //  - add:    drops a new positioned node onto the canvas
 //  - apply:  modifies the currently selected node (e.g. UICorner rounds it)
@@ -64,6 +69,8 @@ export type SceneNode = {
   gradient?: { from: string; to: string };
   layout?: "list" | "grid"; // auto-arrange this node's children
   padding?: number; // px on all sides (UIPadding)
+  initialVisible?: boolean;
+  action?: NodeAction;
   parentId?: string | null; // null/undefined = child of the ScreenGui root
   text?: string;
   font?: string;

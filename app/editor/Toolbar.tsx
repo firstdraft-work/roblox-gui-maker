@@ -11,6 +11,8 @@ import {
   Undo2,
   Redo2,
   FilePlus2,
+  Play,
+  Square,
 } from "lucide-react";
 import type { DeviceKind } from "./catalog";
 
@@ -30,6 +32,8 @@ type Props = {
   canUndo: boolean;
   canRedo: boolean;
   onNew: () => void;
+  previewing: boolean;
+  onPreview: () => void;
 };
 
 export function Toolbar({
@@ -42,6 +46,8 @@ export function Toolbar({
   canUndo,
   canRedo,
   onNew,
+  previewing,
+  onPreview,
 }: Props) {
   return (
     <header className="h-12 shrink-0 flex items-center justify-between px-4 bg-panel border-b border-line select-none">
@@ -94,6 +100,15 @@ export function Toolbar({
       </div>
 
       <div className="flex items-center gap-2">
+        <button
+          onClick={onPreview}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+            previewing ? "bg-success text-base" : "text-ink-dim hover:text-ink hover:bg-raised"
+          }`}
+        >
+          {previewing ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+          {previewing ? "Stop preview" : "Preview"}
+        </button>
         <button
           onClick={onNew}
           title="Start a new GUI (clears the current one)"

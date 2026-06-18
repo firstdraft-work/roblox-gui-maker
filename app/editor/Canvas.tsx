@@ -1,6 +1,7 @@
 "use client";
 
 import type { DeviceKind, SceneNode } from "./catalog";
+import type { PreviewVisibility } from "./scene";
 import { useInteraction, type Corner } from "./useInteraction";
 
 const FRAME_CLASS: Record<DeviceKind, string> = {
@@ -28,11 +29,21 @@ type Props = {
   device: DeviceKind;
   onSelect: (id: string | null) => void;
   onChange: (id: string, patch: Partial<SceneNode>) => void;
+  previewVisibility: PreviewVisibility | null;
+  onPreviewAction: (id: string) => void;
 };
 
 const ROOT = "__root__";
 
-export function Canvas({ scene, selectedId, device, onSelect, onChange }: Props) {
+export function Canvas({
+  scene,
+  selectedId,
+  device,
+  onSelect,
+  onChange,
+  previewVisibility,
+  onPreviewAction,
+}: Props) {
   const { startMove, startResize } = useInteraction(onChange);
 
   // group nodes by parent for recursive rendering
@@ -74,6 +85,8 @@ export function Canvas({ scene, selectedId, device, onSelect, onChange }: Props)
               onSelect={onSelect}
               startMove={startMove}
               startResize={startResize}
+              previewVisibility={previewVisibility}
+              onPreviewAction={onPreviewAction}
             />
           ))}
         </div>
@@ -90,6 +103,8 @@ function NodeView({
   onSelect,
   startMove,
   startResize,
+  previewVisibility,
+  onPreviewAction,
 }: {
   node: SceneNode;
   containerLayout: "none" | "list" | "grid";
@@ -98,6 +113,8 @@ function NodeView({
   onSelect: (id: string) => void;
   startMove: (e: React.PointerEvent, node: SceneNode) => void;
   startResize: (e: React.PointerEvent, node: SceneNode, corner: Corner) => void;
+  previewVisibility: PreviewVisibility | null;
+  onPreviewAction: (id: string) => void;
 }) {
   // a flowed child (its parent has a layout) is arranged by the layout,
   // so we don't absolute-position or allow dragging it.
@@ -106,8 +123,10 @@ function NodeView({
   const visible =
     node.transparency < 1 || node.text != null || !!node.gradient || kids.length > 0;
   if (!visible) return null;
+  if (previewVisibility && previewVisibility[node.id] === false) return null;
 
   const selected = node.id === selectedId;
+  const startsHidden = !previewVisibility && node.initialVisible === false;
   const background = node.gradient
     ? `linear-gradient(135deg, ${node.gradient.from}, ${node.gradient.to})`
     : node.transparency >= 1
@@ -119,6 +138,10 @@ function NodeView({
       data-node-id={node.id}
       onPointerDown={(e) => {
         e.stopPropagation();
+        if (previewVisibility) {
+          if (node.cls === "TextButton") onPreviewAction(node.id);
+          return;
+        }
         onSelect(node.id);
         if (!isFlow) startMove(e, node);
       }}
@@ -134,6 +157,9 @@ function NodeView({
         background,
         borderRadius: node.cornerRadius,
         zIndex: node.zindex,
+        opacity: !previewVisibility && node.initialVisible === false ? 0.45 : 1,
+        cursor: previewVisibility && node.cls === "TextButton" ? "pointer" : undefined,
+        pointerEvents: startsHidden && !selected ? "none" : undefined,
       }}
     >
       {node.text != null && (
@@ -166,6 +192,19 @@ function NodeView({
         </>
       )}
 
+      {startsHidden && (
+        <button
+          type="button"
+          onPointerDown={(event) => {
+            event.stopPropagation();
+            onSelect(node.id);
+          }}
+          className="absolute right-1 top-1 z-50 rounded bg-base/90 px-1.5 py-0.5 text-[9px] font-semibold text-warning pointer-events-auto cursor-pointer"
+        >
+          Starts hidden
+        </button>
+      )}
+
       {kids.length > 0 && (
         <ChildrenWrapper node={node}>
           {kids.map((c) => (
@@ -178,6 +217,8 @@ function NodeView({
               onSelect={onSelect}
               startMove={startMove}
               startResize={startResize}
+              previewVisibility={previewVisibility}
+              onPreviewAction={onPreviewAction}
             />
           ))}
         </ChildrenWrapper>

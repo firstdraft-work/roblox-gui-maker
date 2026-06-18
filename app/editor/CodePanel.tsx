@@ -1,15 +1,17 @@
 "use client";
 
-import { Check, Copy } from "lucide-react";
+import { Check, Copy, Download } from "lucide-react";
 
 export function CodePanel({
   code,
   copied,
   onCopy,
+  onDownload,
 }: {
   code: string;
   copied: boolean;
   onCopy: () => void;
+  onDownload: () => void;
 }) {
   return (
     <footer className="h-52 shrink-0 flex flex-col bg-panel border-t border-line">
@@ -22,17 +24,26 @@ export function CodePanel({
             ScreenGui — paste into a LocalScript
           </span>
         </div>
-        <button
-          onClick={onCopy}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium text-ink-dim hover:text-ink hover:bg-raised transition-colors"
-        >
-          {copied ? (
-            <Check className="w-3.5 h-3.5 text-success" />
-          ) : (
-            <Copy className="w-3.5 h-3.5" />
-          )}
-          {copied ? "Copied" : "Copy"}
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={onDownload}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium text-ink-dim hover:text-ink hover:bg-raised transition-colors"
+          >
+            <Download className="w-3.5 h-3.5" />
+            Download .lua
+          </button>
+          <button
+            onClick={onCopy}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium text-ink-dim hover:text-ink hover:bg-raised transition-colors"
+          >
+            {copied ? (
+              <Check className="w-3.5 h-3.5 text-success" />
+            ) : (
+              <Copy className="w-3.5 h-3.5" />
+            )}
+            {copied ? "Copied" : "Copy"}
+          </button>
+        </div>
       </div>
       <pre className="flex-1 overflow-auto scroll-thin p-4 text-[12.5px] leading-relaxed font-mono text-ink-dim">
         <code>{code}</code>
