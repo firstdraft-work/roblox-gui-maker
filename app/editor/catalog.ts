@@ -62,7 +62,13 @@ export type SceneNode = {
   cls: RobloxClass;
   name: string;
   pos: { x: number; y: number };
+  posOffset?: { x: number; y: number };
   size: { x: number; y: number };
+  sizeOffset?: { x: number; y: number };
+  anchor?: { x: number; y: number };
+  aspectRatio?: number;
+  minSize?: { x: number; y: number };
+  maxSize?: { x: number; y: number };
   color: string; // BackgroundColor3 hex
   transparency: number; // 0..1
   cornerRadius: number; // px (UICorner)
