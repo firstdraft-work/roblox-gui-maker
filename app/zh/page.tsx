@@ -28,7 +28,7 @@ export default function ZhHome() {
   return (
     <>
       <SiteNav />
-      <main>
+      <main lang="zh-CN">
         <section className="max-w-4xl mx-auto px-6 pt-20 pb-12 text-center">
           <p className="text-focus text-sm font-semibold uppercase tracking-wider mb-4">
             免费 · 免登录 · 导出干净 Luau
@@ -120,7 +120,7 @@ export default function ZhHome() {
           <p>
             很多"AI 做 GUI"的工具吐出来的是占位布局,你还得自己收拾。我们正好相反:一个精确的可视化画布,你完全掌控。属性名和
             Roblox 完全一致(BackgroundColor3、BackgroundTransparency、ZIndex),可以嵌套容器、用 UIListLayout/UIGridLayout
-            自动排列、加圆角和渐变,导出的 Luau 干净到能直接发版 —— 真实的 Instance.new、UDim2.fromScale
+            自动排列、加圆角和渐变,导出的 Luau 干净到能直接发版 —— 真实的 Instance.new、UDim2.new
             定位,还带按钮的点击事件。
           </p>
         </section>

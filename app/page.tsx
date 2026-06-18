@@ -50,7 +50,7 @@ const webAppSchema = {
   featureList: [
     "Visual drag-and-drop GUI editor",
     "Parent-child nesting with UIListLayout, UIGridLayout, UIGradient, UICorner, UIPadding",
-    "Exports clean Luau (Instance.new, UDim2.fromScale)",
+    "Exports clean Luau (Instance.new, UDim2.new)",
     "Roblox GUI templates and how-to guides",
   ],
 };
@@ -189,7 +189,7 @@ export default function Home() {
             can nest containers and auto-arrange children with UIListLayout and
             UIGridLayout, and the exported Luau is clean enough to ship as-is —
             real <code className="text-focus">Instance.new</code> calls,{" "}
-            <code className="text-focus">UDim2.fromScale</code> positioning, and
+            <code className="text-focus">UDim2.new</code> positioning, and
             correct parenting.
           </p>
 

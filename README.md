@@ -5,7 +5,7 @@ A free, browser-based visual builder for Roblox game interfaces. Drag and drop
 properties, and export clean Luau you can paste straight into Studio.
 
 The differentiator vs "AI GUI" tools: **precise, you stay in control, and the
-exported Luau is clean** (real `Instance.new` calls, `UDim2.fromScale`
+exported Luau is clean** (real `Instance.new` calls, `UDim2.new`
 positioning, correct parenting) — not placeholder output to clean up.
 
 ## Stack

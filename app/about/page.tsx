@@ -56,7 +56,7 @@ export default function AboutPage() {
             layouts you then have to clean up. This is the opposite: a precise
             canvas where the exported Luau is clean enough to ship. It recreates
             your GUI with real <code className="text-focus">Instance.new</code>{" "}
-            calls and <code className="text-focus">UDim2.fromScale</code>{" "}
+            calls and <code className="text-focus">UDim2.new</code>{" "}
             positioning — and if you wired a button to open a panel, the export
             includes that{" "}
             <code className="text-focus">.Activated:Connect</code> handler too.
