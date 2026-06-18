@@ -140,7 +140,11 @@ export function PropertiesPanel({ node, scene, onChange, onDelete, onDuplicate }
                   )
                 }
               />
-              <div className="mt-2 grid grid-cols-3 gap-1" aria-label="Alignment presets">
+              <div
+                className="mt-2 grid grid-cols-3 gap-1"
+                role="group"
+                aria-label="Alignment presets"
+              >
                 {ALIGNMENTS.map((alignment) => {
                   const active =
                     (node.anchor?.x ?? 0) === alignment.x &&
