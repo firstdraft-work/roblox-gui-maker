@@ -8,7 +8,12 @@ import { Canvas } from "./Canvas";
 import { PropertiesPanel } from "./PropertiesPanel";
 import { CodePanel } from "./CodePanel";
 import { SAMPLE_SCENE, type DeviceKind, type RobloxClass, type SceneNode } from "./catalog";
-import { sanitizeScene } from "./persistence";
+import {
+  parseSceneDocument,
+  sanitizeScene,
+  sceneDocumentFilename,
+  serializeSceneDocument,
+} from "./persistence";
 import {
   applyPreviewAction,
   createNode,
@@ -67,6 +72,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
   const [scene, setScene] = useState<SceneNode[]>(start);
   const [selectedId, setSelectedId] = useState<string | null>("play");
   const [copied, setCopied] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
   const [previewVisibility, setPreviewVisibility] = useState<PreviewVisibility | null>(null);
 
   // Undo/redo: snapshot stack + pointer. Discrete ops commit immediately;
@@ -329,6 +335,38 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
     URL.revokeObjectURL(url);
   }
 
+  function exportProject() {
+    const url = URL.createObjectURL(
+      new Blob([serializeSceneDocument(scene)], {
+        type: "application/json;charset=utf-8",
+      })
+    );
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = sceneDocumentFilename(scene);
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  async function importProject(file: File) {
+    setImportError(null);
+    try {
+      const imported = parseSceneDocument(await file.text());
+      mutate(() => imported, true);
+      setSelectedId(
+        imported.find((node) => node.cls === "ScreenGui" && !node.parentId)?.id ??
+          imported[0].id
+      );
+      setPreviewVisibility(null);
+    } catch (error) {
+      setImportError(
+        error instanceof Error && error.message
+          ? error.message
+          : "Could not import this project."
+      );
+    }
+  }
+
   function togglePreview() {
     setPreviewVisibility((current) =>
       current ? null : createPreviewVisibility(scene)
@@ -376,6 +414,9 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
         onNew={newWorkspace}
         previewing={previewVisibility !== null}
         onPreview={togglePreview}
+        onImportProject={importProject}
+        onExportProject={exportProject}
+        importError={importError}
       />
       <div className="flex-1 min-h-0 flex">
         <Palette

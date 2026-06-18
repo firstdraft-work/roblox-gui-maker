@@ -11,8 +11,10 @@ import {
   Undo2,
   Redo2,
   FilePlus2,
+  FileJson,
   Play,
   Square,
+  Upload,
 } from "lucide-react";
 import type { DeviceKind } from "./catalog";
 
@@ -34,6 +36,9 @@ type Props = {
   onNew: () => void;
   previewing: boolean;
   onPreview: () => void;
+  onImportProject: (file: File) => void;
+  onExportProject: () => void;
+  importError: string | null;
 };
 
 export function Toolbar({
@@ -48,9 +53,12 @@ export function Toolbar({
   onNew,
   previewing,
   onPreview,
+  onImportProject,
+  onExportProject,
+  importError,
 }: Props) {
   return (
-    <header className="h-12 shrink-0 flex items-center justify-between px-4 bg-panel border-b border-line select-none">
+    <header className="relative h-12 shrink-0 flex items-center justify-between px-4 bg-panel border-b border-line select-none">
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
           <span className="grid place-items-center w-7 h-7 rounded-md bg-primary text-on-primary font-bold text-sm">
@@ -124,6 +132,27 @@ export function Toolbar({
           <LayoutTemplate className="w-4 h-4" />
           Templates
         </Link>
+        <label className="flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 text-sm text-ink-dim transition-colors hover:bg-raised hover:text-ink">
+          <Upload className="w-4 h-4" />
+          Import JSON
+          <input
+            type="file"
+            accept="application/json,.json"
+            className="sr-only"
+            onChange={(event) => {
+              const file = event.currentTarget.files?.[0];
+              event.currentTarget.value = "";
+              if (file) onImportProject(file);
+            }}
+          />
+        </label>
+        <button
+          onClick={onExportProject}
+          className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm text-ink-dim transition-colors hover:bg-raised hover:text-ink"
+        >
+          <FileJson className="w-4 h-4" />
+          Export JSON
+        </button>
         <button
           onClick={onExport}
           className="flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm font-semibold bg-primary text-on-primary hover:brightness-110 transition"
@@ -132,6 +161,14 @@ export function Toolbar({
           {copied ? "Copied" : "Export Luau"}
         </button>
       </div>
+      {importError && (
+        <div
+          role="alert"
+          className="absolute right-4 top-full z-20 mt-2 max-w-md rounded-md border border-line bg-panel px-3 py-2 text-sm text-danger shadow-lg"
+        >
+          {importError}
+        </div>
+      )}
     </header>
   );
 }
