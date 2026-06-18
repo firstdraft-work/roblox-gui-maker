@@ -4,6 +4,7 @@ import {
   canvasGeometryStyle,
   sanitizeResponsiveGeometry,
   setAnchorPreservingPosition,
+  validAspectRatio,
   validSizeConstraints,
 } from "./geometry";
 
@@ -81,6 +82,22 @@ describe("setAnchorPreservingPosition", () => {
       posOffset: { x: 14, y: 18 },
     });
   });
+
+  it("uses zero offsets when optional offsets are absent", () => {
+    expect(
+      setAnchorPreservingPosition(
+        {
+          pos: { x: 0.1, y: 0.2 },
+          size: { x: 0.4, y: 0.6 },
+        },
+        { x: 0.5, y: 0.5 }
+      )
+    ).toEqual({
+      anchor: { x: 0.5, y: 0.5 },
+      pos: { x: 0.3, y: 0.5 },
+      posOffset: { x: 0, y: 0 },
+    });
+  });
 });
 
 describe("alignNode", () => {
@@ -91,10 +108,42 @@ describe("alignNode", () => {
       posOffset: { x: 0, y: 0 },
     });
   });
+
+  it.each([0, 0.5, 1].flatMap((y) => [0, 0.5, 1].map((x) => [x, y]))) (
+    "aligns to (%s, %s)",
+    (x, y) => {
+      expect(alignNode({ x, y })).toEqual({
+        anchor: { x, y },
+        pos: { x, y },
+        posOffset: { x: 0, y: 0 },
+      });
+    }
+  );
 });
 
-it("rejects max size below min size", () => {
-  expect(validSizeConstraints({ x: 400, y: 200 }, { x: 300, y: 300 })).toBe(false);
+describe("constraint validation", () => {
+  it("accepts positive aspect ratios", () => {
+    expect(validAspectRatio(16 / 9)).toBe(true);
+  });
+
+  it.each([0, -1, Number.NaN, Number.POSITIVE_INFINITY])(
+    "rejects aspect ratio %s",
+    (ratio) => {
+      expect(validAspectRatio(ratio)).toBe(false);
+    }
+  );
+
+  it("rejects max size below min size", () => {
+    expect(validSizeConstraints({ x: 400, y: 200 }, { x: 300, y: 300 })).toBe(false);
+  });
+
+  it("rejects negative bounds", () => {
+    expect(validSizeConstraints({ x: -1, y: 0 }, { x: 300, y: 300 })).toBe(false);
+  });
+
+  it("accepts equal non-negative bounds", () => {
+    expect(validSizeConstraints({ x: 300, y: 300 }, { x: 300, y: 300 })).toBe(true);
+  });
 });
 
 describe("sanitizeResponsiveGeometry", () => {

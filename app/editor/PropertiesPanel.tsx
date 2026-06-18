@@ -2,6 +2,12 @@
 
 import { Move, Palette as PaletteIcon, Type, Layers, Box, Trash2, Rows3, Copy, Zap, Eye } from "lucide-react";
 import type { SceneNode } from "./catalog";
+import {
+  alignNode,
+  setAnchorPreservingPosition,
+  validAspectRatio,
+  validSizeConstraints,
+} from "./geometry";
 import { FONTS } from "./scene";
 
 type Props = {
@@ -13,6 +19,18 @@ type Props = {
 };
 
 const round2 = (v: number) => Math.round(v * 100) / 100;
+const ZERO_VECTOR = { x: 0, y: 0 };
+const ALIGNMENTS = [
+  { x: 0, y: 0, label: "Top left" },
+  { x: 0.5, y: 0, label: "Top center" },
+  { x: 1, y: 0, label: "Top right" },
+  { x: 0, y: 0.5, label: "Middle left" },
+  { x: 0.5, y: 0.5, label: "Center" },
+  { x: 1, y: 0.5, label: "Middle right" },
+  { x: 0, y: 1, label: "Bottom left" },
+  { x: 0.5, y: 1, label: "Bottom center" },
+  { x: 1, y: 1, label: "Bottom right" },
+] as const;
 
 export function PropertiesPanel({ node, scene, onChange, onDelete, onDuplicate }: Props) {
   const actionTargets = scene.filter(
@@ -59,22 +77,146 @@ export function PropertiesPanel({ node, scene, onChange, onDelete, onDuplicate }
           </div>
 
           <Group icon={Move} label="Layout">
-            <Row label="Position">
-              <PairInput
-                x={node.pos.x}
-                y={node.pos.y}
-                onX={(v) => onChange(node.id, { pos: { ...node.pos, x: round2(v) } })}
-                onY={(v) => onChange(node.id, { pos: { ...node.pos, y: round2(v) } })}
+            <Row label="Position" stacked>
+              <UDim2Input
+                scale={node.pos}
+                offset={node.posOffset ?? ZERO_VECTOR}
+                onScale={(axis, value) =>
+                  onChange(node.id, {
+                    pos: { ...node.pos, [axis]: round2(value) },
+                  })
+                }
+                onOffset={(axis, value) => {
+                  const next = {
+                    ...(node.posOffset ?? ZERO_VECTOR),
+                    [axis]: Math.round(value),
+                  };
+                  onChange(node.id, {
+                    posOffset: next.x === 0 && next.y === 0 ? undefined : next,
+                  });
+                }}
               />
             </Row>
-            <Row label="Size">
-              <PairInput
-                x={node.size.x}
-                y={node.size.y}
-                onX={(v) => onChange(node.id, { size: { ...node.size, x: round2(v) } })}
-                onY={(v) => onChange(node.id, { size: { ...node.size, y: round2(v) } })}
+            <Row label="Size" stacked>
+              <UDim2Input
+                scale={node.size}
+                offset={node.sizeOffset ?? ZERO_VECTOR}
+                onScale={(axis, value) =>
+                  onChange(node.id, {
+                    size: { ...node.size, [axis]: round2(value) },
+                  })
+                }
+                onOffset={(axis, value) => {
+                  const next = {
+                    ...(node.sizeOffset ?? ZERO_VECTOR),
+                    [axis]: Math.round(value),
+                  };
+                  onChange(node.id, {
+                    sizeOffset: next.x === 0 && next.y === 0 ? undefined : next,
+                  });
+                }}
               />
             </Row>
+            <Row label="AnchorPoint" stacked>
+              <PairInput
+                x={node.anchor?.x ?? 0}
+                y={node.anchor?.y ?? 0}
+                onX={(value) =>
+                  onChange(
+                    node.id,
+                    setAnchorPreservingPosition(node, {
+                      x: round2(value),
+                      y: node.anchor?.y ?? 0,
+                    })
+                  )
+                }
+                onY={(value) =>
+                  onChange(
+                    node.id,
+                    setAnchorPreservingPosition(node, {
+                      x: node.anchor?.x ?? 0,
+                      y: round2(value),
+                    })
+                  )
+                }
+              />
+              <div className="mt-2 grid grid-cols-3 gap-1" aria-label="Alignment presets">
+                {ALIGNMENTS.map((alignment) => {
+                  const active =
+                    (node.anchor?.x ?? 0) === alignment.x &&
+                    (node.anchor?.y ?? 0) === alignment.y;
+                  return (
+                    <button
+                      key={alignment.label}
+                      type="button"
+                      aria-label={`Align ${alignment.label.toLowerCase()}`}
+                      aria-pressed={active}
+                      onClick={() => onChange(node.id, alignNode(alignment))}
+                      className={`h-6 rounded border transition-colors ${
+                        active
+                          ? "border-focus bg-focus/20 text-focus"
+                          : "border-line bg-input text-ink-mute hover:text-ink"
+                      }`}
+                    >
+                      <span className="mx-auto block h-1.5 w-1.5 rounded-full bg-current" />
+                    </button>
+                  );
+                })}
+              </div>
+            </Row>
+            <Row label="Aspect ratio">
+              <input
+                type="checkbox"
+                aria-label="Enable aspect ratio constraint"
+                checked={node.aspectRatio !== undefined}
+                onChange={(event) =>
+                  onChange(node.id, {
+                    aspectRatio: event.target.checked ? 16 / 9 : undefined,
+                  })
+                }
+                className="h-4 w-4 accent-focus"
+              />
+            </Row>
+            {node.aspectRatio !== undefined && (
+              <div className="px-1 pb-1">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-[11px] text-ink-mute">Ratio</span>
+                  <NumberInput
+                    value={node.aspectRatio}
+                    step={0.001}
+                    min={0.001}
+                    onValue={(value) => {
+                      if (validAspectRatio(value)) {
+                        onChange(node.id, { aspectRatio: value });
+                      }
+                    }}
+                  />
+                </div>
+                <p className="mt-1 text-[10px] text-ink-mute">Width controls height</p>
+              </div>
+            )}
+            <Row label="Size constraints">
+              <input
+                type="checkbox"
+                aria-label="Enable size constraints"
+                checked={node.minSize !== undefined || node.maxSize !== undefined}
+                onChange={(event) =>
+                  onChange(
+                    node.id,
+                    event.target.checked
+                      ? {
+                          minSize: { x: 0, y: 0 },
+                          maxSize: { x: 1920, y: 1080 },
+                        }
+                      : { minSize: undefined, maxSize: undefined }
+                  )
+                }
+                className="h-4 w-4 accent-focus"
+              />
+            </Row>
+            {(node.minSize || node.maxSize) && (
+              <SizeConstraintInputs node={node} onChange={onChange} />
+            )}
           </Group>
 
           <Group icon={PaletteIcon} label="Appearance">
@@ -331,6 +473,89 @@ function NumberInput({
       }}
       className="w-[68px] px-2 py-1 rounded bg-input text-ink text-xs font-mono outline-none focus:ring-1 focus:ring-focus"
     />
+  );
+}
+
+function UDim2Input({
+  scale,
+  offset,
+  onScale,
+  onOffset,
+}: {
+  scale: { x: number; y: number };
+  offset: { x: number; y: number };
+  onScale: (axis: "x" | "y", value: number) => void;
+  onOffset: (axis: "x" | "y", value: number) => void;
+}) {
+  return (
+    <div className="grid grid-cols-[auto_1fr_1fr] items-center gap-1.5">
+      <span />
+      <span className="text-center text-[10px] text-ink-mute">Scale</span>
+      <span className="text-center text-[10px] text-ink-mute">Offset</span>
+      {(["x", "y"] as const).map((axis) => (
+        <div key={axis} className="contents">
+          <span className="text-[10px] uppercase text-ink-mute font-mono">{axis}</span>
+          <NumberInput
+            value={scale[axis]}
+            step={0.01}
+            onValue={(value) => onScale(axis, value)}
+          />
+          <NumberInput
+            value={offset[axis]}
+            step={1}
+            onValue={(value) => onOffset(axis, value)}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function SizeConstraintInputs({
+  node,
+  onChange,
+}: {
+  node: SceneNode;
+  onChange: (id: string, patch: Partial<SceneNode>) => void;
+}) {
+  const minSize = node.minSize ?? ZERO_VECTOR;
+  const maxSize = node.maxSize ?? { x: 1920, y: 1080 };
+  const update = (
+    bound: "minSize" | "maxSize",
+    axis: "x" | "y",
+    value: number
+  ) => {
+    const nextMin = bound === "minSize" ? { ...minSize, [axis]: value } : minSize;
+    const nextMax = bound === "maxSize" ? { ...maxSize, [axis]: value } : maxSize;
+    if (!validSizeConstraints(nextMin, nextMax)) return;
+    onChange(node.id, { [bound]: bound === "minSize" ? nextMin : nextMax });
+  };
+
+  return (
+    <div className="px-1 pb-1">
+      <div className="grid grid-cols-[auto_1fr_1fr] items-center gap-1.5">
+        <span />
+        <span className="text-center text-[10px] text-ink-mute">Min</span>
+        <span className="text-center text-[10px] text-ink-mute">Max</span>
+        {(["x", "y"] as const).map((axis) => (
+          <div key={axis} className="contents">
+            <span className="text-[10px] uppercase text-ink-mute font-mono">{axis}</span>
+            <NumberInput
+              value={minSize[axis]}
+              min={0}
+              step={1}
+              onValue={(value) => update("minSize", axis, Math.round(value))}
+            />
+            <NumberInput
+              value={maxSize[axis]}
+              min={0}
+              step={1}
+              onValue={(value) => update("maxSize", axis, Math.round(value))}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 

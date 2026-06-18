@@ -112,6 +112,10 @@ export function validSizeConstraints(minSize: Vector2, maxSize: Vector2): boolea
   );
 }
 
+export function validAspectRatio(ratio: number): boolean {
+  return finite(ratio) && ratio > 0;
+}
+
 function finiteVector(raw: unknown): Vector2 | null {
   if (!raw || typeof raw !== "object") return null;
   const vector = raw as Record<string, unknown>;
@@ -158,8 +162,7 @@ export function sanitizeResponsiveGeometry(raw: unknown): ResponsiveGeometry {
   }
   if (
     typeof source.aspectRatio === "number" &&
-    finite(source.aspectRatio) &&
-    source.aspectRatio > 0
+    validAspectRatio(source.aspectRatio)
   ) {
     geometry.aspectRatio = source.aspectRatio;
   }
