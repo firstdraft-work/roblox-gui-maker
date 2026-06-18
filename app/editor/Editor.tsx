@@ -42,6 +42,8 @@ const cloneScene = (s: SceneNode[]): SceneNode[] =>
     ...(n.gradient ? { gradient: { ...n.gradient } } : {}),
     ...(n.action ? { action: { ...n.action } } : {}),
   }));
+const scenesEqual = (left: SceneNode[], right: SceneNode[]) =>
+  JSON.stringify(left) === JSON.stringify(right);
 
 // ---- persistence (localStorage) -------------------------------------------
 const STORAGE_KEY = "rgm:scene:v1";
@@ -131,13 +133,14 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
   // immediate=true commits now (discrete); otherwise debounced (continuous).
   const mutate = useCallback(
     (updater: (prev: SceneNode[]) => SceneNode[], immediate = false) => {
+      const currentScene = sceneRef.current;
+      const next = updater(currentScene);
+      if (scenesEqual(currentScene, next)) return;
       // any new edit invalidates the redo branch — drop it now (not after the
       // 350ms debounce) so a redo before the timer fires can't restore stale state.
       const h = history.current;
       if (h.index < h.stack.length - 1) h.stack = h.stack.slice(0, h.index + 1);
-      const currentScene = sceneRef.current;
-      const next = updater(currentScene);
-      if (next !== currentScene) detachTemplateUrl();
+      detachTemplateUrl();
       sceneRef.current = next;
       setScene(next);
       if (immediate) {
@@ -284,6 +287,10 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
 
   function newWorkspace() {
     if (typeof window !== "undefined" && !window.confirm("Start a new GUI? Your current one will be cleared.")) return;
+    if (commitTimer.current) {
+      clearTimeout(commitTimer.current);
+      commitTimer.current = null;
+    }
     sceneRef.current = SAMPLE_SCENE;
     setScene(SAMPLE_SCENE);
     setSelectedId("play");
