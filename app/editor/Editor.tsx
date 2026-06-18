@@ -74,6 +74,8 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
   const [copied, setCopied] = useState(false);
   const [importError, setImportError] = useState<string | null>(null);
   const [previewVisibility, setPreviewVisibility] = useState<PreviewVisibility | null>(null);
+  const sceneRef = useRef(scene);
+  const importRequest = useRef(0);
 
   // Undo/redo: snapshot stack + pointer. Discrete ops commit immediately;
   // continuous edits (drag/typing/nudge) commit on a debounced timer so a
@@ -117,7 +119,9 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
       // 350ms debounce) so a redo before the timer fires can't restore stale state.
       const h = history.current;
       if (h.index < h.stack.length - 1) h.stack = h.stack.slice(0, h.index + 1);
-      const next = updater(scene);
+      const currentScene = sceneRef.current;
+      const next = updater(currentScene);
+      sceneRef.current = next;
       setScene(next);
       if (immediate) {
         if (commitTimer.current) {
@@ -125,7 +129,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
           // restores the exact pre-mutation scene.
           clearTimeout(commitTimer.current);
           commitTimer.current = null;
-          commit(scene, next);
+          commit(currentScene, next);
         } else {
           commit(next);
         }
@@ -133,19 +137,21 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
         scheduleCommit(next);
       }
     },
-    [scene, commit, scheduleCommit]
+    [commit, scheduleCommit]
   );
 
   function undo() {
     if (commitTimer.current) {
       clearTimeout(commitTimer.current);
       commitTimer.current = null;
-      commit(scene);
+      commit(sceneRef.current);
     }
     const h = history.current;
     if (h.index > 0) {
       h.index--;
-      setScene(cloneScene(h.stack[h.index]));
+      const previous = cloneScene(h.stack[h.index]);
+      sceneRef.current = previous;
+      setScene(previous);
       force();
     }
   }
@@ -154,7 +160,9 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
     const h = history.current;
     if (h.index < h.stack.length - 1) {
       h.index++;
-      setScene(cloneScene(h.stack[h.index]));
+      const next = cloneScene(h.stack[h.index]);
+      sceneRef.current = next;
+      setScene(next);
       force();
     }
   }
@@ -238,6 +246,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
     if (initialScene) return;
     const saved = loadSaved();
     if (!saved) return;
+    sceneRef.current = saved.scene;
     setScene(saved.scene);
     setSelectedId(saved.selectedId);
     history.current = { stack: [cloneScene(saved.scene)], index: 0 };
@@ -258,6 +267,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
 
   function newWorkspace() {
     if (typeof window !== "undefined" && !window.confirm("Start a new GUI? Your current one will be cleared.")) return;
+    sceneRef.current = SAMPLE_SCENE;
     setScene(SAMPLE_SCENE);
     setSelectedId("play");
     history.current = { stack: [cloneScene(SAMPLE_SCENE)], index: 0 };
@@ -349,9 +359,12 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
   }
 
   async function importProject(file: File) {
+    const request = ++importRequest.current;
     setImportError(null);
     try {
-      const imported = parseSceneDocument(await file.text());
+      const text = await file.text();
+      if (request !== importRequest.current) return;
+      const imported = parseSceneDocument(text);
       mutate(() => imported, true);
       setSelectedId(
         imported.find((node) => node.cls === "ScreenGui" && !node.parentId)?.id ??
@@ -359,6 +372,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
       );
       setPreviewVisibility(null);
     } catch (error) {
+      if (request !== importRequest.current) return;
       setImportError(
         error instanceof Error && error.message
           ? error.message

@@ -107,7 +107,7 @@ export function Toolbar({
         })}
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-1 xl:gap-2">
         <button
           onClick={onPreview}
           className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
@@ -132,12 +132,16 @@ export function Toolbar({
           <LayoutTemplate className="w-4 h-4" />
           Templates
         </Link>
-        <label className="flex cursor-pointer items-center gap-1.5 rounded-md px-3 py-1.5 text-sm text-ink-dim transition-colors hover:bg-raised hover:text-ink">
+        <label
+          title="Import JSON"
+          className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-md text-sm text-ink-dim transition-colors hover:bg-raised hover:text-ink focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary xl:w-auto xl:px-3"
+        >
           <Upload className="w-4 h-4" />
-          Import JSON
+          <span className="hidden xl:inline">Import JSON</span>
           <input
             type="file"
             accept="application/json,.json"
+            aria-label="Import JSON"
             className="sr-only"
             onChange={(event) => {
               const file = event.currentTarget.files?.[0];
@@ -148,10 +152,12 @@ export function Toolbar({
         </label>
         <button
           onClick={onExportProject}
-          className="flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm text-ink-dim transition-colors hover:bg-raised hover:text-ink"
+          aria-label="Export JSON"
+          title="Export JSON"
+          className="flex h-8 w-8 shrink-0 items-center justify-center gap-1.5 rounded-md text-sm text-ink-dim transition-colors hover:bg-raised hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary xl:w-auto xl:px-3"
         >
           <FileJson className="w-4 h-4" />
-          Export JSON
+          <span className="hidden xl:inline">Export JSON</span>
         </button>
         <button
           onClick={onExport}
