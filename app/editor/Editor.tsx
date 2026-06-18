@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { Toolbar } from "./Toolbar";
 import { Palette } from "./Palette";
@@ -358,7 +359,33 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
   }
 
   return (
-    <div className="h-screen w-screen flex flex-col overflow-hidden">
+    <>
+      <main className="flex min-h-screen flex-col items-center justify-center gap-5 px-6 text-center md:hidden">
+        <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary text-xl font-bold text-on-primary">
+          R
+        </div>
+        <div className="space-y-2">
+          <h1 className="text-2xl font-bold">Open the editor on a larger screen</h1>
+          <p className="mx-auto max-w-sm text-sm leading-6 text-ink-dim">
+            The editor needs room for the component palette, canvas, and properties. Use a tablet or desktop to build and export your GUI.
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <Link
+            href="/templates"
+            className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-on-primary"
+          >
+            Browse templates
+          </Link>
+          <Link
+            href="/"
+            className="rounded-md border border-line px-4 py-2 text-sm font-medium text-ink-dim"
+          >
+            Back home
+          </Link>
+        </div>
+      </main>
+      <div className="hidden h-screen w-screen flex-col overflow-hidden md:flex">
       <Toolbar
         device={device}
         onDevice={setDevice}
@@ -387,6 +414,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
         />
       </div>
       <CodePanel code={code} copied={copied} onCopy={handleExport} />
-    </div>
+      </div>
+    </>
   );
 }
