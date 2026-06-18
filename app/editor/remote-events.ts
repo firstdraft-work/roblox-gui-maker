@@ -47,8 +47,22 @@ type RemoteEventButton = SceneNode & {
 
 export function remoteEventButtons(scene: SceneNode[]): RemoteEventButton[] {
   return scene.filter(
-    (node): node is RemoteEventButton =>
-      node.cls === "TextButton" && node.action?.type === "remoteEvent"
+    (node): node is RemoteEventButton => {
+      if (node.cls !== "TextButton") return false;
+      const action = node.action as Record<string, unknown> | undefined;
+      if (
+        action?.type !== "remoteEvent" ||
+        typeof action.eventName !== "string" ||
+        typeof action.argument !== "string"
+      ) {
+        return false;
+      }
+      return (
+        action.eventName === action.eventName.trim() &&
+        remoteEventNameError(action.eventName) === null &&
+        action.argument.length <= MAX_REMOTE_ARGUMENT
+      );
+    }
   );
 }
 

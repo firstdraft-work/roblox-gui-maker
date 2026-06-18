@@ -79,15 +79,15 @@ describe("generateServerLuau", () => {
     expect(code).not.toMatch(/leaderstats|Destroy\(|Kick\(/);
   });
 
-  it("escapes event names and arguments in generated literals", () => {
+  it("escapes arguments in generated literals", () => {
     const code = generateServerLuau([
-      button({ action: { type: "remoteEvent", eventName: 'Shop"\\\n', argument: 'buy"\\\n\r\t' } }),
+      button({ action: { type: "remoteEvent", eventName: "ShopAction", argument: 'buy"\\\n\r\t' } }),
     ]);
 
-    expect(code).toContain('FindFirstChild("Shop\\"\\\\\\n")');
+    expect(code).toContain('FindFirstChild("ShopAction")');
     expect(code).toContain('action == "buy\\"\\\\\\n\\r\\t"');
     expect(code).toContain(
-      'warn("Unexpected " .. "Shop\\"\\\\\\n" .. " action from " .. player.Name .. ": " .. tostring(action))'
+      'warn("Unexpected " .. "ShopAction" .. " action from " .. player.Name .. ": " .. tostring(action))'
     );
   });
 });
@@ -191,5 +191,19 @@ describe("remoteEventButtons", () => {
 
     expect(result).toEqual([remoteButton]);
     expect(result[0].action.eventName).toBe("ShopAction");
+  });
+
+  it.each([
+    { type: "remoteEvent", argument: "buy_sword" },
+    { type: "remoteEvent", eventName: "ShopAction" },
+    { type: "remoteEvent", eventName: " ShopAction ", argument: "buy_sword" },
+    { type: "remoteEvent", eventName: "Shop-Action", argument: "buy_sword" },
+    { type: "remoteEvent", eventName: "ShopAction", argument: "x".repeat(MAX_REMOTE_ARGUMENT + 1) },
+  ])("ignores malformed runtime action $action", (action) => {
+    const scene = [button({ action: action as SceneNode["action"] })];
+
+    expect(() => remoteEventButtons(scene)).not.toThrow();
+    expect(collectRemoteEventBindings(scene)).toEqual([]);
+    expect(generateServerLuau(scene)).toBeNull();
   });
 });

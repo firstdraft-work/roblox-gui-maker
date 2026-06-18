@@ -374,9 +374,11 @@ export function generateLuau(scene: SceneNode[]): string {
   }
 
   const visited = new Set<string>();
+  const emittedNodes = new Set<SceneNode>();
   const emit = (node: SceneNode, parentVar: string) => {
     if (visited.has(node.id)) return; // cycle guard against malformed scenes
     visited.add(node.id);
+    emittedNodes.add(node);
     const v = nameOf(node.id);
     out.push("");
     out.push(`local ${v} = Instance.new(${luauString(node.cls)})`);
@@ -474,7 +476,7 @@ export function generateLuau(scene: SceneNode[]): string {
   }
 
   for (const node of scene) {
-    if (node.cls !== "TextButton" || !node.action) continue;
+    if (node.cls !== "TextButton" || !node.action || !emittedNodes.has(node)) continue;
     const buttonVar = varNames.get(node.id);
     if (!buttonVar) continue;
 

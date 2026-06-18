@@ -93,6 +93,38 @@ describe("button actions", () => {
     expect(code).not.toContain('Instance.new("RemoteEvent")');
   });
 
+  it("wires only the first emitted TextButton when node ids are duplicated", () => {
+    const scene = actionScene({ type: "remoteEvent", eventName: "ShopAction", argument: "first" });
+    scene.push(node({
+      id: "button",
+      cls: "TextButton",
+      name: "Duplicate",
+      parentId: "root",
+      action: { type: "remoteEvent", eventName: "ShopAction", argument: "second" },
+    }));
+
+    const code = generateLuau(scene);
+
+    expect(code).toContain('remote0:FireServer("first")');
+    expect(code).not.toContain('remote0:FireServer("second")');
+    expect(code.match(/\.Activated:Connect/g)).toHaveLength(1);
+  });
+
+  it.each([
+    { type: "remoteEvent", argument: "buy_sword" },
+    { type: "remoteEvent", eventName: "ShopAction" },
+    { type: "remoteEvent", eventName: " ShopAction ", argument: "buy_sword" },
+    { type: "remoteEvent", eventName: "Shop-Action", argument: "buy_sword" },
+    { type: "remoteEvent", eventName: "ShopAction", argument: "x".repeat(201) },
+  ])("ignores malformed runtime remote action %#", (action) => {
+    const scene = actionScene(action as NonNullable<SceneNode["action"]>);
+
+    expect(() => generateLuau(scene)).not.toThrow();
+    const code = generateLuau(scene);
+    expect(code).not.toContain("ReplicatedStorage");
+    expect(code).not.toContain("FireServer");
+  });
+
   it("does not emit remote services for visibility-only actions", () => {
     const code = generateLuau(actionScene({ type: "toggle", targetId: "panel" }));
 
