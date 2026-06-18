@@ -67,6 +67,17 @@ function loadSaved(): Saved | null {
   }
 }
 
+function detachTemplateUrl() {
+  const currentUrl = new URL(window.location.href);
+  if (!currentUrl.searchParams.has("template")) return;
+  currentUrl.searchParams.delete("template");
+  window.history.replaceState(
+    window.history.state,
+    "",
+    `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`
+  );
+}
+
 export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
   const start = initialScene ?? SAMPLE_SCENE;
   const [device, setDevice] = useState<DeviceKind>("desktop");
@@ -126,6 +137,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
       if (h.index < h.stack.length - 1) h.stack = h.stack.slice(0, h.index + 1);
       const currentScene = sceneRef.current;
       const next = updater(currentScene);
+      if (next !== currentScene) detachTemplateUrl();
       sceneRef.current = next;
       setScene(next);
       if (immediate) {
@@ -277,6 +289,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
     setSelectedId("play");
     setPreviewNotice(null);
     history.current = { stack: [cloneScene(SAMPLE_SCENE)], index: 0 };
+    detachTemplateUrl();
     force();
   }
 
@@ -412,15 +425,6 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
       );
       setPreviewVisibility(null);
       setPreviewNotice(null);
-      const currentUrl = new URL(window.location.href);
-      if (currentUrl.searchParams.has("template")) {
-        currentUrl.searchParams.delete("template");
-        window.history.replaceState(
-          window.history.state,
-          "",
-          `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`
-        );
-      }
     } catch (error) {
       if (request !== importRequest.current) return;
       setImportError(
