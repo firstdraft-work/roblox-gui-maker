@@ -66,7 +66,7 @@ export function Toolbar({
             alt="Roblox GUI Maker"
             width={28}
             height={28}
-            className="h-7 w-auto rounded-md"
+            className="h-9 w-auto"
           />
           <span className="hidden font-semibold tracking-tight xl:inline">
             Roblox<span className="text-ink-dim"> GUI Maker</span>

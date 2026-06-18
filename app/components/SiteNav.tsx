@@ -9,7 +9,7 @@ export function SiteNav() {
           alt="Roblox GUI Maker"
           width={28}
           height={28}
-          className="h-7 w-auto rounded-md"
+          className="h-9 w-auto"
         />
         <span className="font-semibold tracking-tight">
           Roblox<span className="text-ink-dim"> GUI Maker</span>
