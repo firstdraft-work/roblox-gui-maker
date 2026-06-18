@@ -1,123 +1,145 @@
 # Showcase posts — robloxguimaker.app
 
-Two drafts for the two communities most likely to care. Both lead with the
-problem (Studio's GUI builder is slow), are honest about what's rough, and ask
-for feedback rather than "use my thing." Communities downvote overt promo;
-value-first + humble wins.
+Updated for the current product. The headline differentiator is no longer just
+"drag-drop → clean Luau" — it's **"design interactive GUIs (buttons that open
+and close panels) and export Luau with the click handlers already wired."** That
+is what none of the AI-placeholder or Studio-only routes give you. Lead with it.
 
-**Before posting, capture a screenshot or short GIF of the editor** (drag a
-button, change a color, watch the Luau update). A visual tool needs visual
-proof — text alone underperforms badly on both forums.
+Communities downvote overt promo, so every draft is problem-led, honest about
+the rough edges, and asks for feedback.
+
+**Primary placement: r/robloxgamedev (Showcase flair).** DevForum has no clean
+showcase category (its closest fits — Community Resources / Creations Feedback —
+are high-friction and strict on promo), so it's secondary. A short YouTube
+tutorial is the other high-ROI move (GUI-making intent lives on YouTube).
 
 ---
 
-## 1. DevForum (devforum.roblox.com) — category: Showcase
+## 1. Reddit — r/robloxgamedev (flair: Showcase)
 
-> DevForum is stricter about self-promo. Frame it as "I built this to scratch my
-> own itch, here's how it works, feedback welcome." A Showcase post needs you to
-> be a DevForum member (trust level); if you're not, start with Reddit + the
-> #resources thread.
+> Lead with the relatable pain, keep it short, link in the body, reply to every
+> comment in the first 1–2 hours. One good thread here > five new features.
 
 **Title:**
-`Roblox GUI Maker — a free, browser-based visual GUI builder that exports clean Luau`
+`I built a free visual Roblox GUI maker — wire buttons to open/close panels, export Luau with the click handlers included`
 
 **Body:**
 
 ```
-I've spent more time than I want to admit nudging UDim2 offsets and rebuilding
-the same menu pattern game after game, so I built a small tool to speed it up.
-It's free, runs in the browser, no login, and the whole pitch is: design a GUI
-visually, then copy out clean Luau you can paste straight into a LocalScript.
+I got tired of two things: placing GUI Frames by hand in Studio, and the "AI
+makes your GUI" tools that spit out a static placeholder I then have to wire up
+myself. So I built a thing that does the boring part AND the wiring:
 
 https://robloxguimaker.app
 
-[ screenshot or short GIF of the editor: drag an element, tweak a color,
-  watch the code panel update ]
+[gif or 10s screen recording: load the main-menu template, click PLAY to hide
+the menu, click SETTINGS to open the settings panel, then show the exported
+Luau with the .Activated:Connect handlers]
 
-### What it does
-- Drag-and-drop ScreenGui, Frame, TextButton, TextLabel, TextBox, ImageLabel,
-  ScrollingFrame onto a desktop / tablet / mobile canvas.
-- Resize from any corner, nest containers (parent-child), and auto-arrange
-  children with UIListLayout / UIGridLayout, plus UICorner, UIGradient, UIPadding.
-- The property panel uses the real names — BackgroundColor3, BackgroundTransparency,
-  ZIndex, Font, TextSize — so there's nothing to relearn.
-- Undo/redo, duplicate (Cmd/Cmd+D), arrow-key nudge, Delete, Esc.
-- Exports Luau built from real Instance.new / UDim2.fromScale calls, parented
-  correctly, with the layout instances included. Paste it into a LocalScript
-  inside a ScreenGui and it runs as-is.
-- It auto-saves to your browser, so a refresh doesn't lose your work.
-- Ships with 6 templates (main menu, shop, settings, inventory, loading screen,
-  leaderboard) and a few written guides, all editable.
+It's a free, in-browser visual editor. You drag ScreenGui / Frame / TextButton
+/ etc. onto a canvas, nest and reparent by dragging, auto-arrange with
+UIListLayout and UIGridLayout, add corners/gradients/padding, and constrain
+sizing responsively. The part I'm most happy about: you can set a button to
+show, hide, or toggle a panel, preview it right there, and the exported Luau
+recreates the whole GUI AND emits the `.Activated:Connect(function() ...
+Panel.Visible = true end)` for you. Paste it into a LocalScript and the buttons
+actually work — no hand-wiring.
 
-### What's still rough (being honest)
-- No image upload yet — ImageLabel is a placeholder box for now.
-- The preview can't render Roblox's actual fonts, so text uses a close
-  weight approximation; the content and size are correct.
-- UIGridLayout cells export at a fixed 100x100 (Roblox's CellSize), so they
-  won't match an arbitrary per-cell size in the preview.
-- No multi-select and no drag-to-reparent yet (nesting works via "add into the
-  selected container").
+Other bits: real Roblox property names (BackgroundColor3, transparency, font,
+ZIndex), undo/redo, duplicate, keyboard shortcuts, autosave to your browser, no
+login. Ships with templates including an interactive main menu (Play hides the
+menu, Settings opens a panel, Close closes it), a shop, inventory, settings,
+loading screen, and leaderboard.
 
-### The why
-Most "AI makes your GUI" tools spit out placeholder layouts you then clean up.
-I wanted the opposite: precise, I-stay-in-control, and output clean enough to
-ship. Property names match Studio exactly so there's zero translation.
+Honest about what's NOT there yet: no image upload (ImageLabel is a placeholder
+box), the preview can't render Roblox's real fonts so text is a close
+approximation, and UIGridLayout cells export at a fixed 100x100.
 
-If you try it, I'd genuinely value feedback — especially: which GUI templates
-would actually save you time, and what's missing before you'd use it for real
-work. Happy to answer questions about how the Luau is generated.
+Free, nothing gated, no account. If you try it, I'd genuinely value feedback —
+especially: does the "buttons export with working handlers" part actually save
+you time, and what GUI would you want a template for next?
 ```
 
 ---
 
-## 2. Reddit — r/robloxgamedev (flair: Showcase)
+## 2. DevForum — Resources → Community Resources (secondary, high-friction)
 
-> Reddit punishes anything that reads like an ad. Lead with the relatable pain,
-> keep it short, put the link in the body, and reply to every comment. One good
-> thread here is worth more than five feature additions right now.
+> DevForum has no Showcase category and is strict on promotion. Post only if
+> you have Member trust level, and frame it as a free community resource with a
+> genuine how-to angle (not "look at my product"). The ~5-paragraph quality bar
+> the community expects is roughly met below.
 
 **Title:**
-`I got tired of placing GUI Frames by hand, so I built a free visual Roblox GUI maker (browser, no login, exports clean Luau)`
+`Roblox GUI Maker — free visual editor that exports interactive Luau (buttons, show/hide panels)`
 
 **Body:**
 
 ```
-Studio's GUI builder and I have a love-hate relationship — mostly hate when I'm
-nudging a Frame's offset for the 20th time. So I made a thing:
+Sharing a free, browser-based tool I built to scratch my own itch: designing
+Roblox GUIs visually and getting out clean Luau that's actually wired up, not a
+static placeholder.
 
 https://robloxguimaker.app
 
-[gif or screenshot: drag a button, change its color, see the Luau update live]
+The core loop: drag ScreenGui, Frame, TextButton and friends onto a canvas;
+resize from any corner; nest containers and reparent by dragging; auto-arrange
+children with UIListLayout and UIGridLayout; round corners and add gradients;
+constrain sizing responsively with anchor and min/max size. Every property uses
+the real Roblox names.
 
-It's a free, in-browser visual editor. You drag ScreenGui / Frame / TextButton /
-etc. onto a canvas, tweak the real properties (BackgroundColor3, transparency,
-font, corner radius…), nest containers, use UIListLayout / UIGridLayout, and
-then copy out clean Luau (Instance.new + UDim2.fromScale, parented correctly)
-to paste into a LocalScript. No login, autosaves to your browser, undo/redo,
-duplicate, keyboard shortcuts. There are 6 starter templates (menu, shop,
-settings, inventory, loading screen, leaderboard) if you want a head start.
+What I think is genuinely useful: you can set a TextButton to show, hide, or
+toggle another Frame, preview the behaviour in the editor, and the exported
+Luau recreates the GUI with the matching `.Activated:Connect` handler — so a
+main menu where Play hides the menu and Settings opens a settings panel exports
+as code that actually does that when pasted into a LocalScript.
 
-Honest about what's NOT there yet: no image upload (ImageLabel is a placeholder),
-it can't render Roblox's real fonts so text is a close approximation, grid cells
-export at a fixed 100x100, and no multi-select or drag-to-reparent yet.
+It also has undo/redo, duplicate, keyboard shortcuts, autosave to the browser,
+no login, and a set of templates (interactive main menu, shop, inventory,
+settings, loading screen, leaderboard) plus written guides.
 
-It's free and I'm not gating anything — I mostly wanted something precise
-rather than the "AI generates a messy GUI" route. If you give it a spin, tell me
-what GUI you'd actually want a template for, or what's stopping you from using
-it on a real project. Happy to show how the export works under the hood.
+What's still rough: no image upload yet (ImageLabel is a placeholder), the
+preview approximates Roblox fonts rather than rendering them, and UIGridLayout
+cells export at a fixed 100x100.
+
+I'd value feedback on whether the interactive-export part is useful in practice,
+and which GUIs you'd want templates for. Happy to walk through how the Luau is
+generated if anyone's curious.
 ```
 
 ---
 
-## Posting tips
-- **Visuals first.** A 5–10 second GIF of "drag → recolor → code updates" is the
-  single biggest driver of clicks. Tools: macOS screen record → gifski, or Loom.
-- **Engage in comments within the first 1–2 hours.** Reply to every comment;
-  early engagement is what the algorithms surface.
-- **Don't link-drop and run.** If someone asks a tangential GUI question, answer
-  it helpfully even if it doesn't mention the tool.
-- **DevForum**: also drop the link in the `#resources` channel if there is one,
-  and consider a short reply on the existing "what's the best way to make a GUI?"
-  / "GUI builder is garbage" threads (helpfully, not spammy).
-- **Track**: after posting, watch GA4 Realtime + referrals for a few days to see
-  which source sends actual traffic.
+## Re-recording the GIF (what to capture)
+
+The old GIF showed "add button → gradient → frame." The current product's
+strongest demo is **interactivity**, so re-record that:
+
+1. Load the main-menu template (`/editor?template=main-menu`).
+2. Enter preview mode and click **PLAY** — the menu hides (hideGui action).
+3. (Reload / re-open) click **SETTINGS** — the settings panel appears (show
+   action); click **CLOSE** — it hides.
+4. Show the exported Luau panel scrolled to a `.Activated:Connect(function() ...
+   Visible = true end)` block.
+
+That sequence — "I designed it, the buttons work, and here's the code that does
+it" — is the whole pitch in 10 seconds.
+
+Recording tips: macOS screen record (Cmd+Shift+5) → gifski to convert to a
+looping GIF; keep it under ~10s and 900px wide. A real screen recording is
+smoother than the frame-sequence GIF we auto-generated before.
+
+---
+
+## Posting tips (refreshed)
+- **Reddit first** (r/robloxgamedev, Showcase flair). Reply to every comment
+  within the first 1–2 hours — early engagement is what surfaces it.
+- **YouTube**: record a ~60s tutorial ("Make a Roblox shop GUI in 60 seconds,
+  free, no login") and link the tool in the description. GUI-making intent
+  largely lives on YouTube, so owning a tutorial there beats commenting on
+  others'.
+- **Chinese (`/zh`)**: a short Chinese resource post on forum.robloxdev.cn and a
+  Bilibili tutorial capture the Chinese Roblox dev audience we just localized
+  for.
+- **Don't**: spam "use my tool" comments under other people's YouTube GUI
+  tutorials — it reads as spam and hurts reputation.
+- **Watch GA4 Realtime + referrals** for a few days after posting to see which
+  source actually sends traffic.
