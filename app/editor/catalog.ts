@@ -69,6 +69,7 @@ export type SceneNode = {
   gradient?: { from: string; to: string };
   layout?: "list" | "grid"; // auto-arrange this node's children
   padding?: number; // px on all sides (UIPadding)
+  layoutOrder?: number;
   initialVisible?: boolean;
   action?: NodeAction;
   parentId?: string | null; // null/undefined = child of the ScreenGui root

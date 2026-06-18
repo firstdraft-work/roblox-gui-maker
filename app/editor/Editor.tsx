@@ -15,6 +15,8 @@ import {
   duplicateSubtree,
   FONTS,
   generateLuau,
+  reparentNode,
+  reorderSibling,
   removeSubtree,
   shade,
   type PreviewVisibility,
@@ -82,6 +84,7 @@ function sanitizeNode(raw: unknown): SceneNode | null {
   if (g && isHex(g.from) && isHex(g.to)) node.gradient = { from: g.from as string, to: g.to as string };
   if (n.layout === "list" || n.layout === "grid") node.layout = n.layout;
   if (isFiniteNum(n.padding)) node.padding = Math.max(0, n.padding);
+  if (isFiniteNum(n.layoutOrder)) node.layoutOrder = Math.max(0, Math.round(n.layoutOrder));
   if (typeof n.initialVisible === "boolean") node.initialVisible = n.initialVisible;
   const action = n.action as Record<string, unknown> | undefined;
   if (
@@ -281,6 +284,34 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
     setSelectedId(result.newId);
   }
 
+  function moveInside(id: string, parentId: string) {
+    const next = reparentNode(scene, id, parentId);
+    if (next === scene) return;
+    mutate(() => next, true);
+    setSelectedId(id);
+  }
+
+  function moveRelative(
+    id: string,
+    targetId: string,
+    position: "before" | "after"
+  ) {
+    const moving = scene.find((node) => node.id === id);
+    const target = scene.find((node) => node.id === targetId);
+    if (!moving || !target || target.cls === "ScreenGui") return;
+
+    let next = scene;
+    if ((moving.parentId ?? null) !== (target.parentId ?? null)) {
+      if (!target.parentId) return;
+      next = reparentNode(next, id, target.parentId);
+      if (next === scene) return;
+    }
+    const reordered = reorderSibling(next, id, targetId, position);
+    if (reordered === next && next === scene) return;
+    mutate(() => reordered, true);
+    setSelectedId(id);
+  }
+
   // Restore the saved workspace on mount — only when no template was requested
   // via ?template=. Runs after mount (client-only) so SSR HTML isn't mismatched.
   useEffect(() => {
@@ -433,7 +464,16 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
         onPreview={togglePreview}
       />
       <div className="flex-1 min-h-0 flex">
-        <Palette onAdd={addNode} onApply={applyDecorator} />
+        <Palette
+          onAdd={addNode}
+          onApply={applyDecorator}
+          scene={scene}
+          selectedId={selectedId}
+          onSelect={setSelectedId}
+          onRename={(id, name) => updateNode(id, { name })}
+          onMoveInside={moveInside}
+          onMoveRelative={moveRelative}
+        />
         <Canvas
           scene={scene}
           selectedId={selectedId}

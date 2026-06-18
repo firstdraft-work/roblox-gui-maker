@@ -1,7 +1,7 @@
 "use client";
 
 import type { DeviceKind, SceneNode } from "./catalog";
-import type { PreviewVisibility } from "./scene";
+import { orderedChildren, type PreviewVisibility } from "./scene";
 import { useInteraction, type Corner } from "./useInteraction";
 
 const FRAME_CLASS: Record<DeviceKind, string> = {
@@ -33,8 +33,6 @@ type Props = {
   onPreviewAction: (id: string) => void;
 };
 
-const ROOT = "__root__";
-
 export function Canvas({
   scene,
   selectedId,
@@ -46,16 +44,7 @@ export function Canvas({
 }: Props) {
   const { startMove, startResize } = useInteraction(onChange);
 
-  // group nodes by parent for recursive rendering
-  const childrenByParent = new Map<string, SceneNode[]>();
-  for (const n of scene) {
-    const key = n.parentId ?? ROOT;
-    const arr = childrenByParent.get(key);
-    if (arr) arr.push(n);
-    else childrenByParent.set(key, [n]);
-  }
-  const getChild = (parentId: string | null) =>
-    childrenByParent.get(parentId ?? ROOT) ?? [];
+  const getChild = (parentId: string | null) => orderedChildren(scene, parentId);
 
   return (
     <div className="flex-1 min-w-0 flex flex-col bg-surface">
