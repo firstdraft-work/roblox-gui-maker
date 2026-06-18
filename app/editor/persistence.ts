@@ -107,9 +107,13 @@ function sanitizeNode(raw: unknown): SceneNode | null {
 }
 
 function repairParents(scene: SceneNode[]): void {
-  const ids = new Set(scene.map((node) => node.id));
+  const nodesById = new Map<string, SceneNode>();
   for (const node of scene) {
-    if (node.parentId && !ids.has(node.parentId)) node.parentId = null;
+    if (!nodesById.has(node.id)) nodesById.set(node.id, node);
+  }
+
+  for (const node of scene) {
+    if (node.parentId && !nodesById.has(node.parentId)) node.parentId = null;
   }
 
   for (const node of scene) {
@@ -122,8 +126,7 @@ function repairParents(scene: SceneNode[]): void {
         break;
       }
       chain.add(currentId);
-      currentId =
-        scene.find((candidate) => candidate.id === currentId)?.parentId ?? null;
+      currentId = nodesById.get(currentId)?.parentId ?? null;
     }
   }
 }

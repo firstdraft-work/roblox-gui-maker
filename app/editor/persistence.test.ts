@@ -62,6 +62,21 @@ describe("sanitizeScene", () => {
     ]);
   });
 
+  it("preserves every relationship in a long valid parent chain", () => {
+    const raw = Array.from({ length: 200 }, (_, index) =>
+      node({
+        id: `node-${index}`,
+        parentId: index === 0 ? null : `node-${index - 1}`,
+      })
+    );
+
+    const scene = sanitizeScene(raw);
+
+    expect(scene?.map(({ parentId }) => parentId)).toEqual(
+      raw.map(({ parentId }) => parentId)
+    );
+  });
+
   it("returns null for non-arrays and arrays without valid nodes", () => {
     expect(sanitizeScene({ scene: [] })).toBeNull();
     expect(sanitizeScene([])).toBeNull();
