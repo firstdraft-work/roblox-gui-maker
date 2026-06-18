@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import type { RemoteEventAction } from "./catalog";
 import {
   MAX_REMOTE_ARGUMENT,
@@ -15,18 +15,12 @@ type Props = {
 export function RemoteEventActionFields({ action, onCommit }: Props) {
   const [eventName, setEventName] = useState(action.eventName);
   const [argument, setArgument] = useState(action.argument);
-  const eventNameInput = useRef<HTMLInputElement>(null);
-  const argumentInput = useRef<HTMLInputElement>(null);
   const eventNameId = useId();
   const argumentId = useId();
 
   useEffect(() => {
-    if (document.activeElement !== eventNameInput.current) {
-      setEventName(action.eventName);
-    }
-    if (document.activeElement !== argumentInput.current) {
-      setArgument(action.argument);
-    }
+    setEventName(action.eventName);
+    setArgument(action.argument);
   }, [action.eventName, action.argument]);
 
   const nameError = remoteEventNameError(eventName);
@@ -53,7 +47,6 @@ export function RemoteEventActionFields({ action, onCommit }: Props) {
           RemoteEvent name
         </label>
         <input
-          ref={eventNameInput}
           id={eventNameId}
           value={eventName}
           maxLength={51}
@@ -83,16 +76,15 @@ export function RemoteEventActionFields({ action, onCommit }: Props) {
           </p>
         )}
         <p id={`${eventNameId}-path`} className="mt-1 break-all font-mono text-[10px] text-ink-mute">
-          ReplicatedStorage / Remotes / {eventName.trim() || "..."}
+          ReplicatedStorage / Remotes / {nameError ? "<event>" : eventName.trim()}
         </p>
       </div>
 
       <div>
         <label htmlFor={argumentId} className="mb-1 block text-[11px] text-ink-mute">
-          Argument
+          RemoteEvent argument
         </label>
         <input
-          ref={argumentInput}
           id={argumentId}
           value={argument}
           maxLength={201}
@@ -114,7 +106,7 @@ export function RemoteEventActionFields({ action, onCommit }: Props) {
       </div>
 
       <p className="text-[10px] leading-4 text-warning">
-        Validate the player and argument on the server before changing game state.
+        Validate the player, argument, price, permissions, and target on the server.
       </p>
     </div>
   );
