@@ -74,7 +74,9 @@ export function CodePanel({
             })}
           </div>
           <span className="text-[11px] text-ink-mute">
-            {activeOutput === "client" ? "LocalScript" : "ServerScriptService"}
+            {activeOutput === "client"
+              ? "ScreenGui — paste into a LocalScript"
+              : "Remote handlers — place in ServerScriptService"}
           </span>
         </div>
         <div className="flex items-center gap-1">
