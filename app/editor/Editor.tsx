@@ -6,7 +6,7 @@ import { Toolbar } from "./Toolbar";
 import { Palette } from "./Palette";
 import { Canvas } from "./Canvas";
 import { PropertiesPanel } from "./PropertiesPanel";
-import { CodePanel } from "./CodePanel";
+import { CodePanel, type CodeOutput } from "./CodePanel";
 import { SAMPLE_SCENE, type DeviceKind, type RobloxClass, type SceneNode } from "./catalog";
 import {
   parseSceneDocument,
@@ -26,6 +26,7 @@ import {
   shade,
   type PreviewVisibility,
 } from "./scene";
+import { generateServerLuau } from "./remote-events";
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 const cloneScene = (s: SceneNode[]): SceneNode[] =>
@@ -71,12 +72,14 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
   const [device, setDevice] = useState<DeviceKind>("desktop");
   const [scene, setScene] = useState<SceneNode[]>(start);
   const [selectedId, setSelectedId] = useState<string | null>("play");
-  const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState<CodeOutput | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const [previewVisibility, setPreviewVisibility] = useState<PreviewVisibility | null>(null);
   const [previewNotice, setPreviewNotice] = useState<string | null>(null);
   const sceneRef = useRef(scene);
   const importRequest = useRef(0);
+  const copyRequest = useRef(0);
+  const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Undo/redo: snapshot stack + pointer. Discrete ops commit immediately;
   // continuous edits (drag/typing/nudge) commit on a debounced timer so a
@@ -89,7 +92,8 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
   const [, force] = useReducer((x) => x + 1, 0);
 
   const selected = scene.find((n) => n.id === selectedId) ?? null;
-  const code = generateLuau(scene);
+  const clientCode = generateLuau(scene);
+  const serverCode = generateServerLuau(scene);
   const canUndo = history.current.index > 0;
   const canRedo = history.current.index < history.current.stack.length - 1;
 
@@ -328,21 +332,45 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
     return () => window.removeEventListener("keydown", onKey);
   });
 
-  async function handleExport() {
+  useEffect(() => {
+    return () => {
+      copyRequest.current++;
+      if (copyTimer.current) clearTimeout(copyTimer.current);
+    };
+  }, []);
+
+  async function copyCode(output: CodeOutput) {
+    const code = output === "client" ? clientCode : serverCode;
+    if (code === null) return;
+
+    const request = ++copyRequest.current;
     try {
       await navigator.clipboard.writeText(code);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1600);
+      if (request !== copyRequest.current) return;
+      if (copyTimer.current) clearTimeout(copyTimer.current);
+      setCopied(output);
+      copyTimer.current = setTimeout(() => {
+        copyTimer.current = null;
+        setCopied((current) => (current === output ? null : current));
+      }, 1600);
     } catch {
-      setCopied(false);
+      if (request !== copyRequest.current) return;
+      if (copyTimer.current) {
+        clearTimeout(copyTimer.current);
+        copyTimer.current = null;
+      }
+      setCopied(null);
     }
   }
 
-  function downloadLuau() {
+  function downloadCode(output: CodeOutput) {
+    const code = output === "client" ? clientCode : serverCode;
+    if (code === null) return;
+
     const url = URL.createObjectURL(new Blob([code], { type: "text/plain;charset=utf-8" }));
     const link = document.createElement("a");
     link.href = url;
-    link.download = "roblox-gui.lua";
+    link.download = output === "client" ? "roblox-gui.lua" : "roblox-gui.server.lua";
     link.click();
     URL.revokeObjectURL(url);
   }
@@ -432,8 +460,8 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
       <Toolbar
         device={device}
         onDevice={setDevice}
-        onExport={handleExport}
-        copied={copied}
+        onExport={() => copyCode("client")}
+        copied={copied === "client"}
         onUndo={undo}
         onRedo={redo}
         canUndo={canUndo}
@@ -484,7 +512,13 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
           onDuplicate={duplicateSelected}
         />
       </div>
-      <CodePanel code={code} copied={copied} onCopy={handleExport} onDownload={downloadLuau} />
+      <CodePanel
+        clientCode={clientCode}
+        serverCode={serverCode}
+        copied={copied}
+        onCopy={copyCode}
+        onDownload={downloadCode}
+      />
       </div>
     </>
   );

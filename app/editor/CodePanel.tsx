@@ -1,18 +1,29 @@
 "use client";
 
+import { useState } from "react";
 import { Check, Copy, Download } from "lucide-react";
 
+export type CodeOutput = "client" | "server";
+
+type Props = {
+  clientCode: string;
+  serverCode: string | null;
+  copied: CodeOutput | null;
+  onCopy: (output: CodeOutput) => void;
+  onDownload: (output: CodeOutput) => void;
+};
+
 export function CodePanel({
-  code,
+  clientCode,
+  serverCode,
   copied,
   onCopy,
   onDownload,
-}: {
-  code: string;
-  copied: boolean;
-  onCopy: () => void;
-  onDownload: () => void;
-}) {
+}: Props) {
+  const [activeOutput, setActiveOutput] = useState<CodeOutput>("client");
+  const activeCode = activeOutput === "client" ? clientCode : serverCode;
+  const isAvailable = activeCode !== null;
+
   return (
     <footer className="h-52 shrink-0 flex flex-col bg-panel border-t border-line">
       <div className="h-9 shrink-0 flex items-center justify-between px-4 border-b border-line">
@@ -20,34 +31,102 @@ export function CodePanel({
           <span className="text-[11px] font-bold uppercase tracking-wider text-ink-dim">
             Export · Luau
           </span>
+          <div role="tablist" aria-label="Luau output" className="flex items-center gap-1">
+            {(["client", "server"] as const).map((output) => {
+              const active = activeOutput === output;
+              return (
+                <button
+                  key={output}
+                  id={`${output}-code-tab`}
+                  type="button"
+                  role="tab"
+                  aria-controls={`${output}-code-panel`}
+                  aria-selected={active}
+                  tabIndex={active ? 0 : -1}
+                  onClick={() => setActiveOutput(output)}
+                  onKeyDown={(event) => {
+                    let nextOutput: CodeOutput | null = null;
+                    if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+                      nextOutput = output === "client" ? "server" : "client";
+                    } else if (event.key === "ArrowRight" || event.key === "ArrowDown") {
+                      nextOutput = output === "client" ? "server" : "client";
+                    } else if (event.key === "Home") {
+                      nextOutput = "client";
+                    } else if (event.key === "End") {
+                      nextOutput = "server";
+                    }
+                    if (!nextOutput) return;
+                    event.preventDefault();
+                    setActiveOutput(nextOutput);
+                    event.currentTarget.parentElement
+                      ?.querySelector<HTMLButtonElement>(`#${nextOutput}-code-tab`)
+                      ?.focus();
+                  }}
+                  className={`rounded px-2 py-0.5 text-[11px] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary ${
+                    active
+                      ? "bg-raised text-ink"
+                      : "text-ink-mute hover:text-ink"
+                  }`}
+                >
+                  {output === "client" ? "Client" : "Server"}
+                </button>
+              );
+            })}
+          </div>
           <span className="text-[11px] text-ink-mute">
-            ScreenGui — paste into a LocalScript
+            {activeOutput === "client" ? "LocalScript" : "ServerScriptService"}
           </span>
         </div>
         <div className="flex items-center gap-1">
           <button
-            onClick={onDownload}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium text-ink-dim hover:text-ink hover:bg-raised transition-colors"
+            type="button"
+            onClick={() => onDownload(activeOutput)}
+            disabled={!isAvailable}
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium text-ink-dim hover:text-ink hover:bg-raised disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-ink-dim transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
             <Download className="w-3.5 h-3.5" />
-            Download .lua
+            Download {activeOutput === "client" ? ".lua" : ".server.lua"}
           </button>
           <button
-            onClick={onCopy}
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium text-ink-dim hover:text-ink hover:bg-raised transition-colors"
+            type="button"
+            onClick={() => onCopy(activeOutput)}
+            disabled={!isAvailable}
+            aria-live="polite"
+            className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium text-ink-dim hover:text-ink hover:bg-raised disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-ink-dim transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           >
-            {copied ? (
+            {copied === activeOutput ? (
               <Check className="w-3.5 h-3.5 text-success" />
             ) : (
               <Copy className="w-3.5 h-3.5" />
             )}
-            {copied ? "Copied" : "Copy"}
+            {copied === activeOutput ? "Copied" : "Copy"}
           </button>
         </div>
       </div>
-      <pre className="flex-1 overflow-auto scroll-thin p-4 text-[12.5px] leading-relaxed font-mono text-ink-dim">
-        <code>{code}</code>
-      </pre>
+      {(["client", "server"] as const).map((output) => {
+        const code = output === "client" ? clientCode : serverCode;
+        const active = activeOutput === output;
+        return (
+          <div
+            key={output}
+            id={`${output}-code-panel`}
+            role="tabpanel"
+            aria-labelledby={`${output}-code-tab`}
+            hidden={!active}
+            className={active ? "flex min-h-0 flex-1" : "hidden"}
+          >
+            {code === null ? (
+              <p className="m-auto px-4 text-center text-sm text-ink-mute">
+                Add a Fire RemoteEvent button action to generate a server handler.
+              </p>
+            ) : (
+              <pre className="flex-1 overflow-auto scroll-thin p-4 text-[12.5px] leading-relaxed font-mono text-ink-dim">
+                <code>{code}</code>
+              </pre>
+            )}
+          </div>
+        );
+      })}
     </footer>
   );
 }
