@@ -339,6 +339,15 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
     };
   }, []);
 
+  useEffect(() => {
+    copyRequest.current++;
+    if (copyTimer.current) {
+      clearTimeout(copyTimer.current);
+      copyTimer.current = null;
+    }
+    setCopied(null);
+  }, [clientCode, serverCode]);
+
   async function copyCode(output: CodeOutput) {
     const code = output === "client" ? clientCode : serverCode;
     if (code === null) return;

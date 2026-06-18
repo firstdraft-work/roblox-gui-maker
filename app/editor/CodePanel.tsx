@@ -57,6 +57,7 @@ export function CodePanel({
                     }
                     if (!nextOutput) return;
                     event.preventDefault();
+                    event.stopPropagation();
                     setActiveOutput(nextOutput);
                     event.currentTarget.parentElement
                       ?.querySelector<HTMLButtonElement>(`#${nextOutput}-code-tab`)
@@ -122,7 +123,11 @@ export function CodePanel({
                 Add a Fire RemoteEvent button action to generate a server handler.
               </p>
             ) : (
-              <pre className="flex-1 overflow-auto scroll-thin p-4 text-[12.5px] leading-relaxed font-mono text-ink-dim">
+              <pre
+                tabIndex={0}
+                aria-label={`${output === "client" ? "Client" : "Server"} Luau code`}
+                className="flex-1 overflow-auto scroll-thin p-4 text-[12.5px] leading-relaxed font-mono text-ink-dim focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary"
+              >
                 <code>{code}</code>
               </pre>
             )}
