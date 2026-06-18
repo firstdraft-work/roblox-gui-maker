@@ -4,13 +4,13 @@ export function SiteNav() {
   return (
     <header className="sticky top-0 z-20 h-14 flex items-center justify-between px-6 bg-panel/80 backdrop-blur border-b border-line">
       <Link href="/" className="flex items-center gap-2">
-        <img
-          src="/logo.png"
-          alt="Roblox GUI Maker"
-          width={28}
-          height={28}
-          className="h-9 w-auto"
-        />
+        <span className="grid place-items-center w-9 h-9 rounded-lg bg-white shrink-0 overflow-hidden">
+          <img
+            src="/logo.png"
+            alt="Roblox GUI Maker"
+            className="w-full h-full object-contain"
+          />
+        </span>
         <span className="font-semibold tracking-tight">
           Roblox<span className="text-ink-dim"> GUI Maker</span>
         </span>
