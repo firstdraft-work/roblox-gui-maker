@@ -63,6 +63,39 @@ const PRODUCT_PROOFS = [
   },
 ];
 
+const FAQS = [
+  {
+    question: "Is Roblox GUI Maker free to use?",
+    answer:
+      "Yes. The editor is free, requires no account, and keeps project work in your browser unless you download it.",
+  },
+  {
+    question: "What files can I export?",
+    answer:
+      "You can copy or download client Luau, download optional server Luau, export an editable JSON scene, or download a ZIP containing the project files and instructions.",
+  },
+  {
+    question: "Can I design for phones and tablets?",
+    answer:
+      "Yes. Device previews and responsive geometry controls cover scale, offset, anchors, aspect ratios, and size constraints.",
+  },
+  {
+    question: "Does the editor generate game logic?",
+    answer:
+      "It generates UI instances and selected interaction wiring, including separate RemoteEvent and Teleport server handlers. Secure economy, purchase, reward, permission, and datastore validation remains your responsibility.",
+  },
+  {
+    question: "Where do the generated scripts go in Roblox Studio?",
+    answer:
+      "Place client Luau in a LocalScript under StarterGui. Place generated server Luau in a Script under ServerScriptService.",
+  },
+  {
+    question: "Is this an official Roblox product?",
+    answer:
+      "No. Roblox GUI Maker is an independent, unofficial creator tool and is not affiliated with or endorsed by Roblox Corporation.",
+  },
+];
+
 const webAppSchema = {
   "@context": "https://schema.org",
   "@type": "WebApplication",
@@ -85,6 +118,19 @@ const webAppSchema = {
   ],
 };
 
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: FAQS.map((item) => ({
+    "@type": "Question",
+    name: item.question,
+    acceptedAnswer: {
+      "@type": "Answer",
+      text: item.answer,
+    },
+  })),
+};
+
 export default function Home() {
   return (
     <>
@@ -92,6 +138,12 @@ export default function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(webAppSchema).replace(/</g, "\\u003c"),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(faqSchema).replace(/</g, "\\u003c"),
         }}
       />
       <SiteNav />
@@ -248,6 +300,33 @@ export default function Home() {
             GUI visually and hand off clean Luau. It&rsquo;s free, runs in your
             browser, and never asks you to sign up.
           </p>
+        </section>
+
+        <section
+          aria-labelledby="faq-heading"
+          className="max-w-3xl mx-auto px-6 pb-20"
+        >
+          <h2
+            id="faq-heading"
+            className="mb-8 text-2xl font-semibold text-ink md:text-3xl"
+          >
+            Frequently asked questions
+          </h2>
+          <div className="space-y-3">
+            {FAQS.map((item) => (
+              <details
+                key={item.question}
+                className="rounded-xl border border-line bg-panel"
+              >
+                <summary className="cursor-pointer px-5 py-4 font-semibold text-ink marker:text-focus">
+                  {item.question}
+                </summary>
+                <p className="px-5 pb-5 text-sm leading-relaxed text-ink-dim">
+                  {item.answer}
+                </p>
+              </details>
+            ))}
+          </div>
         </section>
       </main>
       <SiteFooter />
