@@ -6,6 +6,35 @@ test("@smoke edits and previews a secure Teleport action", async ({ page }) => {
     if (message.type() === "error") consoleErrors.push(message.text());
   });
 
+  await page.goto("/");
+  await expect(page).toHaveTitle(
+    "Free Online Roblox GUI Maker | Visual UI Builder"
+  );
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute(
+    "content",
+    /responsive designs, preview interactions, and export Luau, JSON, and ZIP/
+  );
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Roblox GUI Maker" })
+  ).toBeVisible();
+  for (const heading of [
+    "Responsive Layout",
+    "Interaction Preview",
+    "Server-Safe Actions",
+    "ZIP + JSON Export",
+  ]) {
+    await expect(
+      page.getByRole("heading", { level: 3, name: heading })
+    ).toBeVisible();
+  }
+  const schema = await page
+    .locator('script[type="application/ld+json"]')
+    .textContent();
+  expect(schema).toContain("Browser-local ZIP project export");
+  expect(schema).toContain(
+    "Server handlers for RemoteEvent and Teleport actions"
+  );
+
   await page.goto("/editor");
   await page.evaluate(() => window.localStorage.clear());
   await page.reload();
