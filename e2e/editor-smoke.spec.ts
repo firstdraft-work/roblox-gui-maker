@@ -27,12 +27,46 @@ test("@smoke edits and previews a secure Teleport action", async ({ page }) => {
       page.getByRole("heading", { level: 3, name: heading })
     ).toBeVisible();
   }
-  const schema = await page
-    .locator('script[type="application/ld+json"]')
-    .textContent();
-  expect(schema).toContain("Browser-local ZIP project export");
-  expect(schema).toContain(
+  const structuredData = (
+    await page.locator('script[type="application/ld+json"]').allTextContents()
+  ).map(
+    (value) =>
+      JSON.parse(value) as { "@type": string; [key: string]: unknown }
+  );
+  const webAppSchema = structuredData.find(
+    (value) => value["@type"] === "WebApplication"
+  );
+  expect(JSON.stringify(webAppSchema)).toContain(
+    "Browser-local ZIP project export"
+  );
+  expect(JSON.stringify(webAppSchema)).toContain(
     "Server handlers for RemoteEvent and Teleport actions"
+  );
+  const faq = page.getByRole("region", {
+    name: "Frequently asked questions",
+  });
+  await expect(faq.locator("summary")).toHaveCount(6);
+  await faq.getByText("Does the editor generate game logic?").click();
+  await expect(
+    faq.getByText(
+      /Secure economy, purchase, reward, permission, and datastore validation/
+    )
+  ).toBeVisible();
+  const faqSchema = structuredData.find(
+    (value) => value["@type"] === "FAQPage"
+  ) as {
+    mainEntity?: Array<{
+      name: string;
+      acceptedAnswer: { text: string };
+    }>;
+  };
+  expect(faqSchema.mainEntity).toHaveLength(6);
+  expect(
+    faqSchema.mainEntity?.find(
+      (item) => item.name === "Is Roblox GUI Maker free to use?"
+    )?.acceptedAnswer.text
+  ).toBe(
+    "Yes. The editor is free, requires no account, and keeps project work in your browser unless you download it."
   );
 
   await page.goto("/editor");
