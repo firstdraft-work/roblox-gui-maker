@@ -23,6 +23,7 @@ import {
   reparentNode,
   reorderSibling,
   removeSubtree,
+  previewActionNotice,
   shade,
   type PreviewVisibility,
 } from "./scene";
@@ -514,9 +515,9 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
           previewVisibility={previewVisibility}
           previewNotice={previewNotice}
           onPreviewAction={(id) => {
-            const action = scene.find((node) => node.id === id)?.action;
-            if (action?.type === "remoteEvent") {
-              setPreviewNotice("RemoteEvent actions run in Roblox Studio.");
+            const notice = previewActionNotice(scene, id);
+            if (notice) {
+              setPreviewNotice(notice);
               return;
             }
             setPreviewNotice(null);

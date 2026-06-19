@@ -10,6 +10,7 @@ import {
 } from "./geometry";
 import { FONTS } from "./scene";
 import { RemoteEventActionFields } from "./RemoteEventActionFields";
+import { TeleportActionFields } from "./TeleportActionFields";
 
 type Props = {
   node: SceneNode | null;
@@ -41,6 +42,7 @@ function createAction(type: string): NodeAction | undefined {
   if (type === "remoteEvent") {
     return { type: "remoteEvent", eventName: "RemoteAction", argument: "" };
   }
+  if (type === "teleport") return { type: "teleport", placeId: "1" };
   return undefined;
 }
 
@@ -364,6 +366,7 @@ export function PropertiesPanel({ node, scene, onChange, onDelete, onDuplicate }
                   <option value="toggle">Toggle panel</option>
                   <option value="hideGui">Hide entire GUI</option>
                   <option value="remoteEvent">Fire RemoteEvent</option>
+                  <option value="teleport">Teleport to place</option>
                 </select>
               </Row>
               {node.action &&
@@ -399,6 +402,13 @@ export function PropertiesPanel({ node, scene, onChange, onDelete, onDuplicate }
               )}
               {node.action?.type === "remoteEvent" && (
                 <RemoteEventActionFields
+                  key={node.id}
+                  action={node.action}
+                  onCommit={(action) => onChange(node.id, { action })}
+                />
+              )}
+              {node.action?.type === "teleport" && (
+                <TeleportActionFields
                   key={node.id}
                   action={node.action}
                   onCommit={(action) => onChange(node.id, { action })}
