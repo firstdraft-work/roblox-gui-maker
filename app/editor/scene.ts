@@ -3,6 +3,10 @@
 
 import type { RobloxClass, SceneNode } from "./catalog";
 import { collectRemoteEventBindings, luauString } from "./remote-events";
+import {
+  collectTeleportPlaceIds,
+  sanitizeTeleportAction,
+} from "./teleports";
 
 export const FONTS = [
   "GothamBlack",
@@ -147,7 +151,9 @@ export function applyPreviewAction(
     const root = scene.find((node) => node.cls === "ScreenGui" && !node.parentId);
     return root ? { ...visibility, [root.id]: false } : visibility;
   }
-  if (action.type === "remoteEvent") return visibility;
+  if (action.type === "remoteEvent" || action.type === "teleport") {
+    return visibility;
+  }
 
   const target = scene.find(
     (node) =>
@@ -161,6 +167,20 @@ export function applyPreviewAction(
     ...visibility,
     [target.id]: action.type === "show" ? true : action.type === "hide" ? false : !visible,
   };
+}
+
+export function previewActionNotice(
+  scene: SceneNode[],
+  buttonId: string
+): string | null {
+  const action = scene.find((node) => node.id === buttonId)?.action;
+  if (action?.type === "remoteEvent") {
+    return "RemoteEvent actions run in Roblox Studio.";
+  }
+  if (action?.type === "teleport") {
+    return `Teleport to Place ${action.placeId}. Preview does not run live teleports.`;
+  }
+  return null;
 }
 
 export function removeSubtree(scene: SceneNode[], id: string): SceneNode[] {
@@ -180,8 +200,9 @@ export function removeSubtree(scene: SceneNode[], id: string): SceneNode[] {
     .filter((node) => !doomed.has(node.id))
     .map((node) =>
       node.action &&
-      node.action.type !== "hideGui" &&
-      node.action.type !== "remoteEvent" &&
+      (node.action.type === "show" ||
+        node.action.type === "hide" ||
+        node.action.type === "toggle") &&
       node.action.targetId &&
       doomed.has(node.action.targetId)
         ? { ...node, action: undefined }
@@ -465,18 +486,24 @@ export function generateLuau(scene: SceneNode[]): string {
     }
   }
 
-  const remoteBindings = collectRemoteEventBindings(
-    scene.filter((node) => emittedNodes.has(node))
-  );
-  if (remoteBindings.length > 0) {
+  const emittedScene = scene.filter((node) => emittedNodes.has(node));
+  const remoteBindings = collectRemoteEventBindings(emittedScene);
+  const teleportPlaceIds = collectTeleportPlaceIds(emittedScene);
+  if (remoteBindings.length > 0 || teleportPlaceIds.length > 0) {
     out.push("");
     out.push('local ReplicatedStorage = game:GetService("ReplicatedStorage")');
+  }
+  if (remoteBindings.length > 0) {
     out.push('local remotes = ReplicatedStorage:WaitForChild("Remotes")');
     for (const binding of remoteBindings) {
       out.push(
         `local ${binding.variable} = remotes:WaitForChild(${luauString(binding.eventName)})`
       );
     }
+  }
+  if (teleportPlaceIds.length > 0) {
+    out.push('local rgm = ReplicatedStorage:WaitForChild("RGM")');
+    out.push('local teleportRequest = rgm:WaitForChild("TeleportRequest")');
   }
 
   for (const node of scene) {
@@ -494,6 +521,11 @@ export function generateLuau(scene: SceneNode[]): string {
       );
       if (binding) {
         statement = `${binding.variable}:FireServer(${luauString(node.action.argument)})`;
+      }
+    } else if (node.action.type === "teleport") {
+      const action = sanitizeTeleportAction(node.action);
+      if (action && teleportPlaceIds.includes(action.placeId)) {
+        statement = `teleportRequest:FireServer(${luauString(action.placeId)})`;
       }
     } else {
       const action = node.action;

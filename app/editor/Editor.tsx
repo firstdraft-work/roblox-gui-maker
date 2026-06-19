@@ -26,7 +26,7 @@ import {
   shade,
   type PreviewVisibility,
 } from "./scene";
-import { generateServerLuau } from "./remote-events";
+import { generateServerLuau } from "./server-luau";
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 const cloneScene = (s: SceneNode[]): SceneNode[] =>

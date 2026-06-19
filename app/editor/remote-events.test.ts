@@ -4,12 +4,12 @@ import {
   MAX_REMOTE_ARGUMENT,
   MAX_REMOTE_EVENT_NAME,
   collectRemoteEventBindings,
-  generateServerLuau,
   luauString,
   remoteEventButtons,
   remoteEventNameError,
   sanitizeRemoteEventAction,
 } from "./remote-events";
+import { generateServerLuau } from "./server-luau";
 
 const button = (overrides: Partial<SceneNode> = {}): SceneNode => ({
   id: "button",

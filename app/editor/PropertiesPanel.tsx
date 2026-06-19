@@ -377,7 +377,8 @@ export function PropertiesPanel({ node, scene, onChange, onDelete, onDuplicate }
                       if (
                         !node.action ||
                         node.action.type === "hideGui" ||
-                        node.action.type === "remoteEvent"
+                        node.action.type === "remoteEvent" ||
+                        node.action.type === "teleport"
                       ) {
                         return;
                       }

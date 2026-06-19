@@ -10,6 +10,7 @@ import {
   reparentNode,
   reorderSibling,
   removeSubtree,
+  previewActionNotice,
 } from "./scene";
 
 const node = (overrides: Partial<SceneNode>): SceneNode => ({
@@ -48,6 +49,50 @@ function actionScene(action: NonNullable<SceneNode["action"]>): SceneNode[] {
 }
 
 describe("button actions", () => {
+  it("fires valid Teleport requests through one internal RemoteEvent lookup", () => {
+    const scene = actionScene({ type: "teleport", placeId: "123" });
+    scene.push(node({
+      id: "second-button",
+      cls: "TextButton",
+      name: "Second",
+      parentId: "root",
+      action: { type: "teleport", placeId: "456" },
+    }));
+
+    const code = generateLuau(scene);
+
+    expect(code).toContain('local rgm = ReplicatedStorage:WaitForChild("RGM")');
+    expect(code.match(/WaitForChild\("TeleportRequest"\)/g)).toHaveLength(1);
+    expect(code).toContain('teleportRequest:FireServer("123")');
+    expect(code).toContain('teleportRequest:FireServer("456")');
+  });
+
+  it("does not wire a skipped duplicate-id Teleport button", () => {
+    const scene = actionScene({ type: "teleport", placeId: "123" });
+    scene.push(node({
+      id: "button",
+      cls: "TextButton",
+      name: "Duplicate",
+      parentId: "root",
+      action: { type: "teleport", placeId: "456" },
+    }));
+
+    const code = generateLuau(scene);
+
+    expect(code).toContain('teleportRequest:FireServer("123")');
+    expect(code).not.toContain('teleportRequest:FireServer("456")');
+    expect(code.match(/\.Activated:Connect/g)).toHaveLength(1);
+  });
+
+  it("ignores malformed runtime Teleport actions", () => {
+    const scene = actionScene({ type: "teleport", placeId: "01" } as NonNullable<SceneNode["action"]>);
+
+    const code = generateLuau(scene);
+
+    expect(code).not.toContain("TeleportRequest");
+    expect(code).not.toContain("FireServer");
+  });
+
   it.each([
     ["show", "el0.Visible = true"],
     ["hide", "el0.Visible = false"],
@@ -241,8 +286,41 @@ describe("scene action state", () => {
     });
   });
 
+  it("keeps Teleport actions when their Place ID matches a deleted node id", () => {
+    const scene = actionScene({ type: "teleport", placeId: "123" });
+    scene.find((item) => item.id === "panel")!.id = "123";
+
+    const remaining = removeSubtree(scene, "123");
+
+    expect(remaining.find((item) => item.id === "button")?.action).toEqual({
+      type: "teleport",
+      placeId: "123",
+    });
+  });
+
+  it("returns a non-live Preview notice for Teleport actions", () => {
+    const scene = actionScene({ type: "teleport", placeId: "123" });
+    const visibility = createPreviewVisibility(scene);
+
+    expect(applyPreviewAction(scene, visibility, "button")).toBe(visibility);
+    expect(previewActionNotice(scene, "button")).toBe(
+      "Teleport to Place 123. Preview does not run live teleports."
+    );
+  });
+
   it("deep-clones RemoteEvent actions when duplicating a button", () => {
     const scene = actionScene({ type: "remoteEvent", eventName: "ShopAction", argument: "buy_sword" });
+
+    const result = duplicateSubtree(scene, "button");
+    const sourceAction = scene.find((item) => item.id === "button")!.action;
+    const cloneAction = result?.nodes[0].action;
+
+    expect(cloneAction).toEqual(sourceAction);
+    expect(cloneAction).not.toBe(sourceAction);
+  });
+
+  it("deep-clones Teleport actions when duplicating a button", () => {
+    const scene = actionScene({ type: "teleport", placeId: "123" });
 
     const result = duplicateSubtree(scene, "button");
     const sourceAction = scene.find((item) => item.id === "button")!.action;
