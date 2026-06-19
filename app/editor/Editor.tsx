@@ -28,6 +28,7 @@ import {
   type PreviewVisibility,
 } from "./scene";
 import { generateServerLuau } from "./server-luau";
+import { createProjectPackage } from "./project-package";
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n));
 const cloneScene = (s: SceneNode[]): SceneNode[] =>
@@ -419,6 +420,20 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
     URL.revokeObjectURL(url);
   }
 
+  function downloadProjectPackage() {
+    const projectPackage = createProjectPackage(scene, clientCode, serverCode);
+    const url = URL.createObjectURL(
+      new Blob([new Uint8Array(projectPackage.bytes)], {
+        type: "application/zip",
+      })
+    );
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = projectPackage.filename;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
   async function importProject(file: File) {
     const request = ++importRequest.current;
     setImportError(null);
@@ -540,6 +555,7 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
         copied={copied}
         onCopy={copyCode}
         onDownload={downloadCode}
+        onDownloadPackage={downloadProjectPackage}
       />
       </div>
     </>

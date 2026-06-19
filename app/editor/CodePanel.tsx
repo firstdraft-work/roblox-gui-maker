@@ -11,6 +11,7 @@ type Props = {
   copied: CodeOutput | null;
   onCopy: (output: CodeOutput) => void;
   onDownload: (output: CodeOutput) => void;
+  onDownloadPackage: () => void;
 };
 
 export function CodePanel({
@@ -19,6 +20,7 @@ export function CodePanel({
   copied,
   onCopy,
   onDownload,
+  onDownloadPackage,
 }: Props) {
   const [activeOutput, setActiveOutput] = useState<CodeOutput>("client");
   const activeCode = activeOutput === "client" ? clientCode : serverCode;
@@ -84,6 +86,14 @@ export function CodePanel({
           </span>
         </div>
         <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={onDownloadPackage}
+            className="flex items-center gap-1.5 rounded-md bg-primary px-2.5 py-1 text-xs font-semibold text-on-primary transition hover:brightness-110 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          >
+            <Download className="w-3.5 h-3.5" />
+            Download ZIP
+          </button>
           <button
             type="button"
             onClick={() => onDownload(activeOutput)}

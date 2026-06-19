@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
+import { strFromU8, unzipSync } from "fflate";
 
 test("@full preserves and exports server-backed actions", async ({ page }) => {
   const consoleErrors: string[] = [];
@@ -70,8 +71,25 @@ test("@full preserves and exports server-backed actions", async ({ page }) => {
     'rgm:FindFirstChild("TeleportRequest")'
   );
 
-  await page.getByRole("tab", { name: "Client" }).click();
   let downloadPromise = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Download ZIP" }).click();
+  const packageDownload = await downloadPromise;
+  const packagePath = await packageDownload.path();
+  expect(packageDownload.suggestedFilename()).toBe("game-menu.zip");
+  if (!packagePath) throw new Error("Expected the ZIP download path");
+  const packageFiles = unzipSync(await readFile(packagePath));
+  expect(strFromU8(packageFiles["project.json"])).toContain(
+    '"format": "roblox-gui-maker"'
+  );
+  expect(strFromU8(packageFiles["roblox-gui.client.lua"])).toContain(
+    'teleportRequest:FireServer("456")'
+  );
+  expect(strFromU8(packageFiles["roblox-gui.server.lua"])).toContain(
+    "TeleportService:TeleportAsync(numericPlaceId, { player })"
+  );
+
+  await page.getByRole("tab", { name: "Client" }).click();
+  downloadPromise = page.waitForEvent("download");
   await page
     .getByRole("button", { name: "Download .lua", exact: true })
     .click();
