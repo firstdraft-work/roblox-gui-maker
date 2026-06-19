@@ -1,0 +1,83 @@
+import { expect, test } from "@playwright/test";
+
+type StructuredData = {
+  "@type": string;
+  mainEntity?: unknown[];
+  itemListElement?: unknown[];
+};
+
+test("@smoke @full exposes distinct core SEO topic pages", async ({
+  page,
+  request,
+}) => {
+  const consoleErrors: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error") consoleErrors.push(message.text());
+  });
+
+  await page.goto("/templates");
+  await expect(page).toHaveTitle(
+    "Free Roblox GUI Templates — Menus, Shops, HUDs | Roblox GUI Maker"
+  );
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Free Roblox GUI Templates" })
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "How to make a GUI in Roblox" })
+  ).toHaveAttribute("href", "/guides/how-to-make-a-gui-in-roblox");
+  await expect(
+    page.getByRole("link", {
+      name: "Understand generated Roblox GUI scripts",
+    })
+  ).toHaveAttribute("href", "/guides/roblox-gui-script-generator");
+
+  const guides = [
+    {
+      slug: "roblox-gui-script-generator",
+      title: "Roblox GUI Script Generator",
+      related: "How to Make a GUI in Roblox",
+    },
+    {
+      slug: "how-to-make-a-gui-in-roblox",
+      title: "How to Make a GUI in Roblox",
+      related: "Understand Generated Roblox GUI Scripts",
+    },
+  ];
+
+  for (const guide of guides) {
+    await page.goto(`/guides/${guide.slug}`);
+    await expect(page).toHaveTitle(`${guide.title} | Roblox GUI Maker`);
+    await expect(
+      page.getByRole("heading", { level: 1, name: guide.title })
+    ).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: /Open the Main Menu template/ })
+    ).toBeVisible();
+    expect(await page.locator("main h2").count()).toBeGreaterThanOrEqual(7);
+    await expect(
+      page.getByRole("link", { name: guide.related })
+    ).toBeVisible();
+
+    const structuredData = (
+      await page.locator('script[type="application/ld+json"]').allTextContents()
+    ).map((value) => JSON.parse(value) as StructuredData);
+    expect(
+      structuredData.find((value) => value["@type"] === "FAQPage")
+        ?.mainEntity?.length
+    ).toBeGreaterThanOrEqual(3);
+    expect(
+      structuredData.find((value) => value["@type"] === "BreadcrumbList")
+        ?.itemListElement
+    ).toHaveLength(3);
+    expect(
+      await page.evaluate(() => ({
+        innerWidth: window.innerWidth,
+        scrollWidth: document.documentElement.scrollWidth,
+      }))
+    ).toEqual({ innerWidth: 1280, scrollWidth: 1280 });
+  }
+
+  const duplicateTemplateTopic = await request.get("/roblox-gui-templates");
+  expect(duplicateTemplateTopic.status()).toBe(404);
+  expect(consoleErrors).toEqual([]);
+});
