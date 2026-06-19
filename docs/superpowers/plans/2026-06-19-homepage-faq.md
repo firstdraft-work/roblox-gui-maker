@@ -109,6 +109,6 @@ Expected: the full editor import/export journey PASSes.
 
 Mark local steps complete, leave remote CI open, and commit this plan using the lore format with exact verification evidence.
 
-- [ ] **Step 4: Push and verify remote CI**
+- [x] **Step 4: Push and verify remote CI**
 
 Push `main`, wait for the matching CI workflow to succeed, then mark the overall FAQ task complete. Preserve all user-owned worktree changes.
