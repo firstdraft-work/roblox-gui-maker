@@ -1,12 +1,14 @@
 import type { SceneNode, TeleportAction } from "./catalog";
 
 const MAX_SAFE_PLACE_ID = BigInt(Number.MAX_SAFE_INTEGER);
+export const MAX_PLACE_ID_DIGITS = String(Number.MAX_SAFE_INTEGER).length;
 
 export function placeIdError(placeId: string): string | null {
   if (!placeId) return "Place ID is required.";
   if (!/^\d+$/.test(placeId)) return "Place ID must contain digits only.";
   if (placeId === "0") return "Place ID must be greater than zero.";
   if (placeId.startsWith("0")) return "Place ID cannot start with zero.";
+  if (placeId.length > MAX_PLACE_ID_DIGITS) return "Place ID is too large.";
   if (BigInt(placeId) > MAX_SAFE_PLACE_ID) return "Place ID is too large.";
   return null;
 }

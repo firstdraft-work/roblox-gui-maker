@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { SceneNode } from "./catalog";
 import {
+  MAX_PLACE_ID_DIGITS,
   collectTeleportPlaceIds,
   placeIdError,
   sanitizeTeleportAction,
@@ -21,6 +22,13 @@ const button = (overrides: Partial<SceneNode> = {}): SceneNode => ({
 });
 
 describe("placeIdError", () => {
+  it("rejects overlong digit strings before numeric conversion", () => {
+    expect(MAX_PLACE_ID_DIGITS).toBe(16);
+    expect(placeIdError("9".repeat(MAX_PLACE_ID_DIGITS + 1))).toBe(
+      "Place ID is too large."
+    );
+  });
+
   it.each(["1", "12345678901234", "9007199254740991"])(
     "accepts the valid Place ID %s",
     (placeId) => expect(placeIdError(placeId)).toBeNull()
