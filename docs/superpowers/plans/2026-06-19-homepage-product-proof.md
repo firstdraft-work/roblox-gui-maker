@@ -1,6 +1,6 @@
 # Homepage Product Proof Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Update the homepage so visible content, metadata, and JSON-LD accurately prove the editor's responsive, interactive, server-backed, and portable export capabilities.
 
@@ -15,7 +15,7 @@
 **Files:**
 - Modify: `e2e/editor-smoke.spec.ts`
 
-- [ ] **Step 1: Add failing homepage assertions**
+- [x] **Step 1: Add failing homepage assertions**
 
 At the beginning of the smoke journey, load `/` and assert the new public contract before navigating to `/editor`:
 
@@ -48,13 +48,13 @@ expect(schema).toContain("Server handlers for RemoteEvent and Teleport actions")
 await page.goto("/editor");
 ```
 
-- [ ] **Step 2: Build the existing app and verify RED**
+- [x] **Step 2: Build the existing app and verify RED**
 
 Run: `npm run build && npm run test:e2e:smoke`
 
 Expected: FAIL on the old homepage title before reaching the existing editor assertions.
 
-- [ ] **Step 3: Commit the failing regression test**
+- [x] **Step 3: Commit the failing regression test**
 
 Stage only `e2e/editor-smoke.spec.ts`. Commit with the lore format and record that the old homepage still describes Luau-only export.
 
@@ -63,7 +63,7 @@ Stage only `e2e/editor-smoke.spec.ts`. Commit with the lore format and record th
 **Files:**
 - Modify: `app/page.tsx`
 
-- [ ] **Step 1: Update metadata and structured data**
+- [x] **Step 1: Update metadata and structured data**
 
 Set the page title to `Free Online Roblox GUI Maker | Visual UI Builder`. Use this concise description:
 
@@ -73,23 +73,23 @@ Set the page title to `Free Online Roblox GUI Maker | Visual UI Builder`. Use th
 
 Update JSON-LD to use the same product scope and add feature strings for responsive geometry, interaction previews, server handlers, JSON import/export, and browser-local ZIP export.
 
-- [ ] **Step 2: Add product-proof content**
+- [x] **Step 2: Add product-proof content**
 
 Add a static `PRODUCT_PROOFS` array with the four approved headings and factual descriptions. Update the hero eyebrow and body to describe a free browser-local builder that downloads a complete project. Render the proof strip directly beneath the existing `ScenePreview` using four semantic article/card blocks. Update workflow step three to `Download a complete project` while retaining generated Luau language.
 
-- [ ] **Step 3: Rebuild and verify GREEN**
+- [x] **Step 3: Rebuild and verify GREEN**
 
 Run: `npm run build && npm run test:e2e:smoke`
 
 Expected: the homepage contract and existing Teleport editor journey both PASS with zero captured console errors.
 
-- [ ] **Step 4: Run type and unit gates**
+- [x] **Step 4: Run type and unit gates**
 
 Run: `npm test && npx tsc --noEmit && git diff --check`
 
 Expected: all Vitest tests pass, TypeScript exits zero, and no whitespace errors are reported.
 
-- [ ] **Step 5: Commit the homepage implementation**
+- [x] **Step 5: Commit the homepage implementation**
 
 Stage only `app/page.tsx`. Commit with the lore format, noting that FAQ and new topic routes remain separate planned increments.
 
@@ -98,17 +98,17 @@ Stage only `app/page.tsx`. Commit with the lore format, noting that FAQ and new 
 **Files:**
 - Modify: `docs/superpowers/plans/2026-06-19-homepage-product-proof.md`
 
-- [ ] **Step 1: Run the full browser journey**
+- [x] **Step 1: Run the full browser journey**
 
 Run: `npm run test:e2e:full`
 
 Expected: the complete editor import/export journey PASSes.
 
-- [ ] **Step 2: Mark completed plan steps**
+- [x] **Step 2: Mark completed plan steps**
 
-Change completed `- [ ]` markers in this plan to `- [x]`. Leave remote CI open until the pushed workflow succeeds.
+Change completed `- [x]` markers in this plan to `- [x]`. Leave remote CI open until the pushed workflow succeeds.
 
-- [ ] **Step 3: Commit verification evidence**
+- [x] **Step 3: Commit verification evidence**
 
 Commit the checked plan with the lore format and list the exact local verification commands.
 
