@@ -61,11 +61,15 @@ export default async function GuidePage({
       <SiteNav />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(faqSchema).replace(/</g, "\\u003c"),
+        }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(breadcrumb).replace(/</g, "\\u003c"),
+        }}
       />
       <main className="max-w-3xl mx-auto px-6 py-12">
         <Link
@@ -127,6 +131,25 @@ export default async function GuidePage({
                   <h3 className="font-semibold text-ink">{f.q}</h3>
                   <p className="text-ink-dim text-sm mt-1">{f.a}</p>
                 </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {g.relatedGuides && g.relatedGuides.length > 0 && (
+          <section className="mt-12">
+            <h2 className="mb-4 text-xl font-semibold text-ink">
+              Related guides
+            </h2>
+            <div className="flex flex-col gap-3">
+              {g.relatedGuides.map((link) => (
+                <Link
+                  key={link.slug}
+                  href={`/guides/${link.slug}`}
+                  className="rounded-xl border border-line bg-panel px-5 py-4 font-semibold text-ink transition hover:border-focus"
+                >
+                  {link.title} →
+                </Link>
               ))}
             </div>
           </section>

@@ -8,7 +8,7 @@ import { TEMPLATES, CATEGORIES } from "../editor/templates";
 export const metadata: Metadata = {
   title: "Free Roblox GUI Templates — Menus, Shops, HUDs | Roblox GUI Maker",
   description:
-    "Free, ready-to-use Roblox GUI templates: main menus, shops, settings, inventory, loading screens and leaderboards. Open any template in the editor and export clean Luau.",
+    "Free Roblox GUI templates for menus, shops, settings, inventory, loading screens and leaderboards. Customize responsive layouts, then export Luau, JSON, or ZIP.",
   alternates: { canonical: "/templates" },
 };
 
@@ -52,6 +52,58 @@ export default function TemplatesPage() {
             </section>
           );
         })}
+
+        <section className="mx-auto mt-16 max-w-3xl space-y-4 text-ink-dim leading-relaxed">
+          <h2 className="text-2xl font-semibold text-ink">
+            How to choose a Roblox GUI template
+          </h2>
+          <p>
+            Start with the screen that matches the player&rsquo;s immediate task,
+            not only the closest color scheme. A main menu needs one dominant
+            action and a clear route to settings. A shop needs room for real
+            item names, prices, and server-validated purchase states. An
+            inventory needs a hierarchy that can grow without hiding the
+            selected item or equip action.
+          </p>
+          <p>
+            Open the template in the editor and replace every placeholder with
+            realistic game text. Check the hierarchy, rename important panels
+            and buttons, then review desktop, tablet, and mobile sizes before
+            polishing details. The guide on{" "}
+            <Link
+              href="/guides/how-to-make-a-gui-in-roblox"
+              className="font-medium text-focus hover:underline"
+            >
+              How to make a GUI in Roblox
+            </Link>{" "}
+            walks through that complete workflow.
+          </p>
+        </section>
+
+        <section className="mx-auto mt-12 max-w-3xl space-y-4 text-ink-dim leading-relaxed">
+          <h2 className="text-2xl font-semibold text-ink">
+            Customize, preview, and export
+          </h2>
+          <p>
+            Templates use the same responsive geometry and interaction tools as
+            a project built from scratch. Combine scale and offset, set anchors
+            and constraints, and preview show, hide, toggle, RemoteEvent, or
+            Teleport actions before export.
+          </p>
+          <p>
+            Download client Luau for the interface, optional server Luau for
+            configured server-backed actions, JSON for future editing, or a ZIP
+            package containing the project files and placement instructions.
+            Read{" "}
+            <Link
+              href="/guides/roblox-gui-script-generator"
+              className="font-medium text-focus hover:underline"
+            >
+              Understand generated Roblox GUI scripts
+            </Link>{" "}
+            for the exact output and security boundaries.
+          </p>
+        </section>
       </main>
       <SiteFooter />
     </>
