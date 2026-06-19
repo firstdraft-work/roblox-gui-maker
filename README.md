@@ -2,11 +2,13 @@
 
 A free, browser-based visual builder for Roblox game interfaces. Drag and drop
 `ScreenGui`, `Frame`, `TextButton` and friends onto a canvas, tweak real Roblox
-properties, and export clean Luau you can paste straight into Studio.
+properties, preview interactions, and download a Studio-ready project package.
 
 The differentiator vs "AI GUI" tools: **precise, you stay in control, and the
 exported Luau is clean** (real `Instance.new` calls, `UDim2.new`
-positioning, correct parenting) — not placeholder output to clean up.
+positioning, correct parenting) — not placeholder output to clean up. Projects
+can also round-trip through JSON or download as a ZIP with client code, optional
+server handlers, and installation instructions.
 
 ## Stack
 
@@ -14,6 +16,8 @@ positioning, correct parenting) — not placeholder output to clean up.
 - **Tailwind CSS v4** (CSS-first `@theme` tokens in `app/globals.css`)
 - **lucide-react** icons
 - **@fontsource** Inter + JetBrains Mono (no Google Fonts network dependency)
+- **fflate** for browser-local ZIP generation
+- **Vitest** + **Playwright** regression coverage
 
 ## Structure
 
@@ -30,7 +34,10 @@ app/
     useInteraction.ts     # pointer move/resize hook (UDim-scale aware)
     PropertiesPanel.tsx   # two-way property editing
     Palette.tsx           # component palette (add / apply / soon)
-    CodePanel.tsx         # live Luau output + copy
+    CodePanel.tsx         # live Luau output + copy/download actions
+    persistence.ts        # versioned JSON import/export
+    project-package.ts    # ZIP project package assembly
+    server-luau.ts        # RemoteEvent + Teleport server handlers
     scene.ts              # createNode + generateLuau (pure)
     catalog.ts            # types + palette data + sample scene
     templates.ts          # 6 templates as SceneNode[] + getTemplate()
@@ -52,12 +59,33 @@ npm run dev      # http://localhost:3000  (editor at /editor)
 > Local dev server must run inside tmux in this environment
 > (`tmux new-session -d -s dev "npm run dev"`).
 
+## Export
+
+The editor supports four complementary handoff paths:
+
+- **Download ZIP** for `README.md`, `project.json`, client Luau, and optional
+  server Luau in one package.
+- **Export JSON** for an editable project that can be imported later.
+- **Download .lua / .server.lua** for individual generated scripts.
+- **Copy** for pasting the active Luau output directly into Studio.
+
+Native `.rbxmx` export is intentionally not claimed until it can be validated
+against Roblox Studio.
+
 ## Build / verify
 
 ```bash
-npm run build    # production build — the deploy gate
-npm run start    # serve the production build
+npm test                 # Vitest unit suite
+npx tsc --noEmit         # TypeScript
+npm run build            # production build — required before local E2E
+npm run test:e2e:smoke   # critical editor path
+npm run test:e2e:full    # complete import/export journey
+npm run start            # serve the production build
 ```
+
+Browser, type, and generated-code checks cannot prove Roblox runtime behavior.
+Published-experience validation remains tracked in
+[`docs/roblox-live-validation.md`](docs/roblox-live-validation.md).
 
 ## Deploy (Vercel)
 

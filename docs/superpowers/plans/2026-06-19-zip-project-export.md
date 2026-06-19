@@ -165,6 +165,6 @@ Change only completed `- [x]` markers in this plan to `- [x]`, preserving the co
 
 Commit the checked plan using the lore format. Record Roblox Studio import as not tested because the required application and published experience remain unavailable.
 
-- [ ] **Step 4: Push and verify remote CI**
+- [x] **Step 4: Push and verify remote CI**
 
 Push `main` to `origin`, wait for the corresponding CI workflow to complete, and report its run result. Do not claim live Roblox runtime validation.

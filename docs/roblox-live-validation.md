@@ -17,7 +17,7 @@ Credentials, session cookies, private server access codes, and API keys must nev
 
 ## Installation
 
-- [ ] Paste `roblox-gui.lua` into a `LocalScript` under `StarterPlayerScripts` or `StarterGui` as appropriate for the test experience.
+- [ ] Paste `roblox-gui.client.lua` from the ZIP package into a `LocalScript` under `StarterGui` (or use the equivalent single-file `roblox-gui.lua` download).
 - [ ] Paste `roblox-gui.server.lua` into a `Script` under `ServerScriptService`.
 - [ ] Confirm `ReplicatedStorage.Remotes` contains the configured user RemoteEvents.
 - [ ] Confirm `ReplicatedStorage.RGM.TeleportRequest` exists and is a `RemoteEvent`.
