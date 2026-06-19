@@ -1,6 +1,6 @@
 # Homepage FAQ Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Add six visible, native homepage disclosures whose answers exactly match a `FAQPage` JSON-LD payload.
 
@@ -15,7 +15,7 @@
 **Files:**
 - Modify: `e2e/editor-smoke.spec.ts`
 
-- [ ] **Step 1: Write failing FAQ assertions**
+- [x] **Step 1: Write failing FAQ assertions**
 
 Replace the single-script schema lookup with all JSON-LD payloads:
 
@@ -47,13 +47,13 @@ expect(faqSchema.mainEntity?.find((item) => item.name === "Is Roblox GUI Maker f
 );
 ```
 
-- [ ] **Step 2: Build and verify RED**
+- [x] **Step 2: Build and verify RED**
 
 Run: `npm run build && npm run test:e2e:smoke`
 
 Expected: FAIL because the `Frequently asked questions` region does not exist.
 
-- [ ] **Step 3: Commit the failing regression test**
+- [x] **Step 3: Commit the failing regression test**
 
 Stage only `e2e/editor-smoke.spec.ts`. Commit using the lore format and record that the FAQ schema is required to match visible content.
 
@@ -62,31 +62,31 @@ Stage only `e2e/editor-smoke.spec.ts`. Commit using the lore format and record t
 **Files:**
 - Modify: `app/page.tsx`
 
-- [ ] **Step 1: Add the six approved FAQ entries**
+- [x] **Step 1: Add the six approved FAQ entries**
 
 Define `FAQS` as six `{ question, answer }` objects with the exact wording approved in `docs/superpowers/specs/2026-06-19-homepage-faq-design.md`. Do not add questions or split answers into HTML fragments.
 
-- [ ] **Step 2: Generate FAQPage JSON-LD**
+- [x] **Step 2: Generate FAQPage JSON-LD**
 
 Map `FAQS` to a static object with `@context`, `@type: "FAQPage"`, and `mainEntity` entries containing `Question` and `Answer`. Render it as a second native JSON-LD script with `<` escaped as `\u003c`.
 
-- [ ] **Step 3: Render the native disclosures**
+- [x] **Step 3: Render the native disclosures**
 
 After the existing educational body and before `</main>`, add a section labelled by `faq-heading`. Render one bordered `<details>` per item with a keyboard-accessible `<summary>` and answer paragraph. Reuse existing `max-w-3xl`, panel, line, ink, and spacing tokens.
 
-- [ ] **Step 4: Rebuild and verify GREEN**
+- [x] **Step 4: Rebuild and verify GREEN**
 
 Run: `npm run build && npm run test:e2e:smoke`
 
 Expected: FAQ assertions and the existing secure Teleport journey PASS with no captured console errors.
 
-- [ ] **Step 5: Run local quality gates**
+- [x] **Step 5: Run local quality gates**
 
 Run: `npm test && npx tsc --noEmit && git diff --check`
 
 Expected: 147 Vitest tests pass, TypeScript exits zero, and no whitespace errors are reported.
 
-- [ ] **Step 6: Commit the FAQ implementation**
+- [x] **Step 6: Commit the FAQ implementation**
 
 Stage only `app/page.tsx`. Commit with the lore format, recording native disclosure semantics and single-source schema content.
 
@@ -95,17 +95,17 @@ Stage only `app/page.tsx`. Commit with the lore format, recording native disclos
 **Files:**
 - Modify: `docs/superpowers/plans/2026-06-19-homepage-faq.md`
 
-- [ ] **Step 1: Verify responsive FAQ rendering**
+- [x] **Step 1: Verify responsive FAQ rendering**
 
 Serve the current production build and inspect 375 px, 768 px, and 1280 px screenshots. Confirm the disclosure rows do not overflow and expanded answer text remains readable.
 
-- [ ] **Step 2: Run the complete browser journey**
+- [x] **Step 2: Run the complete browser journey**
 
 Run: `npm run test:e2e:full`
 
 Expected: the full editor import/export journey PASSes.
 
-- [ ] **Step 3: Mark completed plan steps and commit evidence**
+- [x] **Step 3: Mark completed plan steps and commit evidence**
 
 Mark local steps complete, leave remote CI open, and commit this plan using the lore format with exact verification evidence.
 
