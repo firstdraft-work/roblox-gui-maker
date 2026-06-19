@@ -1,6 +1,7 @@
 import type { RobloxClass, SceneNode } from "./catalog";
 import { sanitizeResponsiveGeometry } from "./geometry";
 import { sanitizeRemoteEventAction } from "./remote-events";
+import { sanitizeTeleportAction } from "./teleports";
 import { FONTS } from "./scene";
 
 const PROJECT_FORMAT = "roblox-gui-maker";
@@ -108,7 +109,9 @@ function sanitizeNode(raw: unknown): SceneNode | null {
       node.action = { type: "hideGui" };
     } else {
       const remoteEventAction = sanitizeRemoteEventAction(action);
+      const teleportAction = sanitizeTeleportAction(action);
       if (remoteEventAction) node.action = remoteEventAction;
+      else if (teleportAction) node.action = teleportAction;
     }
   }
 

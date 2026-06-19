@@ -27,7 +27,12 @@ export type RemoteEventAction = {
   argument: string;
 };
 
-export type NodeAction = VisibilityAction | RemoteEventAction;
+export type TeleportAction = {
+  type: "teleport";
+  placeId: string;
+};
+
+export type NodeAction = VisibilityAction | RemoteEventAction | TeleportAction;
 
 // How a palette item behaves:
 //  - add:    drops a new positioned node onto the canvas

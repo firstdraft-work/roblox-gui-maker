@@ -22,6 +22,36 @@ const node = (overrides: Partial<SceneNode> = {}): SceneNode => ({
 });
 
 describe("sanitizeScene", () => {
+  it("preserves a valid Teleport action", () => {
+    const scene = sanitizeScene([
+      node({
+        cls: "TextButton",
+        action: { type: "teleport", placeId: "12345678901234" } as SceneNode["action"],
+      }),
+    ]);
+
+    expect(scene?.[0].action).toEqual({
+      type: "teleport",
+      placeId: "12345678901234",
+    });
+  });
+
+  it.each(["0", "01", "9007199254740992"])(
+    "removes invalid Teleport Place ID %s without removing its button",
+    (placeId) => {
+      const scene = sanitizeScene([
+        node({
+          id: "teleport-button",
+          cls: "TextButton",
+          action: { type: "teleport", placeId } as SceneNode["action"],
+        }),
+      ]);
+
+      expect(scene).toHaveLength(1);
+      expect(scene?.[0].action).toBeUndefined();
+    }
+  );
+
   it("preserves a valid RemoteEvent action with a trimmed event name", () => {
     const scene = sanitizeScene([
       node({
@@ -138,6 +168,21 @@ describe("sanitizeScene", () => {
 });
 
 describe("scene project documents", () => {
+  it("round-trips a Teleport action without changing document version 1", () => {
+    const scene: SceneNode[] = [
+      node({
+        id: "teleport-button",
+        cls: "TextButton",
+        action: { type: "teleport", placeId: "12345678901234" } as SceneNode["action"],
+      }),
+    ];
+
+    const serialized = serializeSceneDocument(scene);
+
+    expect(JSON.parse(serialized).version).toBe(1);
+    expect(parseSceneDocument(serialized)).toEqual(scene);
+  });
+
   it("round-trips a RemoteEvent action without changing document version 1", () => {
     const scene: SceneNode[] = [
       node({
