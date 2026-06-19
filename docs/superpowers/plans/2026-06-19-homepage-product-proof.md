@@ -112,6 +112,6 @@ Change completed `- [x]` markers in this plan to `- [x]`. Leave remote CI open u
 
 Commit the checked plan with the lore format and list the exact local verification commands.
 
-- [ ] **Step 4: Push and verify remote CI**
+- [x] **Step 4: Push and verify remote CI**
 
 Push `main` to `origin`, wait for the matching CI workflow, and report its run ID and conclusion. Preserve the user's existing `.gitignore`, `.superpowers/`, and `docs/youtube-60s-script.md` worktree changes.
