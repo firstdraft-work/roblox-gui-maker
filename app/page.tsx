@@ -6,9 +6,17 @@ import { ScenePreview } from "./editor/ScenePreview";
 import { TEMPLATES } from "./editor/templates";
 
 export const metadata: Metadata = {
-  title: "Roblox GUI Maker — Build Roblox UIs Visually, Export Clean Luau",
+  title: "Free Online Roblox GUI Maker | Visual UI Builder",
   description:
-    "Free Roblox GUI maker: drag and drop ScreenGui, Frame, buttons and more, then export clean Luau you can paste into Studio. No login. Templates for menus, shops, HUDs and loading screens.",
+    "Free online Roblox GUI maker. Create responsive designs, preview interactions, and export Luau, JSON, and ZIP for Roblox Studio. No login required.",
+  openGraph: {
+    title: "Free Online Roblox GUI Maker | Visual UI Builder",
+    description:
+      "Create responsive Roblox GUIs, preview interactions, and export Luau, JSON, and complete ZIP projects for Roblox Studio.",
+    url: "https://robloxguimaker.app",
+    siteName: "Roblox GUI Maker",
+    type: "website",
+  },
   alternates: {
     canonical: "/",
     languages: {
@@ -31,8 +39,27 @@ const STEPS = [
   },
   {
     n: "3",
-    title: "Export clean Luau",
-    body: "Copy production-ready Luau that rebuilds your GUI with Instance.new and UDim2. Paste it into a LocalScript — no messy AI output, no cleanup.",
+    title: "Download a complete project",
+    body: "Export clean client and server Luau, keep an editable JSON project, or download everything together as a ZIP for Roblox Studio.",
+  },
+];
+
+const PRODUCT_PROOFS = [
+  {
+    title: "Responsive Layout",
+    body: "Combine scale and offset with anchors, aspect ratios, and size constraints for desktop, tablet, and mobile screens.",
+  },
+  {
+    title: "Interaction Preview",
+    body: "Preview show, hide, toggle, RemoteEvent, and Teleport button actions before exporting your GUI.",
+  },
+  {
+    title: "Server-Safe Actions",
+    body: "Generate separate server handlers with clear validation boundaries for RemoteEvent and allow-listed Teleport actions.",
+  },
+  {
+    title: "ZIP + JSON Export",
+    body: "Download a complete project package or save a versioned scene document that imports back into the editor.",
   },
 ];
 
@@ -42,15 +69,18 @@ const webAppSchema = {
   name: "Roblox GUI Maker",
   url: "https://robloxguimaker.app",
   description:
-    "Free visual builder for Roblox game GUIs. Drag and drop ScreenGui, Frame, buttons and more, then export clean Luau to paste into Roblox Studio.",
+    "Free online visual builder for responsive Roblox GUIs with interaction previews, generated Luau, editable JSON, and complete ZIP project export.",
   applicationCategory: "DeveloperApplication",
   operatingSystem: "Web",
   browserRequirements: "Requires JavaScript",
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
   featureList: [
     "Visual drag-and-drop GUI editor",
-    "Parent-child nesting with UIListLayout, UIGridLayout, UIGradient, UICorner, UIPadding",
-    "Exports clean Luau (Instance.new, UDim2.new)",
+    "Responsive geometry with scale, offset, anchors, aspect ratios, and size constraints",
+    "Interaction previews for show, hide, toggle, RemoteEvent, and Teleport actions",
+    "Server handlers for RemoteEvent and Teleport actions",
+    "Versioned JSON project import and export",
+    "Browser-local ZIP project export",
     "Roblox GUI templates and how-to guides",
   ],
 };
@@ -60,22 +90,24 @@ export default function Home() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(webAppSchema) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(webAppSchema).replace(/</g, "\\u003c"),
+        }}
       />
       <SiteNav />
       <main>
         {/* hero */}
         <section className="max-w-4xl mx-auto px-6 pt-20 pb-12 text-center">
           <p className="text-focus text-sm font-semibold uppercase tracking-wider mb-4">
-            Free · No login · Exports clean Luau
+            Free · No login · Browser-local exports
           </p>
           <h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-5">
             Roblox GUI Maker
           </h1>
           <p className="text-lg md:text-xl text-ink-dim max-w-2xl mx-auto mb-8">
-            Build Roblox game interfaces visually — drag, drop, tweak — then
-            export clean Luau you can paste straight into Studio. Faster than
-            the Studio UI builder, neater than AI.
+            Design responsive Roblox interfaces visually, preview button
+            behavior, then download clean Luau, editable JSON, or a complete
+            ZIP project for Roblox Studio.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Link
@@ -97,6 +129,21 @@ export default function Home() {
         <section className="max-w-4xl mx-auto px-6 pb-4">
           <div className="rounded-2xl ring-1 ring-line overflow-hidden shadow-2xl shadow-black/40">
             <ScenePreview scene={TEMPLATES[0].scene} />
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-5">
+            {PRODUCT_PROOFS.map((proof) => (
+              <article
+                key={proof.title}
+                className="rounded-xl border border-line bg-panel p-4"
+              >
+                <h3 className="mb-1.5 text-sm font-semibold text-ink">
+                  {proof.title}
+                </h3>
+                <p className="text-xs leading-relaxed text-ink-dim">
+                  {proof.body}
+                </p>
+              </article>
+            ))}
           </div>
         </section>
 
