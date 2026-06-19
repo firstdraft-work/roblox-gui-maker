@@ -1,6 +1,6 @@
 # ZIP Project Export Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Add a browser-generated ZIP download containing the portable scene document, generated Luau, and Roblox Studio installation instructions.
 
@@ -18,13 +18,13 @@
 - Modify: `package.json`
 - Modify: `package-lock.json`
 
-- [ ] **Step 1: Add the ZIP dependency**
+- [x] **Step 1: Add the ZIP dependency**
 
 Run: `npm install fflate`
 
 Expected: `fflate` appears under `dependencies` and the lockfile resolves it.
 
-- [ ] **Step 2: Write failing package-content tests**
+- [x] **Step 2: Write failing package-content tests**
 
 Create tests that call the wished-for API and decode the result with `unzipSync`:
 
@@ -57,23 +57,23 @@ describe("createProjectPackage", () => {
 });
 ```
 
-- [ ] **Step 3: Run the focused tests and verify RED**
+- [x] **Step 3: Run the focused tests and verify RED**
 
 Run: `npm test -- app/editor/project-package.test.ts`
 
 Expected: FAIL because `./project-package` does not exist.
 
-- [ ] **Step 4: Implement the package builder**
+- [x] **Step 4: Implement the package builder**
 
 Create `createProjectPackage(scene, clientCode, serverCode)` using `zipSync` and `strToU8`. Derive the archive name by replacing the `.json` suffix from `sceneDocumentFilename(scene)` with `.zip`. Always include `README.md`, `project.json`, and `roblox-gui.client.lua`; include `roblox-gui.server.lua` only when `serverCode` is non-null. The README must direct the client script to `StarterGui` and the optional server script to `ServerScriptService`.
 
-- [ ] **Step 5: Run the focused tests and verify GREEN**
+- [x] **Step 5: Run the focused tests and verify GREEN**
 
 Run: `npm test -- app/editor/project-package.test.ts`
 
 Expected: both package-content tests PASS.
 
-- [ ] **Step 6: Commit the package core**
+- [x] **Step 6: Commit the package core**
 
 Stage only `package.json`, `package-lock.json`, and the two `project-package` files. Commit using the repository lore format, recording `fflate` as the chosen dependency and `.rbxmx` as rejected until Studio validation is available.
 
@@ -84,27 +84,27 @@ Stage only `package.json`, `package-lock.json`, and the two `project-package` fi
 - Modify: `app/editor/Editor.tsx`
 - Modify: `app/editor/project-package.test.ts`
 
-- [ ] **Step 1: Add a failing fallback-filename test**
+- [x] **Step 1: Add a failing fallback-filename test**
 
 Use a root scene whose name cannot produce an ASCII slug and assert `createProjectPackage(...).filename === "roblox-gui-project.zip"`.
 
-- [ ] **Step 2: Run the focused test and verify RED**
+- [x] **Step 2: Run the focused test and verify RED**
 
 Run: `npm test -- app/editor/project-package.test.ts`
 
 Expected: FAIL if archive naming does not correctly reuse the JSON filename fallback.
 
-- [ ] **Step 3: Complete filename behavior and add the UI callback**
+- [x] **Step 3: Complete filename behavior and add the UI callback**
 
 Add `onDownloadPackage: () => void` to `CodePanel` and render a labelled `Download ZIP` button in the export action group. In `Editor`, call `createProjectPackage(scene, clientCode, serverCode)`, create an `application/zip` Blob, click a temporary anchor with the returned filename, and revoke the object URL.
 
-- [ ] **Step 4: Run package tests and type checking**
+- [x] **Step 4: Run package tests and type checking**
 
 Run: `npm test -- app/editor/project-package.test.ts && npx tsc --noEmit`
 
 Expected: tests PASS and TypeScript exits zero.
 
-- [ ] **Step 5: Commit the editor integration**
+- [x] **Step 5: Commit the editor integration**
 
 Stage only `CodePanel.tsx`, `Editor.tsx`, and the package test update. Commit using the lore format with the existing individual exports recorded as a compatibility constraint.
 
@@ -113,27 +113,27 @@ Stage only `CodePanel.tsx`, `Editor.tsx`, and the package test update. Commit us
 **Files:**
 - Modify: `e2e/editor-full.spec.ts`
 
-- [ ] **Step 1: Write the failing Playwright assertion**
+- [x] **Step 1: Write the failing Playwright assertion**
 
 Before the individual Luau download assertions, click `Download ZIP`, assert the suggested filename is `game-menu.zip`, read the downloaded bytes, decode with `unzipSync`, and assert the client and server entries contain the already-configured Teleport behavior.
 
-- [ ] **Step 2: Run the full browser spec and verify RED**
+- [x] **Step 2: Run the full browser spec and verify RED**
 
 Run: `npm run test:e2e:full`
 
 Expected: FAIL because the ZIP action is not yet exposed, or because its archive contract differs from the assertion.
 
-- [ ] **Step 3: Make the minimum accessibility or wiring correction**
+- [x] **Step 3: Make the minimum accessibility or wiring correction**
 
 If needed, adjust only the button's accessible name or callback wiring so Playwright observes the user-facing download contract. Do not alter existing single-file export behavior.
 
-- [ ] **Step 4: Re-run the full browser spec and verify GREEN**
+- [x] **Step 4: Re-run the full browser spec and verify GREEN**
 
 Run: `npm run test:e2e:full`
 
 Expected: the complete editor journey PASSes with no console errors.
 
-- [ ] **Step 5: Commit the browser regression**
+- [x] **Step 5: Commit the browser regression**
 
 Stage `e2e/editor-full.spec.ts` and any narrowly required UI correction. Commit using the lore format.
 
@@ -142,7 +142,7 @@ Stage `e2e/editor-full.spec.ts` and any narrowly required UI correction. Commit 
 **Files:**
 - Modify: `docs/superpowers/plans/2026-06-19-zip-project-export.md`
 
-- [ ] **Step 1: Run all verification gates**
+- [x] **Step 1: Run all verification gates**
 
 Run sequentially:
 
@@ -157,11 +157,11 @@ git diff --check
 
 Expected: all commands exit zero; Vitest, both Playwright suites, type checking, and production build pass.
 
-- [ ] **Step 2: Mark completed plan checkboxes**
+- [x] **Step 2: Mark completed plan checkboxes**
 
-Change only completed `- [ ]` markers in this plan to `- [x]`, preserving the commands and expected evidence.
+Change only completed `- [x]` markers in this plan to `- [x]`, preserving the commands and expected evidence.
 
-- [ ] **Step 3: Commit verification evidence**
+- [x] **Step 3: Commit verification evidence**
 
 Commit the checked plan using the lore format. Record Roblox Studio import as not tested because the required application and published experience remain unavailable.
 
