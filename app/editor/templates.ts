@@ -121,6 +121,560 @@ const leaderboard = (() => {
   return [root, panel, title, ...rows.flat()];
 })();
 
+const gamePassShop = (() => {
+  const root = mk("ScreenGui", {
+    name: "GamePassShop",
+    pos: { x: 0, y: 0 },
+    size: { x: 1, y: 1 },
+    color: "#0b0d14",
+    transparency: 1,
+    cornerRadius: 0,
+  });
+  const panel = mk("Frame", {
+    name: "PassShopPanel",
+    parentId: root.id,
+    pos: { x: 0.12, y: 0.14 },
+    size: { x: 0.76, y: 0.72 },
+    color: "#151923",
+    cornerRadius: 18,
+    layout: "list",
+    padding: 16,
+  });
+  const title = mk("TextLabel", {
+    name: "ShopTitle",
+    parentId: panel.id,
+    pos: FLOW,
+    size: { x: 1, y: 0.1 },
+    color: "#000000",
+    transparency: 1,
+    text: "PREMIUM PASSES",
+    font: "GothamBold",
+    textSize: 25,
+    textColor: "#e6f4ff",
+  });
+  const subtitle = mk("TextLabel", {
+    name: "ShopSubtitle",
+    parentId: panel.id,
+    pos: FLOW,
+    size: { x: 1, y: 0.08 },
+    color: "#000000",
+    transparency: 1,
+    text: "Permanent upgrades for every adventure",
+    font: "GothamMedium",
+    textSize: 13,
+    textColor: "#8da2b8",
+  });
+  const passGrid = mk("Frame", {
+    name: "PassGrid",
+    parentId: panel.id,
+    pos: FLOW,
+    size: { x: 1, y: 0.7 },
+    color: "#000000",
+    transparency: 1,
+    layout: "grid",
+    padding: 10,
+  });
+  const passDefinitions = [
+    {
+      key: "vip",
+      name: "VIP PASS",
+      benefit: "Gold name + VIP lounge",
+      price: "399 R$",
+      accent: "#38bdf8",
+      buttonName: "BuyVip",
+    },
+    {
+      key: "double-coins",
+      name: "DOUBLE COINS",
+      benefit: "Earn 2x coins forever",
+      price: "249 R$",
+      accent: "#a78bfa",
+      buttonName: "BuyDoubleCoins",
+    },
+    {
+      key: "speed-coil",
+      name: "SPEED COIL",
+      benefit: "Move faster in every world",
+      price: "149 R$",
+      accent: "#34d399",
+      buttonName: "BuySpeedCoil",
+    },
+  ];
+  const passes = passDefinitions.map((pass, index) => {
+    const card = mk("Frame", {
+      name: `PassCard${index + 1}`,
+      parentId: passGrid.id,
+      pos: FLOW,
+      size: { x: 0.3, y: 0.82 },
+      color: "#202735",
+      cornerRadius: 12,
+      layout: "list",
+      padding: 10,
+    });
+    const badge = mk("TextLabel", {
+      name: "PassBadge",
+      parentId: card.id,
+      pos: FLOW,
+      size: { x: 1, y: 0.18 },
+      color: pass.accent,
+      cornerRadius: 8,
+      text: pass.name,
+      font: "GothamBold",
+      textSize: 14,
+      textColor: "#07111c",
+    });
+    const benefit = mk("TextLabel", {
+      name: "PassBenefit",
+      parentId: card.id,
+      pos: FLOW,
+      size: { x: 1, y: 0.25 },
+      color: "#000000",
+      transparency: 1,
+      text: pass.benefit,
+      font: "GothamMedium",
+      textSize: 12,
+      textColor: "#c8d3df",
+    });
+    const price = mk("TextLabel", {
+      name: "PassPrice",
+      parentId: card.id,
+      pos: FLOW,
+      size: { x: 1, y: 0.18 },
+      color: "#000000",
+      transparency: 1,
+      text: pass.price,
+      font: "GothamBold",
+      textSize: 18,
+      textColor: "#fbbf24",
+    });
+    const buy = mk("TextButton", {
+      name: pass.buttonName,
+      parentId: card.id,
+      pos: FLOW,
+      size: { x: 1, y: 0.2 },
+      color: pass.accent,
+      cornerRadius: 8,
+      text: "BUY PASS",
+      font: "GothamBold",
+      textSize: 13,
+      textColor: "#07111c",
+      action: {
+        type: "remoteEvent",
+        eventName: "PurchaseGamePass",
+        argument: pass.key,
+      },
+    });
+    return [card, badge, benefit, price, buy];
+  });
+  return [root, panel, title, subtitle, passGrid, ...passes.flat()];
+})();
+
+const codeRedeem = (() => {
+  const root = mk("ScreenGui", {
+    name: "CodeRedeem",
+    pos: { x: 0, y: 0 },
+    size: { x: 1, y: 1 },
+    color: "#0b0d14",
+    transparency: 1,
+    cornerRadius: 0,
+  });
+  const panel = mk("Frame", {
+    name: "RedeemPanel",
+    parentId: root.id,
+    pos: { x: 0.27, y: 0.15 },
+    size: { x: 0.46, y: 0.7 },
+    color: "#151923",
+    cornerRadius: 18,
+    layout: "list",
+    padding: 18,
+  });
+  const title = mk("TextLabel", {
+    name: "RedeemTitle",
+    parentId: panel.id,
+    pos: FLOW,
+    size: { x: 1, y: 0.12 },
+    color: "#000000",
+    transparency: 1,
+    text: "REDEEM A CODE",
+    font: "GothamBold",
+    textSize: 24,
+    textColor: "#c4b5fd",
+  });
+  const subtitle = mk("TextLabel", {
+    name: "RedeemSubtitle",
+    parentId: panel.id,
+    pos: FLOW,
+    size: { x: 1, y: 0.1 },
+    color: "#000000",
+    transparency: 1,
+    text: "Enter a creator code to unlock your reward",
+    font: "GothamMedium",
+    textSize: 13,
+    textColor: "#9aa7b7",
+  });
+  const input = mk("TextBox", {
+    name: "CodeInput",
+    parentId: panel.id,
+    pos: FLOW,
+    size: { x: 1, y: 0.12 },
+    color: "#202735",
+    cornerRadius: 9,
+    text: "ENTER-CODE",
+    font: "GothamMedium",
+    textSize: 15,
+    textColor: "#d8dee9",
+  });
+  const redeem = mk("TextButton", {
+    name: "RedeemCode",
+    parentId: panel.id,
+    pos: FLOW,
+    size: { x: 1, y: 0.12 },
+    color: "#8b5cf6",
+    cornerRadius: 9,
+    text: "REDEEM",
+    font: "GothamBold",
+    textSize: 15,
+    textColor: "#ffffff",
+  });
+  const status = mk("TextLabel", {
+    name: "RedeemStatus",
+    parentId: panel.id,
+    pos: FLOW,
+    size: { x: 1, y: 0.09 },
+    color: "#000000",
+    transparency: 1,
+    text: "Enter a code to check your reward",
+    font: "GothamMedium",
+    textSize: 12,
+    textColor: "#a5b4c3",
+  });
+  const rewardsTitle = mk("TextLabel", {
+    name: "RewardExamplesTitle",
+    parentId: panel.id,
+    pos: FLOW,
+    size: { x: 1, y: 0.09 },
+    color: "#000000",
+    transparency: 1,
+    text: "RECENT REWARDS",
+    font: "GothamBold",
+    textSize: 12,
+    textColor: "#c4b5fd",
+  });
+  const rewardRows = ["LAUNCHDAY  -  500 Coins", "WELCOME  -  Starter Crate"].map(
+    (reward, index) =>
+      mk("TextLabel", {
+        name: `RewardExample${index + 1}`,
+        parentId: panel.id,
+        pos: FLOW,
+        size: { x: 1, y: 0.09 },
+        color: "#202735",
+        cornerRadius: 7,
+        text: reward,
+        font: "GothamMedium",
+        textSize: 12,
+        textColor: "#d8dee9",
+      })
+  );
+  return [
+    root,
+    panel,
+    title,
+    subtitle,
+    input,
+    redeem,
+    status,
+    rewardsTitle,
+    ...rewardRows,
+  ];
+})();
+
+const dailyRewards = (() => {
+  const root = mk("ScreenGui", {
+    name: "DailyRewards",
+    pos: { x: 0, y: 0 },
+    size: { x: 1, y: 1 },
+    color: "#0b0d14",
+    transparency: 1,
+    cornerRadius: 0,
+  });
+  const panel = mk("Frame", {
+    name: "RewardsPanel",
+    parentId: root.id,
+    pos: { x: 0.1, y: 0.16 },
+    size: { x: 0.8, y: 0.68 },
+    color: "#151923",
+    cornerRadius: 18,
+    layout: "list",
+    padding: 15,
+  });
+  const title = mk("TextLabel", {
+    name: "RewardsTitle",
+    parentId: panel.id,
+    pos: FLOW,
+    size: { x: 1, y: 0.1 },
+    color: "#000000",
+    transparency: 1,
+    text: "DAILY REWARDS",
+    font: "GothamBold",
+    textSize: 25,
+    textColor: "#fbbf24",
+  });
+  const streak = mk("TextLabel", {
+    name: "StreakStatus",
+    parentId: panel.id,
+    pos: FLOW,
+    size: { x: 1, y: 0.08 },
+    color: "#000000",
+    transparency: 1,
+    text: "4 DAY STREAK  |  Come back tomorrow to keep it going",
+    font: "GothamMedium",
+    textSize: 13,
+    textColor: "#a7b2c1",
+  });
+  const dayGrid = mk("Frame", {
+    name: "DayGrid",
+    parentId: panel.id,
+    pos: FLOW,
+    size: { x: 1, y: 0.42 },
+    color: "#000000",
+    transparency: 1,
+    layout: "grid",
+    padding: 7,
+  });
+  const rewards = ["100", "150", "200", "350", "500", "750", "CRATE"];
+  const days = rewards.map((reward, index) => {
+    const day = index + 1;
+    const isClaimed = day < 4;
+    const isCurrent = day === 4;
+    const card = mk("Frame", {
+      name: `Day${day}`,
+      parentId: dayGrid.id,
+      pos: FLOW,
+      size: { x: 0.13, y: 0.8 },
+      color: isCurrent ? "#9a6b12" : isClaimed ? "#243445" : "#202735",
+      cornerRadius: 9,
+      layout: "list",
+      padding: 6,
+    });
+    const dayLabel = mk("TextLabel", {
+      name: "DayLabel",
+      parentId: card.id,
+      pos: FLOW,
+      size: { x: 1, y: 0.3 },
+      color: "#000000",
+      transparency: 1,
+      text: isCurrent ? "TODAY" : `DAY ${day}`,
+      font: "GothamBold",
+      textSize: 11,
+      textColor: isCurrent ? "#fff4cc" : "#c8d3df",
+    });
+    const amount = mk("TextLabel", {
+      name: "RewardAmount",
+      parentId: card.id,
+      pos: FLOW,
+      size: { x: 1, y: 0.35 },
+      color: "#000000",
+      transparency: 1,
+      text: reward,
+      font: "GothamBold",
+      textSize: 14,
+      textColor: isCurrent ? "#fbbf24" : "#e5e7eb",
+    });
+    const state = mk("TextLabel", {
+      name: "RewardState",
+      parentId: card.id,
+      pos: FLOW,
+      size: { x: 1, y: 0.22 },
+      color: "#000000",
+      transparency: 1,
+      text: isClaimed ? "CLAIMED" : isCurrent ? "READY" : "LOCKED",
+      font: "GothamMedium",
+      textSize: 9,
+      textColor: isClaimed ? "#7dd3fc" : isCurrent ? "#fde68a" : "#758295",
+    });
+    return [card, dayLabel, amount, state];
+  });
+  const currentReward = mk("TextLabel", {
+    name: "CurrentReward",
+    parentId: panel.id,
+    pos: FLOW,
+    size: { x: 1, y: 0.1 },
+    color: "#202735",
+    cornerRadius: 8,
+    text: "TODAY: 350 COINS",
+    font: "GothamBold",
+    textSize: 15,
+    textColor: "#fde68a",
+  });
+  const claim = mk("TextButton", {
+    name: "ClaimReward",
+    parentId: panel.id,
+    pos: FLOW,
+    size: { x: 1, y: 0.11 },
+    color: "#fbbf24",
+    cornerRadius: 9,
+    text: "CLAIM DAY 4",
+    font: "GothamBold",
+    textSize: 15,
+    textColor: "#211600",
+    action: {
+      type: "remoteEvent",
+      eventName: "ClaimDailyReward",
+      argument: "day-4",
+    },
+  });
+  return [
+    root,
+    panel,
+    title,
+    streak,
+    dayGrid,
+    ...days.flat(),
+    currentReward,
+    claim,
+  ];
+})();
+
+const questTracker = (() => {
+  const root = mk("ScreenGui", {
+    name: "QuestTracker",
+    pos: { x: 0, y: 0 },
+    size: { x: 1, y: 1 },
+    color: "#0b0d14",
+    transparency: 1,
+    cornerRadius: 0,
+  });
+  const panel = mk("Frame", {
+    name: "QuestTrackerPanel",
+    parentId: root.id,
+    pos: { x: 0.65, y: 0.08 },
+    size: { x: 0.31, y: 0.38 },
+    color: "#151923",
+    cornerRadius: 14,
+    layout: "list",
+    padding: 12,
+  });
+  const header = mk("Frame", {
+    name: "QuestHeader",
+    parentId: panel.id,
+    pos: FLOW,
+    size: { x: 1, y: 0.22 },
+    color: "#000000",
+    transparency: 1,
+  });
+  const title = mk("TextLabel", {
+    name: "QuestTitle",
+    parentId: header.id,
+    pos: { x: 0, y: 0.15 },
+    size: { x: 0.75, y: 0.7 },
+    color: "#000000",
+    transparency: 1,
+    text: "ACTIVE QUEST",
+    font: "GothamBold",
+    textSize: 15,
+    textColor: "#6ee7b7",
+  });
+  const details = mk("Frame", {
+    name: "QuestDetails",
+    parentId: panel.id,
+    pos: FLOW,
+    size: { x: 1, y: 0.7 },
+    color: "#202735",
+    cornerRadius: 10,
+  });
+  const toggle = mk("TextButton", {
+    name: "ToggleDetails",
+    parentId: header.id,
+    pos: { x: 0.82, y: 0.12 },
+    size: { x: 0.16, y: 0.76 },
+    color: "#263346",
+    cornerRadius: 7,
+    text: "-",
+    font: "GothamBold",
+    textSize: 18,
+    textColor: "#c8d3df",
+    action: { type: "toggle", targetId: details.id },
+  });
+  const questName = mk("TextLabel", {
+    name: "QuestName",
+    parentId: details.id,
+    pos: { x: 0.06, y: 0.08 },
+    size: { x: 0.88, y: 0.18 },
+    color: "#000000",
+    transparency: 1,
+    text: "Crystal Collector",
+    font: "GothamBold",
+    textSize: 16,
+    textColor: "#f1f5f9",
+  });
+  const objective = mk("TextLabel", {
+    name: "QuestObjective",
+    parentId: details.id,
+    pos: { x: 0.06, y: 0.28 },
+    size: { x: 0.88, y: 0.15 },
+    color: "#000000",
+    transparency: 1,
+    text: "Collect crystal shards",
+    font: "GothamMedium",
+    textSize: 12,
+    textColor: "#aab6c5",
+  });
+  const progressBackground = mk("Frame", {
+    name: "ProgressBackground",
+    parentId: details.id,
+    pos: { x: 0.06, y: 0.48 },
+    size: { x: 0.88, y: 0.08 },
+    color: "#303a49",
+    cornerRadius: 999,
+  });
+  const progressFill = mk("Frame", {
+    name: "ProgressFill",
+    parentId: progressBackground.id,
+    pos: { x: 0, y: 0 },
+    size: { x: 0.66, y: 1 },
+    color: "#34d399",
+    cornerRadius: 999,
+  });
+  const progress = mk("TextLabel", {
+    name: "ProgressValue",
+    parentId: details.id,
+    pos: { x: 0.06, y: 0.6 },
+    size: { x: 0.4, y: 0.14 },
+    color: "#000000",
+    transparency: 1,
+    text: "8 / 12",
+    font: "GothamBold",
+    textSize: 12,
+    textColor: "#6ee7b7",
+  });
+  const reward = mk("TextLabel", {
+    name: "QuestReward",
+    parentId: details.id,
+    pos: { x: 0.46, y: 0.6 },
+    size: { x: 0.48, y: 0.14 },
+    color: "#000000",
+    transparency: 1,
+    text: "Reward: 350 Coins",
+    font: "GothamMedium",
+    textSize: 11,
+    textColor: "#fbbf24",
+  });
+  return [
+    root,
+    panel,
+    header,
+    title,
+    toggle,
+    details,
+    questName,
+    objective,
+    progressBackground,
+    progressFill,
+    progress,
+    reward,
+  ];
+})();
+
 export const TEMPLATES: Template[] = [
   {
     slug: "main-menu",
@@ -175,6 +729,42 @@ export const TEMPLATES: Template[] = [
     description:
       "A live-style leaderboard with rank, name, and score columns, the top row highlighted. Rows stack with UIListLayout so it scales with player count.",
     scene: leaderboard,
+  },
+  {
+    slug: "game-pass-shop",
+    title: "Roblox Game Pass Shop GUI",
+    category: "Shop",
+    tagline: "Premium pass cards with purchase requests",
+    description:
+      "A polished game pass storefront with three editable offers and RemoteEvent purchase requests. Connect each trusted server handler to your Roblox Marketplace purchase flow before release.",
+    scene: gamePassShop,
+  },
+  {
+    slug: "code-redeem",
+    title: "Roblox Code Redeem GUI",
+    category: "Menus",
+    tagline: "Code input, reward examples, and status states",
+    description:
+      "A focused code redemption panel with editable input, feedback, and reward examples. Connect TextBox reading, validation, rate limits, and reward granting in Roblox Studio.",
+    scene: codeRedeem,
+  },
+  {
+    slug: "daily-rewards",
+    title: "Roblox Daily Rewards GUI",
+    category: "Menus",
+    tagline: "Seven-day streak with a server request",
+    description:
+      "A seven-day reward calendar with claimed, current, and upcoming states plus a claim RemoteEvent. Validate time, streak, and duplicate claims on the server.",
+    scene: dailyRewards,
+  },
+  {
+    slug: "quest-tracker",
+    title: "Roblox Quest Tracker GUI",
+    category: "HUD",
+    tagline: "Expandable objective and progress HUD",
+    description:
+      "A compact quest HUD with editable objective, progress, reward, and a previewable details toggle. Connect live quest data and completion rewards in your game code.",
+    scene: questTracker,
   },
 ];
 
