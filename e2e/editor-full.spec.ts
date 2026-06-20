@@ -53,12 +53,27 @@ test("@full preserves and exports server-backed actions", async ({ page }) => {
   await expect(page.getByLabel("Client Luau code")).not.toContainText(
     "example.com"
   );
+  await assetId.fill("123");
+  await page.waitForTimeout(400);
   await assetId.fill("1818");
+  await page.waitForTimeout(400);
   await expect(page.getByLabel("Client Luau code")).toContainText(
     'Image = "rbxassetid://1818"'
   );
+  await page.getByRole("button", { name: "Undo" }).click();
+  await expect(assetId).toHaveValue("rbxassetid://123");
+  await page.getByRole("button", { name: "Redo" }).click();
+  await expect(assetId).toHaveValue("rbxassetid://1818");
   await expect(page.locator('[data-image-state="loaded"]')).toBeVisible();
+  await page
+    .getByRole("textbox", { name: "Image tint", exact: true })
+    .fill("#12abef");
   await page.getByRole("checkbox", { name: "Enable stroke" }).check();
+  await page
+    .getByRole("textbox", { name: "Stroke color", exact: true })
+    .fill("#010203");
+  await page.getByRole("spinbutton", { name: "Stroke transparency" }).fill("0.25");
+  await page.getByRole("spinbutton", { name: "Stroke thickness" }).fill("2");
   await page.getByRole("spinbutton", { name: "Rotation" }).fill("15");
   await expect(page.getByLabel("Client Luau code")).toContainText(
     "Rotation = 15"
@@ -102,6 +117,28 @@ test("@full preserves and exports server-backed actions", async ({ page }) => {
   thumbnailAvailable = false;
   await page.reload();
   await expect(page.locator('[data-image-state="unavailable"]')).toBeVisible();
+  await page.getByRole("button", { name: "Hierarchy" }).click();
+  await page.getByRole("treeitem", { name: /Image Image/ }).click();
+  await expect(assetId).toHaveValue("rbxassetid://1818");
+  await expect(
+    page.getByRole("textbox", { name: "Image tint", exact: true })
+  ).toHaveValue("#12abef");
+  await expect(page.getByRole("spinbutton", { name: "Rotation" })).toHaveValue(
+    "15"
+  );
+  await expect(page.getByRole("checkbox", { name: "Enable stroke" })).toBeChecked();
+  await expect(
+    page.getByRole("spinbutton", { name: "Stroke transparency" })
+  ).toHaveValue("0.25");
+  await expect(
+    page.getByRole("spinbutton", { name: "Stroke thickness" })
+  ).toHaveValue("2");
+  await page.getByRole("treeitem", { name: /Title Title/ }).click();
+  await expect(
+    page.getByRole("checkbox", { name: "Scale text to fit" })
+  ).toBeChecked();
+  await expect(page.getByRole("checkbox", { name: "Wrap text" })).toBeChecked();
+  await page.getByRole("treeitem", { name: /PlayBtn/ }).click();
   await expect(
     page.getByRole("textbox", { name: "Destination Place ID" })
   ).toHaveValue("456");
@@ -112,6 +149,18 @@ test("@full preserves and exports server-backed actions", async ({ page }) => {
   const jsonPath = await jsonDownload.path();
   expect(jsonDownload.suggestedFilename()).toBe("game-menu.json");
   if (!jsonPath) throw new Error("Expected the JSON download path");
+  const exportedProject = JSON.parse(await readFile(jsonPath, "utf8"));
+  expect(
+    exportedProject.scene.find((item: { cls: string }) => item.cls === "ImageLabel")
+  ).toMatchObject({
+    image: "rbxassetid://1818",
+    imageColor: "#12abef",
+    rotation: 15,
+    stroke: { color: "#010203", transparency: 0.25, thickness: 2 },
+  });
+  expect(
+    exportedProject.scene.find((item: { id: string }) => item.id === "title")
+  ).toMatchObject({ textScaled: true, textWrapped: true });
 
   await actionSelect.selectOption("none");
   await expect(page.getByLabel("Client Luau code")).not.toContainText(
@@ -123,6 +172,17 @@ test("@full preserves and exports server-backed actions", async ({ page }) => {
   await expect(page.getByLabel("Client Luau code")).toContainText(
     'teleportRequest:FireServer("456")'
   );
+  await expect(page.getByLabel("Client Luau code")).toContainText(
+    'Image = "rbxassetid://1818"'
+  );
+  await expect(page.getByLabel("Client Luau code")).toContainText(
+    "ImageColor3 = Color3.fromRGB(18, 171, 239)"
+  );
+  await expect(page.getByLabel("Client Luau code")).toContainText(
+    "TextScaled = true"
+  );
+  await page.getByRole("treeitem", { name: /Image Image/ }).click();
+  await expect(assetId).toHaveValue("rbxassetid://1818");
 
   await page.getByRole("button", { name: "Hierarchy" }).click();
   await page.getByRole("treeitem", { name: /SettingsBtn/ }).click();
@@ -146,12 +206,23 @@ test("@full preserves and exports server-backed actions", async ({ page }) => {
   expect(packageDownload.suggestedFilename()).toBe("game-menu.zip");
   if (!packagePath) throw new Error("Expected the ZIP download path");
   const packageFiles = unzipSync(await readFile(packagePath));
-  expect(strFromU8(packageFiles["project.json"])).toContain(
+  const packagedProject = strFromU8(packageFiles["project.json"]);
+  const packagedClient = strFromU8(packageFiles["roblox-gui.client.lua"]);
+  expect(packagedProject).toContain(
     '"format": "roblox-gui-maker"'
   );
-  expect(strFromU8(packageFiles["roblox-gui.client.lua"])).toContain(
+  expect(packagedProject).toContain('"image": "rbxassetid://1818"');
+  expect(packagedProject).toContain('"imageColor": "#12abef"');
+  expect(packagedProject).toContain('"textScaled": true');
+  expect(packagedClient).toContain(
     'teleportRequest:FireServer("456")'
   );
+  expect(packagedClient).toContain('Image = "rbxassetid://1818"');
+  expect(packagedClient).toContain(
+    "ImageColor3 = Color3.fromRGB(18, 171, 239)"
+  );
+  expect(packagedClient).toContain('Instance.new("UIStroke")');
+  expect(packagedClient).toContain("TextScaled = true");
   expect(strFromU8(packageFiles["roblox-gui.server.lua"])).toContain(
     "TeleportService:TeleportAsync(numericPlaceId, { player })"
   );

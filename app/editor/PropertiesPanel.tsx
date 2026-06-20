@@ -280,6 +280,7 @@ export function PropertiesPanel({ node, scene, onChange, onDelete, onDuplicate }
                 <ColorInput
                   value={node.imageColor ?? "#ffffff"}
                   onValue={(imageColor) => onChange(node.id, { imageColor })}
+                  ariaLabel="Image tint"
                 />
               </Row>
             </Group>
@@ -431,6 +432,7 @@ export function PropertiesPanel({ node, scene, onChange, onDelete, onDuplicate }
                   <Row label="Color">
                     <ColorInput
                       value={node.stroke.color}
+                      ariaLabel="Stroke color"
                       onValue={(color) =>
                         onChange(node.id, {
                           stroke: { ...node.stroke!, color },
@@ -764,17 +766,27 @@ function PairInput({
   );
 }
 
-function ColorInput({ value, onValue }: { value: string; onValue: (v: string) => void }) {
+function ColorInput({
+  value,
+  onValue,
+  ariaLabel,
+}: {
+  value: string;
+  onValue: (v: string) => void;
+  ariaLabel?: string;
+}) {
   const safe = /^#[0-9a-f]{6}$/i.test(value) ? value : "#000000";
   return (
     <div className="flex items-center gap-1.5">
       <input
         type="color"
+        aria-label={ariaLabel ? `${ariaLabel} picker` : undefined}
         value={safe}
         onChange={(e) => onValue(e.target.value)}
         className="w-7 h-7 rounded bg-input border border-line cursor-pointer p-0.5"
       />
       <input
+        aria-label={ariaLabel}
         value={value}
         onChange={(e) => onValue(e.target.value)}
         className="w-[80px] px-2 py-1 rounded bg-input text-ink text-xs font-mono outline-none focus:ring-1 focus:ring-focus"
