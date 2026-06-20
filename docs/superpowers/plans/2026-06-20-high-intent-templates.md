@@ -22,7 +22,7 @@
 - Create: `app/editor/templates.test.ts`
 - Test: `app/editor/templates.test.ts`
 
-- [ ] **Step 1: Write the failing data-contract tests**
+- [x] **Step 1: Write the failing data-contract tests**
 
 Create the test file with helpers that resolve the four required templates and inspect their scene nodes:
 
@@ -103,13 +103,13 @@ describe("high-intent templates", () => {
 });
 ```
 
-- [ ] **Step 2: Run the focused test and verify RED**
+- [x] **Step 2: Run the focused test and verify RED**
 
 Run: `npm test -- app/editor/templates.test.ts`
 
 Expected: FAIL because the four slugs do not exist.
 
-- [ ] **Step 3: Commit the failing contract test**
+- [x] **Step 3: Commit the failing contract test**
 
 Stage only `app/editor/templates.test.ts` and commit with the repository lore format. Record that failure is expected because implementation is intentionally absent.
 
@@ -119,7 +119,7 @@ Stage only `app/editor/templates.test.ts` and commit with the repository lore fo
 - Modify: `app/editor/templates.ts`
 - Test: `app/editor/templates.test.ts`
 
-- [ ] **Step 1: Add the Game Pass Shop scene**
+- [x] **Step 1: Add the Game Pass Shop scene**
 
 Use one `ScreenGui`, a centered dark panel, header and subtitle labels, then three horizontally arranged pass cards. Each card contains a pass name, benefit label, price label, and purchase button. Configure the buttons exactly as follows:
 
@@ -131,11 +131,11 @@ action: { type: "remoteEvent", eventName: "PurchaseGamePass", argument: "speed-c
 
 Use `#0b0d14` and `#151923` for the foundation, cyan `#38bdf8` for the accent, and gold `#fbbf24` for prices. Name the scene root `GamePassShop` and purchase controls `BuyVip`, `BuyDoubleCoins`, and `BuySpeedCoil`.
 
-- [ ] **Step 2: Add the Code Redeem scene**
+- [x] **Step 2: Add the Code Redeem scene**
 
 Use a centered violet-accented dark panel with `Redeem a Code`, explanatory copy, a `TextBox` named `CodeInput`, a `TextButton` named `RedeemCode`, a status label reading `Enter a code to check your reward`, and two example reward rows. Do not attach an action to the button because the action model cannot read current TextBox content.
 
-- [ ] **Step 3: Add the Daily Rewards scene**
+- [x] **Step 3: Add the Daily Rewards scene**
 
 Use a wide dark panel with a streak header, seven day cards, claimed/current/upcoming visual states, a current reward summary, and a `ClaimReward` button configured exactly as:
 
@@ -145,7 +145,7 @@ action: { type: "remoteEvent", eventName: "ClaimDailyReward", argument: "day-4" 
 
 Use amber `#fbbf24` as the accent and keep the day labels and reward amounts as real editable text.
 
-- [ ] **Step 4: Add the Quest Tracker scene**
+- [x] **Step 4: Add the Quest Tracker scene**
 
 Use a compact top-right HUD card named `QuestTracker`. Put `ToggleDetails` in its header and `QuestDetails` as a sibling below that header. Configure:
 
@@ -155,7 +155,7 @@ action: { type: "toggle", targetId: details.id }
 
 Inside the details add the quest name `Crystal Collector`, objective `Collect crystal shards`, progress `8 / 12`, a 66% progress fill, and reward `Reward: 350 Coins` using emerald `#34d399` as the accent.
 
-- [ ] **Step 5: Register public template metadata**
+- [x] **Step 5: Register public template metadata**
 
 Append these entries to `TEMPLATES` before the closing bracket:
 
@@ -194,19 +194,19 @@ Append these entries to `TEMPLATES` before the closing bracket:
 },
 ```
 
-- [ ] **Step 6: Run focused tests and verify GREEN**
+- [x] **Step 6: Run focused tests and verify GREEN**
 
 Run: `npm test -- app/editor/templates.test.ts`
 
 Expected: all high-intent template tests pass.
 
-- [ ] **Step 7: Run type checking**
+- [x] **Step 7: Run type checking**
 
 Run: `npx tsc --noEmit`
 
 Expected: exit zero with no diagnostics.
 
-- [ ] **Step 8: Commit the template implementation**
+- [x] **Step 8: Commit the template implementation**
 
 Stage only `app/editor/templates.ts`. Commit with lore describing the honest server boundary and focused test evidence; the contract test remains tracked from Task 1 and becomes green without another staged change.
 
@@ -216,7 +216,7 @@ Stage only `app/editor/templates.ts`. Commit with lore describing the honest ser
 - Modify: `e2e/seo-topics.spec.ts`
 - Test: `e2e/seo-topics.spec.ts`
 
-- [ ] **Step 1: Extend the browser test before implementation verification**
+- [x] **Step 1: Extend the browser test before implementation verification**
 
 Inside the existing `@smoke @full` test, after the `/templates` guide-link assertions, add:
 
@@ -255,19 +255,19 @@ await expect(page.getByLabel("Client Luau code")).toContainText("GamePassShop");
 await expect(page.getByLabel("Client Luau code")).toContainText("PurchaseGamePass");
 ```
 
-- [ ] **Step 2: Build the production application**
+- [x] **Step 2: Build the production application**
 
 Run: `npm run build`
 
 Expected: exit zero and static output includes all four `/templates/<slug>` routes.
 
-- [ ] **Step 3: Run the focused browser spec**
+- [x] **Step 3: Run the focused browser spec**
 
 Run: `npx playwright test e2e/seo-topics.spec.ts`
 
 Expected: 1 passed, no console errors, no horizontal overflow.
 
-- [ ] **Step 4: Commit browser coverage**
+- [x] **Step 4: Commit browser coverage**
 
 Stage only `e2e/seo-topics.spec.ts` and commit with lore including the exact build and Playwright evidence.
 
@@ -276,7 +276,7 @@ Stage only `e2e/seo-topics.spec.ts` and commit with lore including the exact bui
 **Files:**
 - Modify: `docs/superpowers/plans/2026-06-20-high-intent-templates.md`
 
-- [ ] **Step 1: Run the full local verification sequence**
+- [x] **Step 1: Run the full local verification sequence**
 
 Run sequentially:
 
@@ -291,19 +291,33 @@ git diff --check
 
 Expected: every command exits zero.
 
-- [ ] **Step 2: Perform responsive visual checks**
+- [x] **Step 2: Perform responsive visual checks**
 
 Open `/templates` and each new detail page at 375, 768, and 1280 pixel widths. Verify previews remain contained, text and calls to action are legible, cards do not overlap, and no page has horizontal overflow. Save screenshots only as untracked verification artifacts.
 
-- [ ] **Step 3: Review scope and working tree**
+- [x] **Step 3: Review scope and working tree**
 
 Run: `git status --short` and `git diff --stat HEAD~3..HEAD`.
 
 Expected: implementation commits contain only the planned source, test, and plan files. Preserve pre-existing `.gitignore`, `.superpowers/`, and `docs/youtube-60s-script.md` changes.
 
-- [ ] **Step 4: Record completion and commit the plan evidence**
+- [x] **Step 4: Record completion and commit the plan evidence**
 
 Mark completed checkboxes, record exact test counts and visual widths, and commit only this plan file with lore. Leave remote CI unchecked until the pushed workflow succeeds.
+
+Local evidence:
+
+- RED contract run: 5 failed and 1 passed before implementation.
+- GREEN contract run: 6 passed after implementation and layout corrections.
+- Full Vitest run: 10 files and 158 tests passed.
+- TypeScript: `npx tsc --noEmit` exited zero.
+- Production build: 42 static pages generated, including all four new template routes.
+- Focused browser run: 1 passed with all four gallery-to-editor journeys.
+- Smoke browser run: 2 passed.
+- Full browser run: 2 passed.
+- Responsive matrix: `/templates` and four detail pages checked at 375, 768, and 1280 pixels; all reported `scrollWidth === innerWidth` after the shared navigation fix.
+- Visual review: Game Pass cards, Code Redeem panel, Daily Rewards row, and Quest Tracker were inspected at mobile and desktop widths. The fixed Roblox canvas scales down on mobile, while page copy and calls to action remain readable and contained.
+- Additional release fix: CSP now permits the Google Tag Manager transport origin already used by the installed GA script, eliminating console policy errors during repeated navigation.
 
 - [ ] **Step 5: Push and verify remote CI**
 
