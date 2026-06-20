@@ -12,6 +12,38 @@ test("@full preserves and exports server-backed actions", async ({ page }) => {
   await page.evaluate(() => window.localStorage.clear());
   await page.reload();
 
+  await page.getByRole("button", { name: /ImageLabel/ }).click();
+  const assetId = page.getByRole("textbox", { name: "Roblox asset ID" });
+  await assetId.fill("https://example.com/a.png");
+  await expect(
+    page.getByText("Enter a numeric Roblox asset ID.")
+  ).toBeVisible();
+  await expect(page.getByLabel("Client Luau code")).not.toContainText(
+    "example.com"
+  );
+  await assetId.fill("1818");
+  await expect(page.getByLabel("Client Luau code")).toContainText(
+    'Image = "rbxassetid://1818"'
+  );
+  await page.getByRole("checkbox", { name: "Enable stroke" }).check();
+  await page.getByRole("spinbutton", { name: "Rotation" }).fill("15");
+  await expect(page.getByLabel("Client Luau code")).toContainText(
+    "Rotation = 15"
+  );
+
+  await page.locator('[data-node-id="title"]').click();
+  await page.getByRole("checkbox", { name: "Scale text to fit" }).check();
+  await page.getByRole("checkbox", { name: "Wrap text" }).check();
+  await expect(page.getByLabel("Client Luau code")).toContainText(
+    "TextScaled = true"
+  );
+  await expect(page.getByLabel("Client Luau code")).toContainText(
+    "TextWrapped = true"
+  );
+
+  await page.getByRole("button", { name: "Hierarchy" }).click();
+  await page.getByRole("treeitem", { name: /PlayBtn/ }).click();
+
   const actionSelect = page.locator("select").filter({
     has: page.locator('option[value="teleport"]'),
   });
@@ -57,7 +89,8 @@ test("@full preserves and exports server-backed actions", async ({ page }) => {
     'teleportRequest:FireServer("456")'
   );
 
-  await page.locator('[data-node-id="settings"]').click();
+  await page.getByRole("button", { name: "Hierarchy" }).click();
+  await page.getByRole("treeitem", { name: /SettingsBtn/ }).click();
   await actionSelect.selectOption("remoteEvent");
   await page
     .getByRole("textbox", { name: "RemoteEvent name" })
@@ -115,7 +148,7 @@ test("@full preserves and exports server-backed actions", async ({ page }) => {
   );
 
   await page.getByRole("button", { name: "Preview" }).click();
-  await page.locator('[data-node-id="play"]').click();
+  await page.locator('[data-node-id="play"]').dispatchEvent("pointerdown");
   await expect(page.getByRole("status")).toHaveText(
     "Teleport to Place 456. Preview does not run live teleports."
   );

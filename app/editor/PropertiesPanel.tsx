@@ -1,6 +1,19 @@
 "use client";
 
-import { Move, Palette as PaletteIcon, Type, Layers, Box, Trash2, Rows3, Copy, Zap, Eye } from "lucide-react";
+import {
+  Box,
+  Circle,
+  Copy,
+  Eye,
+  Image as ImageIcon,
+  Layers,
+  Move,
+  Palette as PaletteIcon,
+  Rows3,
+  Trash2,
+  Type,
+  Zap,
+} from "lucide-react";
 import type { NodeAction, SceneNode } from "./catalog";
 import {
   alignNode,
@@ -11,6 +24,7 @@ import {
 import { FONTS } from "./scene";
 import { RemoteEventActionFields } from "./RemoteEventActionFields";
 import { TeleportActionFields } from "./TeleportActionFields";
+import { ImageAssetField } from "./ImageAssetField";
 
 type Props = {
   node: SceneNode | null;
@@ -131,6 +145,22 @@ export function PropertiesPanel({ node, scene, onChange, onDelete, onDuplicate }
                 }}
               />
             </Row>
+            {node.cls !== "ScreenGui" && (
+              <Row label="Rotation">
+                <NumberInput
+                  ariaLabel="Rotation"
+                  value={node.rotation ?? 0}
+                  step={1}
+                  min={-360}
+                  max={360}
+                  onValue={(value) =>
+                    onChange(node.id, {
+                      rotation: Math.max(-360, Math.min(360, value)),
+                    })
+                  }
+                />
+              </Row>
+            )}
             <Row label="AnchorPoint" stacked>
               <PairInput
                 x={node.anchor?.x ?? 0}
@@ -237,6 +267,24 @@ export function PropertiesPanel({ node, scene, onChange, onDelete, onDuplicate }
             )}
           </Group>
 
+          {node.cls === "ImageLabel" && (
+            <Group icon={ImageIcon} label="Image">
+              <Row label="Asset ID" stacked>
+                <ImageAssetField
+                  nodeId={node.id}
+                  value={node.image}
+                  onCommit={(image) => onChange(node.id, { image })}
+                />
+              </Row>
+              <Row label="ImageColor3">
+                <ColorInput
+                  value={node.imageColor ?? "#ffffff"}
+                  onValue={(imageColor) => onChange(node.id, { imageColor })}
+                />
+              </Row>
+            </Group>
+          )}
+
           <Group icon={PaletteIcon} label="Appearance">
             <Row label="BackgroundColor3">
               <ColorInput
@@ -332,6 +380,100 @@ export function PropertiesPanel({ node, scene, onChange, onDelete, onDuplicate }
                   onValue={(v) => onChange(node.id, { textColor: v })}
                 />
               </Row>
+              <Row label="TextScaled">
+                <input
+                  type="checkbox"
+                  aria-label="Scale text to fit"
+                  checked={node.textScaled === true}
+                  onChange={(event) =>
+                    onChange(node.id, { textScaled: event.target.checked })
+                  }
+                  className="h-4 w-4 accent-focus"
+                />
+              </Row>
+              <Row label="TextWrapped">
+                <input
+                  type="checkbox"
+                  aria-label="Wrap text"
+                  checked={node.textWrapped === true}
+                  onChange={(event) =>
+                    onChange(node.id, { textWrapped: event.target.checked })
+                  }
+                  className="h-4 w-4 accent-focus"
+                />
+              </Row>
+            </Group>
+          )}
+
+          {node.cls !== "ScreenGui" && (
+            <Group icon={Circle} label="Stroke">
+              <Row label="Enabled">
+                <input
+                  type="checkbox"
+                  aria-label="Enable stroke"
+                  checked={node.stroke !== undefined}
+                  onChange={(event) =>
+                    onChange(node.id, {
+                      stroke: event.target.checked
+                        ? {
+                            color: "#000000",
+                            transparency: 0,
+                            thickness: 1,
+                          }
+                        : undefined,
+                    })
+                  }
+                  className="h-4 w-4 accent-focus"
+                />
+              </Row>
+              {node.stroke && (
+                <>
+                  <Row label="Color">
+                    <ColorInput
+                      value={node.stroke.color}
+                      onValue={(color) =>
+                        onChange(node.id, {
+                          stroke: { ...node.stroke!, color },
+                        })
+                      }
+                    />
+                  </Row>
+                  <Row label="Transparency">
+                    <NumberInput
+                      ariaLabel="Stroke transparency"
+                      value={node.stroke.transparency}
+                      step={0.05}
+                      min={0}
+                      max={1}
+                      onValue={(transparency) =>
+                        onChange(node.id, {
+                          stroke: {
+                            ...node.stroke!,
+                            transparency: Math.max(0, Math.min(1, transparency)),
+                          },
+                        })
+                      }
+                    />
+                  </Row>
+                  <Row label="Thickness">
+                    <NumberInput
+                      ariaLabel="Stroke thickness"
+                      value={node.stroke.thickness}
+                      step={1}
+                      min={0}
+                      max={100}
+                      onValue={(thickness) =>
+                        onChange(node.id, {
+                          stroke: {
+                            ...node.stroke!,
+                            thickness: Math.max(0, Math.min(100, thickness)),
+                          },
+                        })
+                      }
+                    />
+                  </Row>
+                </>
+              )}
             </Group>
           )}
 
@@ -492,16 +634,19 @@ function NumberInput({
   step = 1,
   min,
   max,
+  ariaLabel,
 }: {
   value: number;
   onValue: (v: number) => void;
   step?: number;
   min?: number;
   max?: number;
+  ariaLabel?: string;
 }) {
   return (
     <input
       type="number"
+      aria-label={ariaLabel}
       value={value}
       step={step}
       min={min}
