@@ -185,6 +185,6 @@ Expected: all commands exit zero.
 
 Mark local steps complete, leave remote CI open, and commit this plan with the exact evidence.
 
-- [ ] **Step 4: Push and verify remote CI**
+- [x] **Step 4: Push and verify remote CI**
 
 Push `main`, wait for the matching CI workflow, and record its run ID. Preserve the user's existing worktree changes.
