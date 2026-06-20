@@ -120,6 +120,7 @@ export function duplicateSubtree(
     ...(n.minSize ? { minSize: { ...n.minSize } } : {}),
     ...(n.maxSize ? { maxSize: { ...n.maxSize } } : {}),
     ...(n.gradient ? { gradient: { ...n.gradient } } : {}),
+    ...(n.stroke ? { stroke: { ...n.stroke } } : {}),
     ...(n.action ? { action: { ...n.action } } : {}),
     id: idMap.get(n.id)!,
     parentId: n.parentId ? idMap.get(n.parentId) ?? n.parentId : n.parentId,
@@ -399,6 +400,7 @@ export function generateLuau(scene: SceneNode[]): string {
     if (node.anchor && (node.anchor.x !== 0 || node.anchor.y !== 0)) {
       out.push(`${v}.AnchorPoint = ${vector2(node.anchor)}`);
     }
+    if (node.rotation) out.push(`${v}.Rotation = ${fmt(node.rotation)}`);
     if (node.transparency >= 1) {
       out.push(`${v}.BackgroundTransparency = 1`);
     } else {
@@ -408,6 +410,13 @@ export function generateLuau(scene: SceneNode[]): string {
     out.push(`${v}.ZIndex = ${node.zindex}`);
     const siblingOrder = childrenOf(node.parentId ?? null).findIndex((sibling) => sibling.id === node.id);
     out.push(`${v}.LayoutOrder = ${siblingOrder}`);
+
+    if (node.cls === "ImageLabel") {
+      if (node.image) out.push(`${v}.Image = ${luauString(node.image)}`);
+      if (node.imageColor) {
+        out.push(`${v}.ImageColor3 = ${color3(node.imageColor)}`);
+      }
+    }
 
     if (node.cornerRadius > 0) {
       out.push("");
@@ -423,6 +432,16 @@ export function generateLuau(scene: SceneNode[]): string {
       );
       out.push(`${v}_grad.Rotation = 45`);
       out.push(`${v}_grad.Parent = ${v}`);
+    }
+    if (node.stroke) {
+      out.push("");
+      out.push(`local ${v}_stroke = Instance.new("UIStroke")`);
+      out.push(`${v}_stroke.Color = ${color3(node.stroke.color)}`);
+      out.push(
+        `${v}_stroke.Transparency = ${fmt(node.stroke.transparency)}`
+      );
+      out.push(`${v}_stroke.Thickness = ${fmt(node.stroke.thickness)}`);
+      out.push(`${v}_stroke.Parent = ${v}`);
     }
     if (node.layout === "list") {
       out.push("");
@@ -454,6 +473,8 @@ export function generateLuau(scene: SceneNode[]): string {
       out.push(`${v}.Font = ${fontEnum(node.font)}`);
       out.push(`${v}.TextSize = ${node.textSize ?? 14}`);
       out.push(`${v}.TextColor3 = ${color3(node.textColor ?? "#e1e1ef")}`);
+      if (node.textScaled) out.push(`${v}.TextScaled = true`);
+      if (node.textWrapped) out.push(`${v}.TextWrapped = true`);
     }
     if (node.initialVisible === false) out.push(`${v}.Visible = false`);
 

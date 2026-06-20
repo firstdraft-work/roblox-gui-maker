@@ -239,6 +239,52 @@ describe("responsive Luau geometry", () => {
   });
 });
 
+describe("visual asset Luau", () => {
+  it("exports image, rotation, text, and stroke properties", () => {
+    const code = generateLuau([
+      node({ id: "root", cls: "ScreenGui", name: "Gui" }),
+      node({
+        id: "image",
+        cls: "ImageLabel",
+        name: "Icon",
+        parentId: "root",
+        image: "rbxassetid://1818",
+        imageColor: "#12abef",
+        rotation: 15,
+        stroke: {
+          color: "#010203",
+          transparency: 0.25,
+          thickness: 2,
+        },
+      }),
+      node({
+        id: "label",
+        cls: "TextLabel",
+        name: "Title",
+        parentId: "root",
+        text: "TITLE",
+        textScaled: true,
+        textWrapped: true,
+      }),
+    ]);
+
+    expect(code).toContain('el0.Image = "rbxassetid://1818"');
+    expect(code).toContain(
+      "el0.ImageColor3 = Color3.fromRGB(18, 171, 239)"
+    );
+    expect(code).toContain("el0.Rotation = 15");
+    expect(code).toContain('local el0_stroke = Instance.new("UIStroke")');
+    expect(code).toContain(
+      "el0_stroke.Color = Color3.fromRGB(1, 2, 3)"
+    );
+    expect(code).toContain("el0_stroke.Transparency = 0.25");
+    expect(code).toContain("el0_stroke.Thickness = 2");
+    expect(code).toContain("el0_stroke.Parent = el0");
+    expect(code).toContain("el1.TextScaled = true");
+    expect(code).toContain("el1.TextWrapped = true");
+  });
+});
+
 describe("scene action state", () => {
   it("clears actions that target a deleted subtree", () => {
     const scene = actionScene({ type: "show", targetId: "panel" });
@@ -328,6 +374,21 @@ describe("scene action state", () => {
 
     expect(cloneAction).toEqual(sourceAction);
     expect(cloneAction).not.toBe(sourceAction);
+  });
+
+  it("deep-clones stroke data when duplicating a node", () => {
+    const source = node({
+      stroke: { color: "#123456", transparency: 0.5, thickness: 3 },
+    });
+
+    const result = duplicateSubtree([source], source.id);
+    const cloneStroke = result?.nodes[0].stroke;
+
+    expect(cloneStroke).toEqual(source.stroke);
+    expect(cloneStroke).not.toBe(source.stroke);
+    if (!cloneStroke) throw new Error("Expected duplicated stroke");
+    cloneStroke.color = "#ffffff";
+    expect(source.stroke?.color).toBe("#123456");
   });
 });
 
