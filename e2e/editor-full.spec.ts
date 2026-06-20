@@ -4,8 +4,40 @@ import { strFromU8, unzipSync } from "fflate";
 
 test("@full preserves and exports server-backed actions", async ({ page }) => {
   const consoleErrors: string[] = [];
+  let thumbnailAvailable = true;
   page.on("console", (message) => {
     if (message.type() === "error") consoleErrors.push(message.text());
+  });
+  await page.route("https://thumbnails.roblox.com/**", async (route) => {
+    if (!thumbnailAvailable) {
+      await route.fulfill({
+        contentType: "application/json",
+        headers: { "access-control-allow-origin": "*" },
+        body: JSON.stringify({ data: [{ state: "Pending" }] }),
+      });
+      return;
+    }
+    await route.fulfill({
+      contentType: "application/json",
+      headers: { "access-control-allow-origin": "*" },
+      body: JSON.stringify({
+        data: [
+          {
+            state: "Completed",
+            imageUrl: "https://tr.rbxcdn.com/editor-test.png",
+          },
+        ],
+      }),
+    });
+  });
+  await page.route("https://tr.rbxcdn.com/editor-test.png", async (route) => {
+    await route.fulfill({
+      contentType: "image/png",
+      body: Buffer.from(
+        "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+        "base64"
+      ),
+    });
   });
 
   await page.goto("/editor");
@@ -25,6 +57,7 @@ test("@full preserves and exports server-backed actions", async ({ page }) => {
   await expect(page.getByLabel("Client Luau code")).toContainText(
     'Image = "rbxassetid://1818"'
   );
+  await expect(page.locator('[data-image-state="loaded"]')).toBeVisible();
   await page.getByRole("checkbox", { name: "Enable stroke" }).check();
   await page.getByRole("spinbutton", { name: "Rotation" }).fill("15");
   await expect(page.getByLabel("Client Luau code")).toContainText(
@@ -66,7 +99,9 @@ test("@full preserves and exports server-backed actions", async ({ page }) => {
   await expect(placeId).toHaveValue("456");
 
   await page.waitForTimeout(450);
+  thumbnailAvailable = false;
   await page.reload();
+  await expect(page.locator('[data-image-state="unavailable"]')).toBeVisible();
   await expect(
     page.getByRole("textbox", { name: "Destination Place ID" })
   ).toHaveValue("456");

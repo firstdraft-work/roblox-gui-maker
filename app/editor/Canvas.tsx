@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import type { DeviceKind, SceneNode } from "./catalog";
 import { canvasGeometryStyle } from "./geometry";
+import { assetIdNumber, resolveThumbnail } from "./image-assets";
 import { orderedChildren, type PreviewVisibility } from "./scene";
 import { useInteraction, type Corner } from "./useInteraction";
 
@@ -116,6 +118,9 @@ function NodeView({
   previewVisibility: PreviewVisibility | null;
   onPreviewAction: (id: string) => void;
 }) {
+  const thumbnail = useRobloxThumbnail(
+    node.cls === "ImageLabel" ? node.image : undefined
+  );
   // a flowed child (its parent has a layout) is arranged by the layout,
   // so we don't absolute-position or allow dragging it.
   const isFlow = containerLayout !== "none";
@@ -140,6 +145,7 @@ function NodeView({
   return (
     <div
       data-node-id={node.id}
+      data-image-state={node.cls === "ImageLabel" ? thumbnail.state : undefined}
       onPointerDown={(e) => {
         e.stopPropagation();
         if (previewVisibility) {
@@ -156,21 +162,69 @@ function NodeView({
       }
       style={{
         ...geometryStyle,
-        ...(isFlow ? { left: undefined, top: undefined, transform: undefined } : {}),
+        ...(isFlow
+          ? {
+              left: undefined,
+              top: undefined,
+              transform: node.rotation
+                ? `rotate(${node.rotation}deg)`
+                : undefined,
+            }
+          : {}),
         background,
         borderRadius: node.cornerRadius,
+        boxShadow: node.stroke
+          ? `inset 0 0 0 ${node.stroke.thickness}px ${hexToRgba(
+              node.stroke.color,
+              1 - node.stroke.transparency
+            )}`
+          : undefined,
+        containerType: "inline-size",
         zIndex: node.zindex,
         opacity: !previewVisibility && node.initialVisible === false ? 0.45 : 1,
         cursor: previewVisibility && node.cls === "TextButton" ? "pointer" : undefined,
         pointerEvents: startsHidden && !selected ? "none" : undefined,
       }}
     >
+      {node.cls === "ImageLabel" && node.image && (
+        thumbnail.state === "loaded" && thumbnail.url ? (
+          <>
+            {/* Roblox thumbnails resolve at runtime and already have a bounded editor box. */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={thumbnail.url}
+              alt=""
+              onError={thumbnail.markUnavailable}
+              className="pointer-events-none absolute inset-0 h-full w-full object-contain"
+            />
+            {node.imageColor && node.imageColor !== "#ffffff" && (
+              <span
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 mix-blend-multiply"
+                style={{ backgroundColor: node.imageColor }}
+              />
+            )}
+          </>
+        ) : (
+          <span className="pointer-events-none absolute inset-0 grid place-items-center px-2 text-center font-mono text-[10px] text-ink-mute">
+            Asset {assetIdNumber(node.image)}
+          </span>
+        )
+      )}
       {node.text != null && (
         <span
           className="absolute inset-0 grid place-items-center px-2 text-center leading-none pointer-events-none"
           style={{
             color: node.textColor,
-            fontSize: node.textSize,
+            fontSize: node.textScaled
+              ? `clamp(10px, 8cqw, ${node.textSize ?? 14}px)`
+              : node.textSize,
+            whiteSpace: node.textWrapped ? "normal" : "nowrap",
+            overflowWrap: node.textWrapped ? "anywhere" : undefined,
+            overflow: "hidden",
+            textShadow: node.stroke
+              ? textStrokeShadow(node.stroke)
+              : undefined,
             fontWeight: node.font?.includes("Black")
               ? 800
               : node.font?.includes("Bold")
@@ -230,6 +284,47 @@ function NodeView({
   );
 }
 
+type ThumbnailPreview = {
+  state: "idle" | "loading" | "loaded" | "unavailable";
+  url: string | null;
+  markUnavailable: () => void;
+};
+
+function useRobloxThumbnail(image?: string): ThumbnailPreview {
+  const [preview, setPreview] = useState<
+    Pick<ThumbnailPreview, "state" | "url">
+  >({ state: "idle", url: null });
+
+  useEffect(() => {
+    let active = true;
+    if (!image) {
+      setPreview({ state: "idle", url: null });
+      return () => {
+        active = false;
+      };
+    }
+
+    setPreview({ state: "loading", url: null });
+    void resolveThumbnail(image).then((url) => {
+      if (!active) return;
+      setPreview({
+        state: url ? "loaded" : "unavailable",
+        url,
+      });
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [image]);
+
+  return {
+    ...preview,
+    markUnavailable: () =>
+      setPreview({ state: "unavailable", url: null }),
+  };
+}
+
 function containsNode(
   rootId: string,
   targetId: string,
@@ -277,4 +372,15 @@ function hexToRgba(hex: string, alpha: number): string {
   if (!m) return `rgba(40, 41, 51, ${alpha})`;
   const n = parseInt(m[1], 16);
   return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
+}
+
+function textStrokeShadow(stroke: NonNullable<SceneNode["stroke"]>): string {
+  const width = Math.max(0, stroke.thickness);
+  const color = hexToRgba(stroke.color, 1 - stroke.transparency);
+  return [
+    `${width}px 0 ${color}`,
+    `-${width}px 0 ${color}`,
+    `0 ${width}px ${color}`,
+    `0 -${width}px ${color}`,
+  ].join(", ");
 }

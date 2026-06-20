@@ -41,6 +41,16 @@ describe("Roblox image assets", () => {
       })
     ).toBe("https://tr.rbxcdn.com/example");
     expect(parseThumbnailResponse({ data: [{ state: "Pending" }] })).toBeNull();
+    expect(
+      parseThumbnailResponse({
+        data: [
+          {
+            state: "Completed",
+            imageUrl: "https://example.com/untrusted.png",
+          },
+        ],
+      })
+    ).toBeNull();
     expect(parseThumbnailResponse({ data: "bad" })).toBeNull();
   });
 });
