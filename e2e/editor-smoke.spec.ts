@@ -1,5 +1,22 @@
 import { expect, test } from "@playwright/test";
 
+test("@smoke keeps initially hidden layers off the canvas until selected", async ({
+  page,
+}) => {
+  await page.goto("/editor?template=main-menu");
+
+  const settingsPanel = page.locator('[data-node-id="tpl-4"]');
+  await expect(settingsPanel).toHaveCount(0);
+
+  await page.getByRole("button", { name: "Hierarchy" }).click();
+  await page.locator('[data-tree-node="tpl-4"] > [role="treeitem"]').click();
+  await expect(settingsPanel).toBeVisible();
+
+  await page.locator('[data-tree-node="tpl-7"] > [role="treeitem"]').click();
+  await expect(settingsPanel).toBeVisible();
+  await expect(page.locator('[data-node-id="tpl-7"]')).toBeVisible();
+});
+
 test("@smoke edits and previews a secure Teleport action", async ({ page }) => {
   const consoleErrors: string[] = [];
   page.on("console", (message) => {

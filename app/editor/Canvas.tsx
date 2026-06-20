@@ -127,6 +127,9 @@ function NodeView({
 
   const selected = node.id === selectedId;
   const startsHidden = !previewVisibility && node.initialVisible === false;
+  const selectedInside =
+    selectedId !== null && containsNode(node.id, selectedId, getChild);
+  if (startsHidden && !selectedInside) return null;
   const background = node.gradient
     ? `linear-gradient(135deg, ${node.gradient.from}, ${node.gradient.to})`
     : node.transparency >= 1
@@ -224,6 +227,17 @@ function NodeView({
         </ChildrenWrapper>
       )}
     </div>
+  );
+}
+
+function containsNode(
+  rootId: string,
+  targetId: string,
+  getChild: (parentId: string | null) => SceneNode[]
+): boolean {
+  if (rootId === targetId) return true;
+  return getChild(rootId).some((child) =>
+    containsNode(child.id, targetId, getChild)
   );
 }
 
