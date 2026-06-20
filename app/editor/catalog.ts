@@ -34,6 +34,12 @@ export type TeleportAction = {
 
 export type NodeAction = VisibilityAction | RemoteEventAction | TeleportAction;
 
+export type StrokeStyle = {
+  color: string;
+  transparency: number;
+  thickness: number;
+};
+
 // How a palette item behaves:
 //  - add:    drops a new positioned node onto the canvas
 //  - apply:  modifies the currently selected node (e.g. UICorner rounds it)
@@ -95,6 +101,12 @@ export type SceneNode = {
   font?: string;
   textSize?: number;
   textColor?: string;
+  image?: string;
+  imageColor?: string;
+  rotation?: number;
+  textScaled?: boolean;
+  textWrapped?: boolean;
+  stroke?: StrokeStyle;
   zindex: number;
 };
 

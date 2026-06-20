@@ -3,6 +3,7 @@ import { sanitizeResponsiveGeometry } from "./geometry";
 import { sanitizeRemoteEventAction } from "./remote-events";
 import { sanitizeTeleportAction } from "./teleports";
 import { FONTS } from "./scene";
+import { normalizeRobloxAssetId } from "./image-assets";
 
 const PROJECT_FORMAT = "roblox-gui-maker";
 const PROJECT_VERSION = 1;
@@ -75,6 +76,40 @@ function sanitizeNode(raw: unknown): SceneNode | null {
   }
   if (isFiniteNum(source.textSize)) node.textSize = Math.max(1, source.textSize);
   if (isHex(source.textColor)) node.textColor = source.textColor;
+  if (isFiniteNum(source.rotation)) {
+    node.rotation = Math.max(-360, Math.min(360, source.rotation));
+  }
+
+  if (source.cls === "ImageLabel") {
+    if (typeof source.image === "string") {
+      const image = normalizeRobloxAssetId(source.image);
+      if (image) node.image = image;
+    }
+    if (isHex(source.imageColor)) node.imageColor = source.imageColor;
+  }
+
+  if (typeof source.text === "string") {
+    if (typeof source.textScaled === "boolean") {
+      node.textScaled = source.textScaled;
+    }
+    if (typeof source.textWrapped === "boolean") {
+      node.textWrapped = source.textWrapped;
+    }
+  }
+
+  const stroke = source.stroke as Record<string, unknown> | undefined;
+  if (
+    stroke &&
+    isHex(stroke.color) &&
+    isFiniteNum(stroke.transparency) &&
+    isFiniteNum(stroke.thickness)
+  ) {
+    node.stroke = {
+      color: stroke.color,
+      transparency: clamp01(stroke.transparency),
+      thickness: Math.max(0, Math.min(100, stroke.thickness)),
+    };
+  }
 
   const gradient = source.gradient as Record<string, unknown> | undefined;
   if (gradient && isHex(gradient.from) && isHex(gradient.to)) {

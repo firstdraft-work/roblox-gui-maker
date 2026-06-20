@@ -22,6 +22,72 @@ const node = (overrides: Partial<SceneNode> = {}): SceneNode => ({
 });
 
 describe("sanitizeScene", () => {
+  it("sanitizes visual fields by class and bounds", () => {
+    const scene = sanitizeScene([
+      node({
+        cls: "ImageLabel",
+        image: "1818",
+        imageColor: "#abcdef",
+        rotation: 999,
+        stroke: {
+          color: "#123456",
+          transparency: 3,
+          thickness: 200,
+        },
+      }),
+      node({
+        id: "text",
+        cls: "TextLabel",
+        text: "Label",
+        image: "rbxassetid://9",
+        textScaled: true,
+        textWrapped: true,
+      }),
+    ]);
+
+    expect(scene?.[0]).toMatchObject({
+      image: "rbxassetid://1818",
+      imageColor: "#abcdef",
+      rotation: 360,
+      stroke: {
+        color: "#123456",
+        transparency: 1,
+        thickness: 100,
+      },
+    });
+    expect(scene?.[1]).not.toHaveProperty("image");
+    expect(scene?.[1]).toMatchObject({
+      textScaled: true,
+      textWrapped: true,
+    });
+  });
+
+  it("drops malformed optional visual fields without removing the node", () => {
+    const scene = sanitizeScene([
+      {
+        ...node({ cls: "ImageLabel" }),
+        image: "https://example.com/image.png",
+        imageColor: "blue",
+        rotation: "quarter turn",
+        textScaled: "yes",
+        textWrapped: 1,
+        stroke: {
+          color: "red",
+          transparency: "none",
+          thickness: null,
+        },
+      },
+    ]);
+
+    expect(scene).toHaveLength(1);
+    expect(scene?.[0]).not.toHaveProperty("image");
+    expect(scene?.[0]).not.toHaveProperty("imageColor");
+    expect(scene?.[0]).not.toHaveProperty("rotation");
+    expect(scene?.[0]).not.toHaveProperty("textScaled");
+    expect(scene?.[0]).not.toHaveProperty("textWrapped");
+    expect(scene?.[0]).not.toHaveProperty("stroke");
+  });
+
   it("preserves a valid Teleport action", () => {
     const scene = sanitizeScene([
       node({
@@ -168,6 +234,27 @@ describe("sanitizeScene", () => {
 });
 
 describe("scene project documents", () => {
+  it("round-trips visual asset properties", () => {
+    const scene = [
+      node({
+        cls: "ImageLabel",
+        image: "rbxassetid://1818",
+        imageColor: "#12abef",
+        rotation: 15,
+        stroke: {
+          color: "#010203",
+          transparency: 0.25,
+          thickness: 2,
+        },
+      }),
+    ];
+
+    const serialized = serializeSceneDocument(scene);
+
+    expect(JSON.parse(serialized).version).toBe(1);
+    expect(parseSceneDocument(serialized)).toEqual(scene);
+  });
+
   it("round-trips a Teleport action without changing document version 1", () => {
     const scene: SceneNode[] = [
       node({
