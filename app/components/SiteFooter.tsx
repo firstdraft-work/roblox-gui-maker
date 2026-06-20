@@ -73,6 +73,13 @@ export function SiteFooter() {
             className="h-10 w-auto"
           />
         </a>
+        <a href="https://shipstry.com/" target="_blank" rel="noopener noreferrer">
+          <img
+            src="https://shipstry.com/badges/featured.svg"
+            alt="Featured on Shipstry"
+            className="h-10 w-auto"
+          />
+        </a>
       </div>
       <div className="border-t border-line py-4 text-center text-xs text-ink-mute">
         © {year} robloxguimaker.app ·{" "}
