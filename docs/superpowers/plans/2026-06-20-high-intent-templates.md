@@ -319,6 +319,8 @@ Local evidence:
 - Visual review: Game Pass cards, Code Redeem panel, Daily Rewards row, and Quest Tracker were inspected at mobile and desktop widths. The fixed Roblox canvas scales down on mobile, while page copy and calls to action remain readable and contained.
 - Additional release fix: CSP now permits the Google Tag Manager transport origin already used by the installed GA script, eliminating console policy errors during repeated navigation.
 
-- [ ] **Step 5: Push and verify remote CI**
+- [x] **Step 5: Push and verify remote CI**
 
 Push `main`, wait for the matching GitHub Actions run to finish, record its run ID, then mark the remote gate complete in a final narrow commit and push it.
+
+Remote evidence: GitHub Actions CI run `27855505733` completed successfully in 1m05s, including 2 passing smoke tests.
