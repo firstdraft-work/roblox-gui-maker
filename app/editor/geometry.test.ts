@@ -61,6 +61,29 @@ describe("canvasGeometryStyle", () => {
       maxHeight: "540px",
     });
   });
+
+  it("composes anchor translation and rotation", () => {
+    expect(
+      canvasGeometryStyle({
+        pos: { x: 0.5, y: 1 },
+        size: { x: 0.4, y: 0.2 },
+        anchor: { x: 0.5, y: 1 },
+        rotation: 15,
+      })
+    ).toMatchObject({
+      transform: "translate(-50%, -100%) rotate(15deg)",
+    });
+  });
+
+  it("renders rotation without an anchor", () => {
+    expect(
+      canvasGeometryStyle({
+        pos: { x: 0, y: 0 },
+        size: { x: 1, y: 1 },
+        rotation: -20,
+      }).transform
+    ).toBe("rotate(-20deg)");
+  });
 });
 
 describe("setAnchorPreservingPosition", () => {

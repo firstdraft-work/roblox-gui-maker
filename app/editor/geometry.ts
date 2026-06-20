@@ -6,7 +6,13 @@ type GeometryNode = Pick<SceneNode, "pos" | "size"> &
   Partial<
     Pick<
       SceneNode,
-      "posOffset" | "sizeOffset" | "anchor" | "aspectRatio" | "minSize" | "maxSize"
+      | "posOffset"
+      | "sizeOffset"
+      | "anchor"
+      | "aspectRatio"
+      | "minSize"
+      | "maxSize"
+      | "rotation"
     >
   >;
 type ResponsiveGeometry = Partial<
@@ -36,6 +42,7 @@ export function canvasGeometryStyle(node: GeometryNode): CSSProperties {
   const posOffset = node.posOffset ?? ZERO;
   const sizeOffset = node.sizeOffset ?? ZERO;
   const anchor = node.anchor ?? ZERO;
+  const transforms: string[] = [];
   const style: CSSProperties = {
     left: cssAxis(node.pos.x, posOffset.x),
     top: cssAxis(node.pos.y, posOffset.y),
@@ -44,10 +51,14 @@ export function canvasGeometryStyle(node: GeometryNode): CSSProperties {
   };
 
   if (anchor.x !== 0 || anchor.y !== 0) {
-    style.transform = `translate(-${percent(clamp01(anchor.x))}%, -${percent(
-      clamp01(anchor.y)
-    )}%)`;
+    transforms.push(
+      `translate(-${percent(clamp01(anchor.x))}%, -${percent(
+        clamp01(anchor.y)
+      )}%)`
+    );
   }
+  if (node.rotation) transforms.push(`rotate(${cleanZero(node.rotation)}deg)`);
+  if (transforms.length > 0) style.transform = transforms.join(" ");
   if (node.aspectRatio) style.aspectRatio = node.aspectRatio;
   if (node.minSize) {
     style.minWidth = `${roundPixel(node.minSize.x)}px`;
