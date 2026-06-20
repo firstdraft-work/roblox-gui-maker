@@ -205,7 +205,7 @@ const gamePassShop = (() => {
       name: `PassCard${index + 1}`,
       parentId: passGrid.id,
       pos: FLOW,
-      size: { x: 0.3, y: 0.82 },
+      size: { x: 1, y: 0.82 },
       color: "#202735",
       cornerRadius: 12,
       layout: "list",
@@ -438,10 +438,9 @@ const dailyRewards = (() => {
     size: { x: 1, y: 0.42 },
     color: "#000000",
     transparency: 1,
-    layout: "grid",
-    padding: 7,
   });
   const rewards = ["100", "150", "200", "350", "500", "750", "CRATE"];
+  const dayPositions = [0, 0.14, 0.28, 0.42, 0.56, 0.7, 0.84];
   const days = rewards.map((reward, index) => {
     const day = index + 1;
     const isClaimed = day < 4;
@@ -449,7 +448,7 @@ const dailyRewards = (() => {
     const card = mk("Frame", {
       name: `Day${day}`,
       parentId: dayGrid.id,
-      pos: FLOW,
+      pos: { x: dayPositions[index], y: 0.08 },
       size: { x: 0.13, y: 0.8 },
       color: isCurrent ? "#9a6b12" : isClaimed ? "#243445" : "#202735",
       cornerRadius: 9,

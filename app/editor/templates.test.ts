@@ -61,9 +61,8 @@ describe("high-intent templates", () => {
   });
 
   it("configures distinct game-pass purchase requests", () => {
-    const actions = actionNodes(
-      requiredTemplate("game-pass-shop").scene
-    ).map((node) => node.action);
+    const scene = requiredTemplate("game-pass-shop").scene;
+    const actions = actionNodes(scene).map((node) => node.action);
     expect(actions).toEqual([
       {
         type: "remoteEvent",
@@ -81,6 +80,11 @@ describe("high-intent templates", () => {
         argument: "speed-coil",
       },
     ]);
+    expect(
+      scene
+        .filter((node) => node.name.startsWith("PassCard"))
+        .map((node) => node.size.x)
+    ).toEqual([1, 1, 1]);
   });
 
   it("does not fake dynamic code redemption with a static action", () => {
@@ -94,17 +98,20 @@ describe("high-intent templates", () => {
   });
 
   it("configures the daily claim request", () => {
-    expect(
-      actionNodes(requiredTemplate("daily-rewards").scene).map(
-        (node) => node.action
-      )
-    ).toEqual([
+    const scene = requiredTemplate("daily-rewards").scene;
+    expect(actionNodes(scene).map((node) => node.action)).toEqual([
       {
         type: "remoteEvent",
         eventName: "ClaimDailyReward",
         argument: "day-4",
       },
     ]);
+    expect(scene.find((node) => node.name === "DayGrid")?.layout).toBeUndefined();
+    expect(
+      scene
+        .filter((node) => /^Day\d+$/.test(node.name))
+        .map((node) => node.pos.x)
+    ).toEqual([0, 0.14, 0.28, 0.42, 0.56, 0.7, 0.84]);
   });
 
   it("keeps the quest toggle outside the details it controls", () => {

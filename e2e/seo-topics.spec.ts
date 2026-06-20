@@ -89,6 +89,22 @@ test("@smoke @full exposes distinct core SEO topic pages", async ({
     "QuestDetails"
   );
 
+  await page.setViewportSize({ width: 375, height: 900 });
+  await page.goto("/templates");
+  await expect(
+    page.getByRole("link", { name: "Templates", exact: true })
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Launch Editor" })
+  ).toBeVisible();
+  expect(
+    await page.evaluate(() => ({
+      innerWidth: window.innerWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+    }))
+  ).toEqual({ innerWidth: 375, scrollWidth: 375 });
+  await page.setViewportSize({ width: 1280, height: 900 });
+
   const guides = [
     {
       slug: "roblox-gui-script-generator",
