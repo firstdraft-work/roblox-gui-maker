@@ -3,7 +3,8 @@ import Link from "next/link";
 import { SiteNav } from "./components/SiteNav";
 import { SiteFooter } from "./components/SiteFooter";
 import { ScenePreview } from "./editor/ScenePreview";
-import { TEMPLATES } from "./editor/templates";
+import { TEMPLATES, getTemplate } from "./editor/templates";
+import { USE_CASES } from "./for/usecases";
 
 export const metadata: Metadata = {
   title: "Free Online Roblox GUI Maker | Visual UI Builder",
@@ -230,6 +231,47 @@ export default function Home() {
                 <p className="text-sm text-ink-dim leading-relaxed">{s.body}</p>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* use cases */}
+        <section className="max-w-6xl mx-auto px-6 py-16">
+          <h2 className="text-2xl md:text-3xl font-semibold text-center mb-3">
+            Roblox GUI Maker for every screen type
+          </h2>
+          <p className="text-ink-dim text-center max-w-2xl mx-auto mb-10">
+            Shops, HUDs, inventories, menus, admin panels, loading screens — each
+            use case maps to a real Roblox Studio layout you can build and export.
+          </p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {USE_CASES.map((u) => {
+              const tpl = u.template ? getTemplate(u.template) : undefined;
+              return (
+                <Link
+                  key={u.slug}
+                  href={`/for/${u.slug}`}
+                  className="group rounded-xl overflow-hidden ring-1 ring-line hover:ring-focus transition"
+                >
+                  {tpl && <ScenePreview scene={tpl.scene} />}
+                  <div className="p-3 bg-panel">
+                    <p className="text-sm font-medium text-ink capitalize">
+                      {u.noun}
+                    </p>
+                    <p className="text-xs text-ink-mute line-clamp-2">
+                      {u.blurb}
+                    </p>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+          <div className="text-center mt-6">
+            <Link
+              href="/for"
+              className="text-sm text-focus hover:underline font-medium"
+            >
+              Browse all use cases →
+            </Link>
           </div>
         </section>
 
