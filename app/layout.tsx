@@ -26,6 +26,12 @@ export const metadata: Metadata = {
     siteName: "Roblox GUI Maker",
     type: "website",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Roblox GUI Maker — Build Roblox UIs Visually, Export Clean Luau",
+    description:
+      "Free Roblox GUI maker. Drag and drop, tweak real Roblox properties, export clean Luau. No login.",
+  },
 };
 
 export default function RootLayout({

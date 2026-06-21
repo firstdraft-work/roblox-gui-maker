@@ -87,6 +87,13 @@ export function SiteFooter() {
             className="h-[54px] w-auto"
           />
         </a>
+        <a href="https://www.buildway.cc" target="_blank" rel="noopener noreferrer">
+          <img
+            src="https://www.buildway.cc/logo-dark.png"
+            alt="Listed on BuildWay"
+            className="h-10 w-auto"
+          />
+        </a>
       </div>
       <div className="border-t border-line py-4 text-center text-xs text-ink-mute">
         © {year} robloxguimaker.app ·{" "}

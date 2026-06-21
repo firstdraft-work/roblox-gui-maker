@@ -9,6 +9,16 @@ export const metadata: Metadata = {
   title: "Free Online Roblox GUI Maker | Visual UI Builder",
   description:
     "Free online Roblox GUI maker. Create responsive designs, preview interactions, and export Luau, JSON, and ZIP for Roblox Studio. No login required.",
+  keywords: [
+    "Roblox GUI Maker",
+    "Roblox GUI Generator",
+    "Roblox UI Maker",
+    "Roblox UI Generator",
+    "Roblox GUI builder",
+    "online Roblox GUI editor",
+    "Roblox Studio GUI",
+    "free Roblox GUI tool",
+  ],
   openGraph: {
     title: "Free Online Roblox GUI Maker | Visual UI Builder",
     description:
@@ -16,6 +26,12 @@ export const metadata: Metadata = {
     url: "https://robloxguimaker.app",
     siteName: "Roblox GUI Maker",
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Free Online Roblox GUI Maker | Visual UI Builder",
+    description:
+      "Create responsive Roblox GUIs, preview interactions, and export Luau, JSON, and complete ZIP projects for Roblox Studio.",
   },
   alternates: {
     canonical: "/",
@@ -98,17 +114,17 @@ const FAQS = [
 
 const webAppSchema = {
   "@context": "https://schema.org",
-  "@type": "WebApplication",
+  "@type": "SoftwareApplication",
   name: "Roblox GUI Maker",
   url: "https://robloxguimaker.app",
   description:
-    "Free online visual builder for responsive Roblox GUIs with interaction previews, generated Luau, editable JSON, and complete ZIP project export.",
-  applicationCategory: "DeveloperApplication",
+    "Free online visual Roblox GUI maker and generator. Build responsive Roblox UIs with drag-and-drop, preview interactions, and export clean Luau for Roblox Studio.",
+  applicationCategory: "DesignApplication",
   operatingSystem: "Web",
   browserRequirements: "Requires JavaScript",
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
   featureList: [
-    "Visual drag-and-drop GUI editor",
+    "Visual drag-and-drop Roblox GUI editor",
     "Responsive geometry with scale, offset, anchors, aspect ratios, and size constraints",
     "Interaction previews for show, hide, toggle, RemoteEvent, and Teleport actions",
     "Server handlers for RemoteEvent and Teleport actions",
@@ -262,7 +278,10 @@ export default function Home() {
             <code className="text-focus">Frame</code>,{" "}
             <code className="text-focus">TextButton</code> and{" "}
             <code className="text-focus">TextLabel</code>, positioned with UDim2
-            scale so they adapt to every screen size.
+            scale so they adapt to every screen size. A{" "}
+            <strong>Roblox GUI maker</strong> or{" "}
+            <strong>Roblox GUI generator</strong> lets you build these interfaces
+            visually without hand-editing each property in Studio.
           </p>
 
           <h2 className="text-2xl font-semibold text-ink pt-4">
@@ -274,7 +293,9 @@ export default function Home() {
             hand, nudging UDim2 offsets until things line up, and rebuilding the
             same menu patterns game after game eats hours — especially for solo
             developers and younger creators learning to script. That friction is
-            exactly what a dedicated Roblox GUI maker removes.
+            exactly what a dedicated <strong>Roblox GUI builder</strong> removes.
+            An <strong>online Roblox GUI editor</strong> like this one lets you
+            design and export from any device without installing Studio.
           </p>
 
           <h2 className="text-2xl font-semibold text-ink pt-4">
@@ -282,14 +303,17 @@ export default function Home() {
           </h2>
           <p>
             Most &ldquo;AI GUI&rdquo; tools spit out placeholder layouts you then
-            have to clean up. This tool is the opposite: a precise, visual canvas
-            where you stay in control. Property names match Roblox exactly
-            (BackgroundColor3, BackgroundTransparency, ZIndex), you
-            can nest containers and auto-arrange children with UIListLayout and
-            UIGridLayout, and the exported Luau is clean enough to ship as-is —
-            real <code className="text-focus">Instance.new</code> calls,{" "}
+            have to clean up. This <strong>Roblox UI maker</strong> is the
+            opposite: a precise, visual canvas where you stay in control.
+            Property names match Roblox exactly (BackgroundColor3,
+            BackgroundTransparency, ZIndex), you can nest containers and
+            auto-arrange children with UIListLayout and UIGridLayout, and the
+            exported Luau is clean enough to ship as-is — real{" "}
+            <code className="text-focus">Instance.new</code> calls,{" "}
             <code className="text-focus">UDim2.new</code> positioning, and
-            correct parenting.
+            correct parenting. Unlike a typical <strong>
+            Roblox UI generator</strong> that outputs raw text, this tool gives
+            you a live preview on desktop and mobile.
           </p>
 
           <h2 className="text-2xl font-semibold text-ink pt-4">Who it&rsquo;s for</h2>
@@ -298,7 +322,10 @@ export default function Home() {
             inspector; experienced developers who want to scaffold a shop or HUD
             in minutes instead of an hour; and anyone who&rsquo;d rather design a
             GUI visually and hand off clean Luau. It&rsquo;s free, runs in your
-            browser, and never asks you to sign up.
+            browser, and never asks you to sign up. Whether you call it a{" "}
+            <strong>Roblox GUI maker</strong>, <strong>Roblox UI builder</strong>,
+            or <strong>online Roblox GUI editor</strong> — the goal is the same:
+            ship polished interfaces faster.
           </p>
         </section>
 
