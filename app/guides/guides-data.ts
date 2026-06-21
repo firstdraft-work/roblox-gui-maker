@@ -751,6 +751,126 @@ panel.AnchorPoint = Vector2.new(0.5, 0.5)`,
       },
     ],
   },
+  {
+    slug: "roblox-ui-design",
+    title: "Roblox UI Design — Layout, Color, and Sizing Guide",
+    description:
+      "Roblox UI design fundamentals: UDim2 sizing, AnchorPoint alignment, color palettes, font pairing, spacing with UIListLayout, and responsive patterns for mobile and desktop.",
+    category: "Design",
+    intro:
+      "Good Roblox UI design is not about fancy images — it is about clean hierarchy, readable text, consistent spacing, and layouts that survive every screen size. This guide covers the core design decisions you make before writing a single script: how to size elements, align them, pick colors, choose fonts, and build responsive layouts that look right on phones and desktops.",
+    sections: [
+      {
+        heading: "1. UDim2 — the foundation of Roblox UI sizing",
+        paragraphs: [
+          "Every Roblox GUI element uses UDim2 for Position and Size. A UDim2 has two axes, each with a Scale component (0–1, fraction of parent) and an Offset component (pixels). Understanding when to use each is the single most important Roblox UI design skill.",
+          "Use Scale for anything that should grow or shrink with the parent: panel widths, row heights, padding ratios. Use Offset for things that must stay a fixed pixel size: icon dimensions, corner radius, small gaps.",
+          "A common pattern: Size = UDim2.fromScale(0.8, 0.6) for the main panel, then Size = UDim2.fromOffset(32, 32) for icons inside it. This keeps the panel proportional but the icon crisp.",
+        ],
+        tip: "If you only use Offset, your GUI will look perfect on one screen size and broken on every other. Always start with Scale and add Offset only for fixed-size details.",
+      },
+      {
+        heading: "2. AnchorPoint and alignment",
+        paragraphs: [
+          "AnchorPoint decides which corner of an element its Position refers to. The default is (0, 0) — top-left. Setting it to (0.5, 0.5) centers the element on its Position coordinate.",
+          "For centered panels, always set AnchorPoint to (0.5, 0.5) and Position to UDim2.fromScale(0.5, 0.5). This centers the panel regardless of screen size.",
+          "For corner HUDs, use AnchorPoint (0, 0) for top-left, (1, 0) for top-right, (0, 1) for bottom-left, and (1, 1) for bottom-right. Then Position with Scale values like (0.02, 0) or (0.98, 0) to keep a small margin from the edge.",
+        ],
+      },
+      {
+        heading: "3. Color palettes that work in Roblox",
+        paragraphs: [
+          "Roblox games run on a huge range of screens — bright laptop monitors, dim phone screens, and everything in between. Your palette needs enough contrast to be readable everywhere.",
+          "A safe starting palette: dark background (Color3.fromRGB(18, 18, 24)), light text (Color3.fromRGB(230, 230, 240)), and one accent color (Color3.fromRGB(0, 162, 255) for interactive elements). This gives you a 12:1+ contrast ratio on the text.",
+          "Avoid pure white (#FFFFFF) for large background areas — it is harsh on eyes in a dark game. Use off-white (#E6E6F0) or a very light blue-gray instead.",
+          "For status colors: green (#22C55E) for success, red (#EF4444) for errors, yellow (#EAB308) for warnings. Keep them consistent across the entire UI.",
+        ],
+        tip: "Test your colors at 50% brightness — if you can still read the text, the contrast is good enough for mobile players in bright rooms.",
+      },
+      {
+        heading: "4. Font pairing and text hierarchy",
+        paragraphs: [
+          "Roblox offers several built-in fonts. For a clean modern look: GothamBold or GothamBlack for headings, GothamMedium for body text, and Code for technical labels.",
+          "Establish a clear text hierarchy: H1 (titles) at 28–36px, H2 (section headers) at 20–24px, body text at 14–16px, and captions at 11–12px. Stick to these sizes across the entire GUI.",
+          "Line height matters more than you think. In Roblox, TextLabel.TextWrapped = true with a generous frame height gives you natural line spacing. Avoid cramming text into tight frames.",
+          "For dark backgrounds, use TextColor3 with high brightness (200+). For light backgrounds, use low brightness (30–60). Never use mid-gray text — it is unreadable on both.",
+        ],
+      },
+      {
+        heading: "5. Spacing with UIListLayout and UIPadding",
+        paragraphs: [
+          "UIListLayout is the Roblox equivalent of CSS flexbox. Drop it into a Frame and every child stacks automatically — vertically or horizontally, with configurable padding and alignment.",
+          "Use UIPadding on the parent Frame to create consistent margins. A good rule: 16px outer padding, 8–12px between items. This matches modern web design conventions and feels natural to players.",
+          "For grids (shops, inventories), use UIGridLayout with CellSize in Scale for responsive columns. UDim2.fromScale(0.3, 0) with a UIAspectRatioConstraint gives you square cells that resize with the parent.",
+          "For button rows, use UIListLayout with FillDirection = Horizontal and a small Padding value. Each button gets a fixed Offset width so they stay tap-friendly on mobile.",
+        ],
+        tip: "If your layout looks cramped, increase UIPadding before increasing the Frame size. White space is free and makes everything more readable.",
+      },
+      {
+        heading: "6. Responsive design for mobile and desktop",
+        paragraphs: [
+          "Roblox players use phones, tablets, desktops, and consoles — sometimes in the same server. Your GUI must work on all of them.",
+          "The core principle: use Scale-based sizing for containers and layouts, then add UITextSizeConstraint and UIAspectRatioConstraint for fine control over text and aspect ratios.",
+          "For mobile: minimum tap target is 44x44 pixels (Apple HIG standard). Keep buttons at least this size. Use UIListLayout spacing of 8px minimum between tappable elements.",
+          "For desktop: you can afford denser layouts with smaller text. But keep the same Scale-based structure so the layout reflows naturally.",
+          "Test with the Roblox Studio emulator at 360x640 (phone), 768x1024 (tablet), and 1920x1080 (desktop). If it looks right at all three, it will work everywhere.",
+        ],
+      },
+      {
+        heading: "7. Visual hierarchy and information architecture",
+        paragraphs: [
+          "Every screen should have one clear focal point — the thing the player should look at first. Use size, color, and position to draw the eye there.",
+          "Group related elements visually. A Frame with a slightly different BackgroundColor3 and a UICorner creates a card that says 'these items belong together.'",
+          "Use consistent spacing between groups (16–24px) and tighter spacing within groups (8–12px). This creates a visual rhythm that players intuitively understand.",
+          "Limit the number of visible actions per screen. A main menu needs 3–5 buttons, not 15. If you need more, use sub-screens or tabs.",
+        ],
+      },
+      {
+        heading: "8. Export and iterate with Roblox GUI Maker",
+        paragraphs: [
+          "Design decisions are hard to undo once you have written 500 lines of Luau. Roblox GUI Maker lets you preview layouts visually, test responsive behavior, and export clean code — so you can iterate on design before committing to scripts.",
+          "Start from a template that matches your screen type (main menu, shop, inventory, HUD), adjust the properties in the visual editor, preview on multiple device sizes, and export when the layout feels right.",
+          "The exported Luau uses real Roblox property names (BackgroundColor3, UDim2, UIListLayout) so you learn the API while designing. Every property you tweak in the editor maps directly to a Luau line you can read and modify.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "What is the best font for Roblox GUIs?",
+        a: "GothamBold for headings and GothamMedium for body text is the safest modern combination. Avoid legacy fonts like SourceSans — they look dated and have inconsistent rendering across platforms.",
+      },
+      {
+        q: "How do I make a Roblox GUI look good on mobile?",
+        a: "Use Scale-based sizing, keep tap targets above 44x44 pixels, test at 360x640 resolution, and use UIListLayout for automatic reflow. UITextSizeConstraint prevents text from becoming unreadable on small screens.",
+      },
+      {
+        q: "What colors work best for Roblox GUIs?",
+        a: "Dark backgrounds (18, 18, 24) with light text (230, 230, 240) and one accent color (0, 162, 255) give you the best contrast across all screen types. Avoid pure white backgrounds — use off-white instead.",
+      },
+      {
+        q: "Should I use Scale or Offset for Roblox GUI sizing?",
+        a: "Use Scale for containers, panels, and layout elements that should resize with the screen. Use Offset for icons, corner radius, and fixed-size details. Never use only Offset — your GUI will break on different screen sizes.",
+      },
+      {
+        q: "How do I center a GUI element in Roblox?",
+        a: "Set AnchorPoint to (0.5, 0.5) and Position to UDim2.fromScale(0.5, 0.5). This centers the element on its parent regardless of screen size.",
+      },
+      {
+        q: "What is the difference between UIListLayout and UIGridLayout?",
+        a: "UIListLayout stacks children in a single row or column. UIGridLayout arranges children in a grid of rows and columns. Use UIListLayout for button bars and settings lists; use UIGridLayout for item grids and inventory screens.",
+      },
+    ],
+    relatedGuides: [
+      {
+        slug: "how-to-make-a-responsive-roblox-gui",
+        title: "How to Make a Responsive Roblox GUI",
+      },
+      {
+        slug: "how-to-use-uilistlayout-in-roblox",
+        title: "How to Use UIListLayout in Roblox",
+      },
+    ],
+  },
 ];
 
 export function getGuide(slug: string): Guide | undefined {

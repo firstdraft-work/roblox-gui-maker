@@ -5,6 +5,7 @@ import { SiteNav } from "../../components/SiteNav";
 import { SiteFooter } from "../../components/SiteFooter";
 import { ScenePreview } from "../../editor/ScenePreview";
 import { getTemplate } from "../../editor/templates";
+import { getGuide } from "../../guides/guides-data";
 import { USE_CASES, getUseCase } from "../usecases";
 
 export function generateStaticParams() {
@@ -35,6 +36,7 @@ export default async function UseCasePage({
   const u = getUseCase(slug);
   if (!u) notFound();
   const tpl = u.template ? getTemplate(u.template) : undefined;
+  const guide = u.relatedGuide ? getGuide(u.relatedGuide) : undefined;
   const others = USE_CASES.filter((x) => x.slug !== slug).slice(0, 3);
 
   const breadcrumb = {
@@ -105,6 +107,57 @@ export default async function UseCasePage({
               className="px-5 py-2.5 rounded-lg font-semibold bg-primary text-on-primary hover:brightness-110 transition"
             >
               Open the editor →
+            </Link>
+          </div>
+        )}
+
+        <h2 className="text-xl font-semibold text-ink mb-3">
+          How to build a {u.noun} in Roblox GUI Maker
+        </h2>
+        <ol className="space-y-3 mb-10 list-decimal list-inside text-ink-dim leading-relaxed">
+          {u.howTo.map((step, i) => (
+            <li key={i} className="pl-1">
+              {step}
+            </li>
+          ))}
+        </ol>
+
+        <h2 className="text-xl font-semibold text-ink mb-3">
+          Key Roblox properties for {u.noun}s
+        </h2>
+        <div className="flex flex-wrap gap-2 mb-10">
+          {u.properties.map((p) => (
+            <code
+              key={p}
+              className="text-xs px-2.5 py-1 rounded-md bg-raised border border-line text-focus font-mono"
+            >
+              {p}
+            </code>
+          ))}
+        </div>
+
+        <h2 className="text-xl font-semibold text-ink mb-3">
+          Tips for a better {u.noun}
+        </h2>
+        <ul className="space-y-2 mb-10">
+          {u.tips.map((t) => (
+            <li key={t} className="flex gap-2.5 text-ink-dim">
+              <span className="text-focus mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-focus" />
+              <span className="leading-relaxed">{t}</span>
+            </li>
+          ))}
+        </ul>
+
+        {guide && (
+          <div className="rounded-xl bg-panel border border-line p-5 mb-10">
+            <p className="text-xs text-ink-mute uppercase tracking-wider mb-1">
+              Related guide
+            </p>
+            <Link
+              href={`/guides/${guide.slug}`}
+              className="text-base font-semibold text-focus hover:underline"
+            >
+              {guide.title} →
             </Link>
           </div>
         )}
