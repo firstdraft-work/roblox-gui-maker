@@ -80,6 +80,13 @@ export function SiteFooter() {
             className="h-10 w-auto"
           />
         </a>
+        <a href="https://newtool.site/item/roblox-gui-maker" target="_blank" rel="noopener noreferrer">
+          <img
+            src="https://newtool.site/badges/newtool-light.svg"
+            alt="Featured on NewTool.site"
+            className="h-[54px] w-auto"
+          />
+        </a>
       </div>
       <div className="border-t border-line py-4 text-center text-xs text-ink-mute">
         © {year} robloxguimaker.app ·{" "}
