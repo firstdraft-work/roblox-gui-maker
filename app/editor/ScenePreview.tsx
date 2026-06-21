@@ -73,7 +73,7 @@ function PreviewNode({
     >
       {node.text != null && (
         <span
-          className="absolute inset-0 grid place-items-center px-2 text-center leading-none"
+          className="absolute inset-0 grid place-items-center px-2 text-center leading-none overflow-hidden"
           style={{
             color: node.textColor,
             fontSize: node.textSize,
