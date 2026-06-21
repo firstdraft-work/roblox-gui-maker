@@ -23,6 +23,16 @@ export async function generateMetadata({
   return {
     title: `${u.title} | Roblox GUI Maker`,
     description: u.blurb,
+    openGraph: {
+      title: `${u.title} | Roblox GUI Maker`,
+      description: u.blurb,
+      url: `https://robloxguimaker.app/for/${slug}`,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: u.title,
+      description: u.blurb,
+    },
     alternates: { canonical: `/for/${slug}` },
   };
 }
@@ -54,7 +64,7 @@ export default async function UseCasePage({
       <SiteNav />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb).replace(/</g, "\\u003c") }}
       />
       <main className="max-w-3xl mx-auto px-6 py-12">
         <Link

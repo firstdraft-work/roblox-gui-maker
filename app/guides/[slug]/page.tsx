@@ -21,6 +21,16 @@ export async function generateMetadata({
   return {
     title: `${g.title} | Roblox GUI Maker`,
     description: g.description,
+    openGraph: {
+      title: `${g.title} | Roblox GUI Maker`,
+      description: g.description,
+      url: `https://robloxguimaker.app/guides/${slug}`,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: g.title,
+      description: g.description,
+    },
     alternates: { canonical: `/guides/${slug}` },
   };
 }

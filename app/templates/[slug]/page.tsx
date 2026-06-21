@@ -21,6 +21,16 @@ export async function generateMetadata({
   return {
     title: `${t.title} — Free Template | Roblox GUI Maker`,
     description: t.description,
+    openGraph: {
+      title: `${t.title} — Free Roblox GUI Template`,
+      description: t.description,
+      url: `https://robloxguimaker.app/templates/${slug}`,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${t.title} — Free Roblox GUI Template`,
+      description: t.description,
+    },
     alternates: { canonical: `/templates/${slug}` },
   };
 }
@@ -49,7 +59,7 @@ export default async function TemplatePage({
       <SiteNav />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumb).replace(/</g, "\\u003c") }}
       />
       <main className="max-w-4xl mx-auto px-6 py-12">
         <Link

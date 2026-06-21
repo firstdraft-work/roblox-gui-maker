@@ -8,6 +8,18 @@ export const metadata: Metadata = {
   title: "Roblox GUI Maker for Every Screen — Menus, Shops, HUDs & More",
   description:
     "Roblox GUI Maker for main menus, shop menus, inventory screens, simulator HUDs, settings, loading screens, leaderboards and admin panels. Open a use case and export clean Luau.",
+  openGraph: {
+    title: "Roblox GUI Maker for Every Screen — Menus, Shops, HUDs & More",
+    description:
+      "Roblox GUI Maker for main menus, shop menus, inventory screens, simulator HUDs, settings, loading screens, leaderboards and admin panels.",
+    url: "https://robloxguimaker.app/for",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Roblox GUI Maker for Every Screen — Menus, Shops, HUDs & More",
+    description:
+      "Roblox GUI Maker for main menus, shop menus, inventory screens, simulator HUDs, settings, loading screens, leaderboards and admin panels.",
+  },
   alternates: { canonical: "/for" },
 };
 

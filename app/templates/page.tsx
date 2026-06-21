@@ -9,6 +9,18 @@ export const metadata: Metadata = {
   title: "Free Roblox GUI Templates — Menus, Shops, HUDs | Roblox GUI Maker",
   description:
     "Free Roblox GUI templates for menus, shops, settings, inventory, loading screens and leaderboards. Customize responsive layouts, then export Luau, JSON, or ZIP.",
+  openGraph: {
+    title: "Free Roblox GUI Templates — Menus, Shops, HUDs",
+    description:
+      "Free Roblox GUI templates for menus, shops, settings, inventory, loading screens and leaderboards. Customize and export Luau for Roblox Studio.",
+    url: "https://robloxguimaker.app/templates",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Free Roblox GUI Templates — Menus, Shops, HUDs",
+    description:
+      "Free Roblox GUI templates for menus, shops, settings, inventory, loading screens and leaderboards.",
+  },
   alternates: { canonical: "/templates" },
 };
 

@@ -7,6 +7,18 @@ export const metadata: Metadata = {
   title: "About — Roblox GUI Maker",
   description:
     "Roblox GUI Maker is a free, browser-based visual builder for Roblox game GUIs. Why it exists, how it works, and what's under the hood.",
+  openGraph: {
+    title: "About — Roblox GUI Maker",
+    description:
+      "Roblox GUI Maker is a free, browser-based visual builder for Roblox game GUIs. Why it exists, how it works, and what's under the hood.",
+    url: "https://robloxguimaker.app/about",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "About — Roblox GUI Maker",
+    description:
+      "Roblox GUI Maker is a free, browser-based visual builder for Roblox game GUIs.",
+  },
   alternates: { canonical: "/about" },
 };
 
