@@ -89,7 +89,7 @@ function PreviewNode({
             color: node.textColor,
             fontSize:
               node.textSize != null
-                ? `clamp(7px, ${((node.textSize * 100) / DESIGNED_WIDTH).toFixed(2)}cqw, ${node.textSize}px)`
+                ? `min(${((node.textSize * 100) / DESIGNED_WIDTH).toFixed(2)}cqw, ${node.textSize}px)`
                 : undefined,
             fontWeight: node.font?.includes("Black")
               ? 800
