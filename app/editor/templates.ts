@@ -680,16 +680,20 @@ const questTracker = (() => {
 })();
 
 // Richness treatment: give every filled surface a subtle multi-stop gradient
-// (a lighter top stop + darker bottom stop of its own color) for depth. Nodes
-// that already have a gradient or are transparent are left alone, so bespoke
-// styling (e.g. game-pass-shop's accent strokes) is preserved.
+// (lighter top + darker bottom of its own color) for depth, plus a faint edge
+// stroke on top-level panels (modern card definition) and a lighter self-colored
+// stroke on buttons (a soft glow). Existing gradient/stroke are preserved, so
+// bespoke styling (e.g. game-pass-shop's accent strokes) is untouched.
 function enrichScene(scene: SceneNode[]): SceneNode[] {
+  const rootId = scene.find((n) => n.cls === "ScreenGui" && (n.parentId ?? null) === null)?.id;
   return scene.map((n) => {
-    if (n.gradient || n.transparency >= 1) return n;
-    if (n.cls !== "Frame" && n.cls !== "ScrollingFrame" && n.cls !== "TextButton") return n;
-    return {
+    if (n.transparency >= 1) return n;
+    const isButton = n.cls === "TextButton";
+    const isSurface = n.cls === "Frame" || n.cls === "ScrollingFrame";
+    if (!isButton && !isSurface) return n;
+    const next: SceneNode = {
       ...n,
-      gradient: {
+      gradient: n.gradient ?? {
         stops: [
           { at: 0, color: shade(n.color, 16) },
           { at: 1, color: shade(n.color, -16) },
@@ -697,6 +701,14 @@ function enrichScene(scene: SceneNode[]): SceneNode[] {
         rotation: 45,
       },
     };
+    if (!n.stroke) {
+      if (isButton) {
+        next.stroke = { color: shade(n.color, 30), transparency: 0.5, thickness: 1.5 };
+      } else if (n.parentId === rootId) {
+        next.stroke = { color: "#ffffff", transparency: 0.85, thickness: 1 };
+      }
+    }
+    return next;
   });
 }
 
