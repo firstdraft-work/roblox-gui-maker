@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import type { DeviceKind, SceneNode } from "./catalog";
+import { useEffect, useMemo, useState } from "react";
+import type { DeviceKind, SceneNode, Transition } from "./catalog";
 import { canvasGeometryStyle } from "./geometry";
 import { assetIdNumber, resolveThumbnail } from "./image-assets";
 import { orderedChildren, type PreviewVisibility } from "./scene";
@@ -51,6 +51,25 @@ export function Canvas({
 
   const getChild = (parentId: string | null) => orderedChildren(scene, parentId);
 
+  // Map target id -> the first show/hide transition that animates it, so the
+  // preview can fade panels in/out instead of popping them instantly.
+  const transitionByTarget = useMemo(() => {
+    const map = new Map<string, Transition>();
+    for (const n of scene) {
+      const a = n.action;
+      if (
+        a &&
+        (a.type === "show" || a.type === "hide") &&
+        a.transition &&
+        a.targetId &&
+        !map.has(a.targetId)
+      ) {
+        map.set(a.targetId, a.transition);
+      }
+    }
+    return map;
+  }, [scene]);
+
   return (
     <div className="flex-1 min-w-0 flex flex-col bg-surface">
       <div className="h-9 shrink-0 flex items-center justify-between px-4 border-b border-line">
@@ -89,6 +108,7 @@ export function Canvas({
               startResize={startResize}
               previewVisibility={previewVisibility}
               onPreviewAction={onPreviewAction}
+              transitionByTarget={transitionByTarget}
             />
           ))}
         </div>
@@ -107,6 +127,7 @@ function NodeView({
   startResize,
   previewVisibility,
   onPreviewAction,
+  transitionByTarget,
 }: {
   node: SceneNode;
   containerLayout: "none" | "list" | "grid";
@@ -117,6 +138,7 @@ function NodeView({
   startResize: (e: React.PointerEvent, node: SceneNode, corner: Corner) => void;
   previewVisibility: PreviewVisibility | null;
   onPreviewAction: (id: string) => void;
+  transitionByTarget: Map<string, Transition>;
 }) {
   const thumbnail = useRobloxThumbnail(
     node.cls === "ImageLabel" ? node.image : undefined
@@ -128,7 +150,11 @@ function NodeView({
   const visible =
     node.transparency < 1 || node.text != null || !!node.gradient || kids.length > 0;
   if (!visible) return null;
-  if (previewVisibility && previewVisibility[node.id] === false) return null;
+  const transition = previewVisibility ? transitionByTarget.get(node.id) : undefined;
+  const previewHidden = !!(previewVisibility && previewVisibility[node.id] === false);
+  // Without a transition a hidden node unmounts instantly; with one it stays
+  // mounted so its opacity can animate in/out.
+  if (previewHidden && !transition) return null;
 
   const selected = node.id === selectedId;
   const startsHidden = !previewVisibility && node.initialVisible === false;
@@ -136,7 +162,9 @@ function NodeView({
     selectedId !== null && containsNode(node.id, selectedId, getChild);
   if (startsHidden && !selectedInside) return null;
   const background = node.gradient
-    ? `linear-gradient(135deg, ${node.gradient.from}, ${node.gradient.to})`
+    ? `linear-gradient(${(node.gradient.rotation ?? 0) + 90}deg, ${node.gradient.stops
+        .map((s) => `${s.color} ${Math.round(s.at * 100)}%`)
+        .join(", ")})`
     : node.transparency >= 1
       ? "transparent"
       : hexToRgba(node.color, 1 - node.transparency);
@@ -181,9 +209,18 @@ function NodeView({
           : undefined,
         containerType: "inline-size",
         zIndex: node.zindex,
-        opacity: !previewVisibility && node.initialVisible === false ? 0.45 : 1,
+        opacity:
+          previewHidden && transition
+            ? 0
+            : !previewVisibility && node.initialVisible === false
+              ? 0.45
+              : 1,
+        transition: transition ? `opacity ${transition.duration}s ease` : undefined,
         cursor: previewVisibility && node.cls === "TextButton" ? "pointer" : undefined,
-        pointerEvents: startsHidden && !selected ? "none" : undefined,
+        pointerEvents:
+          (startsHidden && !selected) || (previewHidden && !!transition)
+            ? "none"
+            : undefined,
       }}
     >
       {node.cls === "ImageLabel" && node.image && (
@@ -276,6 +313,7 @@ function NodeView({
               startResize={startResize}
               previewVisibility={previewVisibility}
               onPreviewAction={onPreviewAction}
+              transitionByTarget={transitionByTarget}
             />
           ))}
         </ChildrenWrapper>

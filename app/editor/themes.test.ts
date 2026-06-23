@@ -69,11 +69,16 @@ describe("applyTheme — structural recoloring", () => {
 
   it("recolors gradient stops", () => {
     const out = applyTheme(
-      [node({ color: "#0b0d14", gradient: { from: "#15171f", to: "#00a2ff" } })],
+      [
+        node({
+          color: "#0b0d14",
+          gradient: { stops: [{ at: 0, color: "#15171f" }, { at: 1, color: "#00a2ff" }] },
+        }),
+      ],
       target,
     );
-    expect(out[0].gradient?.from).toBe(target.panel);
-    expect(out[0].gradient?.to).toBe(target.primary);
+    expect(out[0].gradient?.stops[0]?.color).toBe(target.panel);
+    expect(out[0].gradient?.stops[1]?.color).toBe(target.primary);
   });
 
   it("recolors stroke color", () => {

@@ -17,8 +17,20 @@ export type RobloxClass =
 
 export type DeviceKind = "desktop" | "tablet" | "mobile";
 
+export type TransitionStyle = "scale" | "slide";
+export type SlideDirection = "left" | "right" | "up" | "down";
+
+// How a show/hide action animates. toggle stays instant (its direction is only
+// known at runtime), so transition applies to show/hide only.
+export type Transition = {
+  style: TransitionStyle;
+  duration: number; // seconds
+  direction?: SlideDirection; // slide only
+};
+
 export type VisibilityAction =
-  | { type: "show" | "hide" | "toggle"; targetId?: string }
+  | { type: "show" | "hide"; targetId?: string; transition?: Transition }
+  | { type: "toggle"; targetId?: string }
   | { type: "hideGui" };
 
 export type RemoteEventAction = {
@@ -38,6 +50,14 @@ export type StrokeStyle = {
   color: string;
   transparency: number;
   thickness: number;
+};
+
+// Multi-stop gradient. `rotation` is Roblox degrees (0 = left→right); the
+// preview renders it as CSS (rotation + 90)deg so the preview matches export.
+export type GradientStop = { at: number; color: string }; // at: 0..1
+export type Gradient = {
+  stops: GradientStop[]; // 2+, ordered by `at`
+  rotation?: number;
 };
 
 // How a palette item behaves:
@@ -90,7 +110,7 @@ export type SceneNode = {
   color: string; // BackgroundColor3 hex
   transparency: number; // 0..1
   cornerRadius: number; // px (UICorner)
-  gradient?: { from: string; to: string };
+  gradient?: Gradient;
   layout?: "list" | "grid"; // auto-arrange this node's children
   padding?: number; // px on all sides (UIPadding)
   layoutOrder?: number;

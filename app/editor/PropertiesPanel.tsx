@@ -14,7 +14,7 @@ import {
   Type,
   Zap,
 } from "lucide-react";
-import type { NodeAction, SceneNode } from "./catalog";
+import type { NodeAction, SceneNode, SlideDirection, Transition } from "./catalog";
 import {
   alignNode,
   setAnchorPreservingPosition,
@@ -543,6 +543,77 @@ export function PropertiesPanel({ node, scene, onChange, onDelete, onDuplicate }
                     ))}
                   </select>
                 </Row>
+              )}
+              {(node.action?.type === "show" || node.action?.type === "hide") && (
+                <>
+                  <Row label="Animate" stacked>
+                    <select
+                      value={node.action.transition?.style ?? "none"}
+                      onChange={(event) => {
+                        if (node.action?.type !== "show" && node.action?.type !== "hide") return;
+                        const style = event.target.value as "none" | "scale" | "slide";
+                        const prev = node.action.transition;
+                        const transition: Transition | undefined =
+                          style === "none"
+                            ? undefined
+                            : style === "scale"
+                              ? { style: "scale", duration: prev?.duration ?? 0.25 }
+                              : {
+                                  style: "slide",
+                                  duration: prev?.duration ?? 0.25,
+                                  direction: prev?.direction ?? "left",
+                                };
+                        onChange(node.id, { action: { ...node.action, transition } });
+                      }}
+                      className="w-full px-2 py-1 rounded bg-input text-ink text-xs outline-none focus:ring-1 focus:ring-focus"
+                    >
+                      <option value="none">Instant</option>
+                      <option value="scale">Scale pop</option>
+                      <option value="slide">Slide</option>
+                    </select>
+                  </Row>
+                  {node.action.transition && (
+                    <>
+                      <Row label="Seconds">
+                        <NumberInput
+                          value={node.action.transition.duration}
+                          step={0.05}
+                          min={0.05}
+                          onValue={(v) => {
+                            const a = node.action;
+                            if (!a || (a.type !== "show" && a.type !== "hide") || !a.transition) return;
+                            onChange(node.id, {
+                              action: { ...a, transition: { ...a.transition, duration: v } },
+                            });
+                          }}
+                        />
+                      </Row>
+                      {node.action.transition.style === "slide" && (
+                        <Row label="From" stacked>
+                          <select
+                            value={node.action.transition.direction ?? "left"}
+                            onChange={(event) => {
+                              const a = node.action;
+                              if (!a || (a.type !== "show" && a.type !== "hide") || !a.transition) return;
+                              onChange(node.id, {
+                                action: {
+                                  ...a,
+                                  transition: { ...a.transition, direction: event.target.value as SlideDirection },
+                                },
+                              });
+                            }}
+                            className="w-full px-2 py-1 rounded bg-input text-ink text-xs outline-none focus:ring-1 focus:ring-focus"
+                          >
+                            <option value="left">Left</option>
+                            <option value="right">Right</option>
+                            <option value="up">Up</option>
+                            <option value="down">Down</option>
+                          </select>
+                        </Row>
+                      )}
+                    </>
+                  )}
+                </>
               )}
               {node.action?.type === "remoteEvent" && (
                 <RemoteEventActionFields

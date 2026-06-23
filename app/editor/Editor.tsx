@@ -207,7 +207,9 @@ export function Editor({ initialScene }: { initialScene?: SceneNode[] }) {
       if (cls === "UICorner") return map((n) => ({ ...n, cornerRadius: n.cornerRadius > 0 ? 0 : 12 }));
       if (cls === "UIGradient")
         return map((n) =>
-          n.gradient ? { ...n, gradient: undefined } : { ...n, gradient: { from: shade(n.color, 22), to: shade(n.color, -22) } }
+          n.gradient
+            ? { ...n, gradient: undefined }
+            : { ...n, gradient: { stops: [{ at: 0, color: shade(n.color, 22) }, { at: 1, color: shade(n.color, -22) }] } }
         );
       if (cls === "UIListLayout") return map((n) => ({ ...n, layout: n.layout === "list" ? undefined : "list" }));
       if (cls === "UIGridLayout") return map((n) => ({ ...n, layout: n.layout === "grid" ? undefined : "grid" }));

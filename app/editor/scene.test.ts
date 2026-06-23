@@ -196,6 +196,85 @@ describe("button actions", () => {
   });
 });
 
+describe("transition tweens", () => {
+  it("emits a scale tween for a show action with a scale transition", () => {
+    const code = generateLuau(
+      actionScene({
+        type: "show",
+        targetId: "panel",
+        transition: { style: "scale", duration: 0.25 },
+      }),
+    );
+    expect(code).toContain('local TweenService = game:GetService("TweenService")');
+    expect(code).toContain("TweenService:Create(el0");
+    expect(code).toContain("el0.Visible = true");
+    expect(code).toContain("el0.Size = UDim2.fromScale(0.5, 0.5)");
+    expect(code).toContain("{Size = UDim2.fromScale(1, 1)}");
+    expect(code).toContain("TweenInfo.new(0.25");
+    expect(code).toContain("tw:Play()");
+  });
+
+  it("hides and restores Size when a hide+scale tween completes", () => {
+    const code = generateLuau(
+      actionScene({
+        type: "hide",
+        targetId: "panel",
+        transition: { style: "scale", duration: 0.2 },
+      }),
+    );
+    expect(code).toContain("tw.Completed:Connect(function()");
+    expect(code).toContain("{Size = UDim2.fromScale(0.5, 0.5)}");
+    expect(code).toContain("el0.Size = UDim2.fromScale(1, 1)");
+    expect(code).toContain("tw:Play()");
+  });
+
+  it("emits a slide tween on Position", () => {
+    const code = generateLuau(
+      actionScene({
+        type: "show",
+        targetId: "panel",
+        transition: { style: "slide", duration: 0.3, direction: "left" },
+      }),
+    );
+    expect(code).toContain("el0.Visible = true");
+    expect(code).toContain("el0.Position = UDim2.fromScale(-0.2, 0)");
+    expect(code).toContain("{Position = UDim2.fromScale(0, 0)}");
+  });
+
+  it("does not emit TweenService without a transition", () => {
+    const code = generateLuau(actionScene({ type: "show", targetId: "panel" }));
+    expect(code).not.toContain("TweenService");
+    expect(code).toContain("el0.Visible = true");
+  });
+});
+
+describe("gradient", () => {
+  it("emits a multi-stop ColorSequence with rotation", () => {
+    const code = generateLuau([
+      node({ id: "root", cls: "ScreenGui", name: "Gui" }),
+      node({
+        id: "panel",
+        cls: "Frame",
+        name: "Panel",
+        parentId: "root",
+        gradient: {
+          stops: [
+            { at: 0, color: "#141a2e" },
+            { at: 0.5, color: "#00a2ff" },
+            { at: 1, color: "#0b0d14" },
+          ],
+          rotation: 90,
+        },
+      }),
+    ]);
+    expect(code).toContain('local el0_grad = Instance.new("UIGradient")');
+    expect(code).toContain("ColorSequenceKeypoint.new(0, Color3.fromRGB(20, 26, 46))");
+    expect(code).toContain("ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 162, 255))");
+    expect(code).toContain("ColorSequenceKeypoint.new(1, Color3.fromRGB(11, 13, 20))");
+    expect(code).toContain("el0_grad.Rotation = 90");
+  });
+});
+
 describe("responsive Luau geometry", () => {
   it("exports offsets, anchor, aspect ratio, and size constraints", () => {
     const code = generateLuau([

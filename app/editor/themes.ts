@@ -98,8 +98,11 @@ export function applyTheme(scene: SceneNode[], palette: Palette): SceneNode[] {
     }
     if (n.gradient) {
       next.gradient = {
-        from: recolor(n.gradient.from, palette) ?? n.gradient.from,
-        to: recolor(n.gradient.to, palette) ?? n.gradient.to,
+        stops: n.gradient.stops.map((s) => ({
+          ...s,
+          color: recolor(s.color, palette) ?? s.color,
+        })),
+        rotation: n.gradient.rotation,
       };
     }
     return next;

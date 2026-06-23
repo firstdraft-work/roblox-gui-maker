@@ -46,7 +46,9 @@ function PreviewNode({
   const isFlow = containerLayout !== "none";
   const kids = getChild(node.id);
   const background = node.gradient
-    ? `linear-gradient(135deg, ${node.gradient.from}, ${node.gradient.to})`
+    ? `linear-gradient(${(node.gradient.rotation ?? 0) + 90}deg, ${node.gradient.stops
+        .map((s) => `${s.color} ${Math.round(s.at * 100)}%`)
+        .join(", ")})`
     : node.transparency >= 1
       ? "transparent"
       : hexToRgba(node.color, 1 - node.transparency);
@@ -68,6 +70,9 @@ function PreviewNode({
         height: `${node.size.y * 100}%`,
         background,
         borderRadius: node.cornerRadius,
+        boxShadow: node.stroke
+          ? `inset 0 0 0 ${node.stroke.thickness}px ${hexToRgba(node.stroke.color, 1 - node.stroke.transparency)}`
+          : undefined,
         zIndex: node.zindex,
       }}
     >
@@ -82,6 +87,7 @@ function PreviewNode({
               : node.font?.includes("Bold")
                 ? 700
                 : 500,
+            textShadow: node.stroke ? textStrokeShadow(node.stroke) : undefined,
           }}
         >
           {node.text}
@@ -108,4 +114,15 @@ function hexToRgba(hex: string, alpha: number): string {
   if (!m) return `rgba(40, 41, 51, ${alpha})`;
   const n = parseInt(m[1], 16);
   return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${alpha})`;
+}
+
+function textStrokeShadow(stroke: NonNullable<SceneNode["stroke"]>): string {
+  const width = Math.max(0, stroke.thickness);
+  const color = hexToRgba(stroke.color, 1 - stroke.transparency);
+  return [
+    `${width}px 0 ${color}`,
+    `-${width}px 0 ${color}`,
+    `0 ${width}px ${color}`,
+    `0 -${width}px ${color}`,
+  ].join(", ");
 }

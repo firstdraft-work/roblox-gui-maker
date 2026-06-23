@@ -112,8 +112,17 @@ function sanitizeNode(raw: unknown): SceneNode | null {
   }
 
   const gradient = source.gradient as Record<string, unknown> | undefined;
-  if (gradient && isHex(gradient.from) && isHex(gradient.to)) {
-    node.gradient = { from: gradient.from, to: gradient.to };
+  if (gradient && Array.isArray(gradient.stops)) {
+    const stops = gradient.stops
+      .map((s) => s as { at?: unknown; color?: unknown })
+      .filter((s) => typeof s.at === "number" && isHex(s.color as string))
+      .map((s) => ({ at: s.at as number, color: s.color as string }));
+    if (stops.length >= 2) {
+      node.gradient =
+        typeof gradient.rotation === "number"
+          ? { stops, rotation: gradient.rotation }
+          : { stops };
+    }
   }
   if (source.layout === "list" || source.layout === "grid") {
     node.layout = source.layout;

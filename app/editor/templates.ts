@@ -38,6 +38,7 @@ function mk(cls: RobloxClass, overrides: Partial<SceneNode> = {}): SceneNode {
     ...(overrides.padding ? { padding: overrides.padding } : {}),
     ...(overrides.initialVisible !== undefined ? { initialVisible: overrides.initialVisible } : {}),
     ...(overrides.action ? { action: overrides.action } : {}),
+    ...(overrides.stroke ? { stroke: overrides.stroke } : {}),
   };
 }
 
@@ -94,7 +95,7 @@ const inventory = (() => {
 })();
 
 const loadingScreen = (() => {
-  const root = mk("ScreenGui", { name: "Loading", pos: { x: 0, y: 0 }, size: { x: 1, y: 1 }, color: "#0b0d14", transparency: 0, cornerRadius: 0, gradient: { from: "#141a2e", to: "#0b0d14" } });
+  const root = mk("ScreenGui", { name: "Loading", pos: { x: 0, y: 0 }, size: { x: 1, y: 1 }, color: "#0b0d14", transparency: 0, cornerRadius: 0, gradient: { stops: [{ at: 0, color: "#141a2e" }, { at: 1, color: "#0b0d14" }], rotation: 45 } });
   const title = mk("TextLabel", { name: "Title", parentId: root.id, pos: { x: 0.2, y: 0.36 }, size: { x: 0.6, y: 0.12 }, color: "#000000", transparency: 1, text: "LOADING", font: "GothamBlack", textSize: 44, textColor: "#99cbff" });
   const barBg = mk("Frame", { name: "BarBg", parentId: root.id, pos: { x: 0.3, y: 0.56 }, size: { x: 0.4, y: 0.03 }, color: "#1d1f29", cornerRadius: 999 });
   const barFill = mk("Frame", { name: "BarFill", parentId: barBg.id, pos: { x: 0, y: 0 }, size: { x: 0.65, y: 1 }, color: "#00a2ff", cornerRadius: 999 });
@@ -139,6 +140,7 @@ const gamePassShop = (() => {
     cornerRadius: 18,
     layout: "list",
     padding: 16,
+    gradient: { stops: [{ at: 0, color: "#1a2030" }, { at: 1, color: "#10141e" }], rotation: 45 },
   });
   const title = mk("TextLabel", {
     name: "ShopTitle",
@@ -210,6 +212,8 @@ const gamePassShop = (() => {
       cornerRadius: 12,
       layout: "list",
       padding: 10,
+      gradient: { stops: [{ at: 0, color: "#2a3243" }, { at: 1, color: "#171c28" }], rotation: 45 },
+      stroke: { color: pass.accent, transparency: 0.7, thickness: 1.5 },
     });
     const badge = mk("TextLabel", {
       name: "PassBadge",
