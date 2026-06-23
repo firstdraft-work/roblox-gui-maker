@@ -10,6 +10,11 @@ const ASPECT: Record<DeviceKind, string> = {
   mobile: "aspect-[9/19.5]",
 };
 
+// Text sizes were tuned for the editor's 860px-wide desktop canvas. In smaller
+// previews (thumbnail cards) that absolute px would overflow the scaled-down
+// frames, so text scales with the container via cqw (capped at the design size).
+const DESIGNED_WIDTH = 860;
+
 export function ScenePreview({
   scene,
   device = "desktop",
@@ -23,6 +28,7 @@ export function ScenePreview({
   return (
     <div
       className={`relative w-full ${ASPECT[device]} rounded-xl overflow-hidden bg-base ring-1 ring-line-soft`}
+      style={{ containerType: "inline-size" }}
     >
       {childrenOf(null).map((n) => (
         <PreviewNode key={n.id} node={n} getChild={childrenOf} containerLayout="none" />
@@ -81,7 +87,10 @@ function PreviewNode({
           className="absolute inset-0 grid place-items-center px-2 text-center leading-none overflow-hidden"
           style={{
             color: node.textColor,
-            fontSize: node.textSize,
+            fontSize:
+              node.textSize != null
+                ? `clamp(7px, ${((node.textSize * 100) / DESIGNED_WIDTH).toFixed(2)}cqw, ${node.textSize}px)`
+                : undefined,
             fontWeight: node.font?.includes("Black")
               ? 800
               : node.font?.includes("Bold")
