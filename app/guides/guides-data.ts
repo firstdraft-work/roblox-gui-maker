@@ -1216,3 +1216,9 @@ panel.AnchorPoint = Vector2.new(0.5, 0.5)`,
 export function getGuide(slug: string): Guide | undefined {
   return GUIDES.find((g) => g.slug === slug);
 }
+
+// Reverse lookup: guides whose relatedTemplate matches, for cross-linking from
+// a template detail page to its how-to guide(s).
+export function guidesForTemplate(templateSlug: string): Guide[] {
+  return GUIDES.filter((g) => g.relatedTemplate === templateSlug);
+}

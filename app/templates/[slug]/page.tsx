@@ -5,6 +5,7 @@ import { SiteNav } from "../../components/SiteNav";
 import { SiteFooter } from "../../components/SiteFooter";
 import { ScenePreview } from "../../editor/ScenePreview";
 import { TEMPLATES, getTemplate } from "../../editor/templates";
+import { guidesForTemplate } from "../../guides/guides-data";
 
 export function generateStaticParams() {
   return TEMPLATES.map((t) => ({ slug: t.slug }));
@@ -44,6 +45,7 @@ export default async function TemplatePage({
   const t = getTemplate(slug);
   if (!t) notFound();
   const related = TEMPLATES.filter((x) => x.slug !== slug).slice(0, 3);
+  const guides = guidesForTemplate(slug);
   const breadcrumb = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -105,6 +107,24 @@ export default async function TemplatePage({
             <code className="text-focus">ScreenGui</code> and it works as-is.
           </p>
         </div>
+
+        {guides.length > 0 && (
+          <section className="mt-10">
+            <h2 className="text-xl font-semibold mb-3">How to build this</h2>
+            <div className="flex flex-col gap-2">
+              {guides.map((g) => (
+                <Link
+                  key={g.slug}
+                  href={`/guides/${g.slug}`}
+                  className="rounded-xl border border-line bg-panel p-4 hover:border-focus transition"
+                >
+                  <p className="text-sm font-semibold text-ink">{g.title}</p>
+                  <p className="text-xs text-ink-mute mt-1 line-clamp-2">{g.description}</p>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
 
         <h2 className="text-xl font-semibold mt-12 mb-4">More templates</h2>
         <div className="grid sm:grid-cols-3 gap-4">
