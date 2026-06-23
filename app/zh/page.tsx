@@ -14,7 +14,6 @@ export const metadata: Metadata = {
     description:
       "免费、浏览器内的 Roblox GUI 可视化构建器。拖拽设计游戏菜单、商店、HUD、加载界面,导出干净 Luau,粘进 Studio 即可运行。",
     url: "https://robloxguimaker.app/zh",
-    locale: "zh_CN",
   },
   twitter: {
     card: "summary_large_image",

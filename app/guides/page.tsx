@@ -9,14 +9,14 @@ export const metadata: Metadata = {
   description:
     "Written guides for building Roblox GUIs: main menus, shops, loading screens, and how to use UIListLayout and UIGridLayout — with copy-paste Luau.",
   openGraph: {
-    title: "Roblox GUI Guides — Tutorials & How-To",
+    title: "Roblox GUI Guides — How to Make Menus, Shops & Loading Screens",
     description:
-      "Written guides for building Roblox GUIs: main menus, shops, loading screens, UIListLayout, UIGridLayout, and more — with copy-paste Luau.",
+      "Written guides for building Roblox GUIs: main menus, shops, loading screens, and how to use UIListLayout and UIGridLayout — with copy-paste Luau.",
     url: "https://robloxguimaker.app/guides",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Roblox GUI Guides — Tutorials & How-To",
+    title: "Roblox GUI Guides — How to Make Menus, Shops & Loading Screens",
     description:
       "Written guides for building Roblox GUIs: main menus, shops, loading screens, and more.",
   },
