@@ -216,6 +216,64 @@ export default function Home() {
           </div>
         </section>
 
+        {/* hire vs build */}
+        <section className="max-w-5xl mx-auto px-6 py-16">
+          <h2 className="text-2xl md:text-3xl font-semibold text-center mb-3">
+            Hire a designer, or build it yourself?
+          </h2>
+          <p className="text-ink-dim text-center max-w-2xl mx-auto mb-10">
+            Commissioning Roblox UI on a freelance marketplace means paying,
+            waiting, and handing off revisions. Roblox GUI Maker gives you the
+            same result in minutes — free, with the scripts included.
+          </p>
+          <div className="grid md:grid-cols-2 gap-4 items-start">
+            <div className="rounded-xl border border-line bg-panel p-6">
+              <h3 className="font-semibold mb-4 text-ink-dim">
+                Hire a UI designer
+              </h3>
+              <ul className="space-y-3 text-sm">
+                {[
+                  ["Cost", "$25–150+ per project"],
+                  ["Turnaround", "Days of waiting"],
+                  ["Revisions", "Cost time, often money"],
+                  ["Code", "Design only — scripts extra"],
+                ].map(([k, v]) => (
+                  <li key={k} className="flex items-baseline gap-3">
+                    <span className="w-20 shrink-0 text-ink-mute">{k}</span>
+                    <span className="text-ink-dim">{v}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-xl border border-focus bg-panel p-6 ring-1 ring-focus shadow-lg shadow-focus/10">
+              <h3 className="font-semibold mb-4 text-ink">
+                Build it in Roblox GUI Maker
+              </h3>
+              <ul className="space-y-3 text-sm">
+                {[
+                  ["Cost", "Free, no account"],
+                  ["Turnaround", "Minutes, in your browser"],
+                  ["Revisions", "Edit anything, instantly"],
+                  ["Code", "Luau + server scripts included"],
+                ].map(([k, v]) => (
+                  <li key={k} className="flex items-baseline gap-3">
+                    <span className="w-20 shrink-0 text-ink-mute">{k}</span>
+                    <span className="text-ink">{v}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+          <div className="text-center mt-8">
+            <Link
+              href="/editor"
+              className="px-6 py-3 rounded-lg font-semibold bg-primary text-on-primary hover:brightness-110 transition"
+            >
+              Launch the Editor →
+            </Link>
+          </div>
+        </section>
+
         {/* how it works */}
         <section className="max-w-5xl mx-auto px-6 py-16">
           <h2 className="text-2xl md:text-3xl font-semibold text-center mb-10">

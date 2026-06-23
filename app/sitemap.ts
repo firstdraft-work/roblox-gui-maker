@@ -28,6 +28,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     entry("", { freq: "weekly", pri: 1, zhPath: "/zh" }),
     entry("/editor", { freq: "weekly", pri: 0.8 }),
     entry("/templates", { freq: "weekly", pri: 0.8 }),
+    entry("/showcase", { freq: "weekly", pri: 0.8 }),
     entry("/guides", { freq: "weekly", pri: 0.8 }),
     entry("/for", { freq: "weekly", pri: 0.8 }),
     entry("/about", { freq: "weekly", pri: 0.8 }),
