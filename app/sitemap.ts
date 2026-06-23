@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { TEMPLATES } from "./editor/templates";
 import { GUIDES } from "./guides/guides-data";
 import { USE_CASES } from "./for/usecases";
+import { KITS } from "./editor/kits";
 
 const BASE = "https://robloxguimaker.app";
 const NOW = new Date().toISOString();
@@ -28,6 +29,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     entry("", { freq: "weekly", pri: 1, zhPath: "/zh" }),
     entry("/editor", { freq: "weekly", pri: 0.8 }),
     entry("/templates", { freq: "weekly", pri: 0.8 }),
+    entry("/kits", { freq: "weekly", pri: 0.8 }),
     entry("/showcase", { freq: "weekly", pri: 0.8 }),
     entry("/guides", { freq: "weekly", pri: 0.8 }),
     entry("/for", { freq: "weekly", pri: 0.8 }),
@@ -42,5 +44,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const usecases = USE_CASES.map((u) =>
     entry(`/for/${u.slug}`, { freq: "monthly", pri: 0.6 })
   );
-  return [...fixed, ...templates, ...guides, ...usecases];
+  const kits = KITS.map((k) =>
+    entry(`/kits/${k.slug}`, { freq: "monthly", pri: 0.7 })
+  );
+  return [...fixed, ...templates, ...guides, ...usecases, ...kits];
 }

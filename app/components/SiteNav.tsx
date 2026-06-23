@@ -29,6 +29,12 @@ export function SiteNav() {
           Templates
         </Link>
         <Link
+          href="/kits"
+          className="hidden sm:inline-flex px-3 py-1.5 rounded-md text-ink-dim hover:text-ink hover:bg-raised transition-colors"
+        >
+          Kits
+        </Link>
+        <Link
           href="/showcase"
           className="hidden sm:inline-flex px-3 py-1.5 rounded-md text-ink-dim hover:text-ink hover:bg-raised transition-colors"
         >

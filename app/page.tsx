@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { SiteNav } from "./components/SiteNav";
 import { SiteFooter } from "./components/SiteFooter";
+import { KitCard } from "./components/KitCard";
 import { ScenePreview } from "./editor/ScenePreview";
+import { KITS } from "./editor/kits";
 import { TEMPLATES, getTemplate } from "./editor/templates";
 import { USE_CASES } from "./for/usecases";
 
@@ -330,6 +332,29 @@ export default function Home() {
             >
               Browse all use cases →
             </Link>
+          </div>
+        </section>
+
+        {/* game ui kits */}
+        <section className="max-w-6xl mx-auto px-6 py-12">
+          <div className="flex items-end justify-between mb-8">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-semibold">
+                Game UI Kits
+              </h2>
+              <p className="text-sm text-ink-dim mt-1 max-w-md">
+                Whole-game interface sets — menu, shop, HUD and rewards in one
+                shared theme. The look of a finished game, free.
+              </p>
+            </div>
+            <Link href="/kits" className="text-sm text-focus hover:underline font-medium">
+              All kits →
+            </Link>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-5">
+            {KITS.map((kit) => (
+              <KitCard key={kit.slug} kit={kit} />
+            ))}
           </div>
         </section>
 

@@ -1,0 +1,38 @@
+import Link from "next/link";
+import { ScenePreview } from "../editor/ScenePreview";
+import { kitScene, type Kit } from "../editor/kits";
+import { getTheme } from "../editor/themes";
+
+// A kit card: preview of its first screen (recolored with the kit theme) plus
+// name, theme swatch, and tagline. Used on the kits gallery and the homepage.
+export function KitCard({ kit }: { kit: Kit }) {
+  const preview = kitScene(kit, kit.screens[0].template);
+  const theme = getTheme(kit.theme);
+  return (
+    <Link
+      href={`/kits/${kit.slug}`}
+      className="group rounded-xl overflow-hidden ring-1 ring-line hover:ring-focus transition"
+    >
+      {preview && <ScenePreview scene={preview} />}
+      <div className="p-4 bg-panel">
+        <div className="flex items-center justify-between gap-3 mb-1">
+          <p className="text-base font-semibold text-ink">{kit.name}</p>
+          {theme && (
+            <span className="inline-flex items-center gap-1.5 text-xs text-ink-mute">
+              <span
+                className="w-3 h-3 rounded-full ring-1 ring-line"
+                style={{ backgroundColor: theme.primary }}
+                aria-hidden
+              />
+              {kit.theme}
+            </span>
+          )}
+        </div>
+        <p className="text-sm text-ink-dim">{kit.tagline}</p>
+        <p className="text-xs text-ink-mute mt-2">
+          {kit.screens.length} cohesive screens →
+        </p>
+      </div>
+    </Link>
+  );
+}
