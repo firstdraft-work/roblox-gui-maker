@@ -94,6 +94,18 @@ export function SiteFooter() {
             className="h-10 w-auto"
           />
         </a>
+        <a
+          href="https://shinylaunch.com/product/robloxguimaker"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img
+            src="https://shinylaunch.com/assets/images/badge.png"
+            alt="Featured on ShinyLaunch"
+            className="h-[54px] w-auto"
+            loading="lazy"
+          />
+        </a>
       </div>
       <div className="border-t border-line py-4 text-center text-xs text-ink-mute">
         © {year} robloxguimaker.app ·{" "}
