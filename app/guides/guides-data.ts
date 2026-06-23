@@ -25,6 +25,102 @@ export type Guide = {
 
 export const GUIDES: Guide[] = [
   {
+    slug: "how-to-design-polished-roblox-ui",
+    title: "How to Design Polished Roblox UI (Gradients, Strokes & Depth)",
+    description:
+      "Make modern, premium-feeling Roblox UI with multi-stop UIGradient, glowing UIStroke borders, and depth — with copy-paste Luau. No Photoshop or image assets required.",
+    category: "Design",
+    relatedTemplate: "game-pass-shop",
+    intro:
+      "Most Roblox UI looks flat because Frame, TextButton and TextLabel are solid-color rectangles by default. The polish that separates a shipped game's interface from a starter build comes from two native features people underuse: UIGradient (multi-stop color blends for depth) and UIStroke (colored, semi-transparent edges that read as glow). This guide shows both, with Luau you can paste straight into Roblox Studio — and every technique here is built into the visual editor.",
+    sections: [
+      {
+        heading: "1. Why native Roblox UI looks flat (and how to fix it)",
+        paragraphs: [
+          "A plain Frame is a single flat color. There is no built-in lighting or shadow on a Frame, so a screen full of them reads as a wireframe. The fix is not to switch to images — it is to layer the decorators Roblox already ships: UICorner for rounded edges, UIGradient for a color blend across the surface, and UIStroke for a border. Stacked together they turn a flat rectangle into something that looks raised and lit.",
+        ],
+      },
+      {
+        heading: "2. Add depth with a multi-stop UIGradient",
+        paragraphs: [
+          "UIGradient takes a ColorSequence, which means you are not limited to two colors — you can keypoint as many stops as you want. A lighter top stop blending into a darker bottom stop of the same hue makes a panel look like it is catching light from above. Set Rotation in degrees (0 is left-to-right, 90 is top-to-bottom).",
+        ],
+        code: `local card = Instance.new("Frame")
+card.Size = UDim2.fromScale(0.6, 0.3)
+card.BackgroundColor3 = Color3.fromRGB(32, 39, 53)
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 12)
+corner.Parent = card
+
+-- lighter top stop -> darker bottom stop = subtle depth
+local grad = Instance.new("UIGradient")
+grad.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(42, 50, 67)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(23, 28, 40)),
+})
+grad.Rotation = 45
+grad.Parent = card`,
+        tip: "Keep the light and dark stops close in hue (just shift brightness). A 15-20% brightness difference reads as depth; a bigger jump starts to look like a banner.",
+      },
+      {
+        heading: "3. Make edges glow with UIStroke",
+        paragraphs: [
+          "UIStroke draws a border on any GUI object. Make it thick, and drop its Transparency, in an accent color and it reads as a soft glow around the element — the signature look of modern game shops and reward screens.",
+        ],
+        code: `-- thick + semi-transparent + accent color = glow edge
+local glow = Instance.new("UIStroke")
+glow.Color = Color3.fromRGB(56, 189, 248)
+glow.Transparency = 0.6
+glow.Thickness = 2
+glow.Parent = card`,
+        tip: "Match the stroke color to the element's purpose: blue for info, gold for premium/paid, green for success. Consistent accent colors across a screen are what make it feel designed.",
+      },
+      {
+        heading: "4. Glossy buttons with a gradient fill",
+        paragraphs: [
+          "A flat-colored button looks like a label. Give it a two-stop gradient from a lighter to a darker shade of its action color and it looks like a physical button you can press.",
+        ],
+        code: `local buy = Instance.new("TextButton")
+buy.Size = UDim2.fromScale(1, 0.2)
+buy.BackgroundColor3 = Color3.fromRGB(0, 162, 255)
+buy.Text = "BUY"
+buy.Font = Enum.Font.GothamBold
+
+local buyGrad = Instance.new("UIGradient")
+buyGrad.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(56, 189, 248)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 119, 182)),
+})
+buyGrad.Parent = buy`,
+      },
+      {
+        heading: "5. In the editor versus in Studio",
+        paragraphs: [
+          "Every technique above is built into the visual editor. Open the game-pass-shop template to see gradient fills and accent UIStroke glow already applied, then tweak the colors live and export the Luau — the exported script contains real Instance.new('UIGradient') and Instance.new('UIStroke') calls with ColorSequence keypoints, ready to paste into a LocalScript under StarterGui.",
+        ],
+        tip: "Native gradients and strokes keep your UI editable, responsive and scriptable. They will not match commissioned Photoshop art with rendered 3D characters — for that you need image assets — but for clean, modern, premium-feeling interfaces they are the right tool.",
+      },
+    ],
+    faq: [
+      {
+        q: "Can UIGradient use more than two colors?",
+        a: "Yes. UIGradient.Color is a ColorSequence, so you can add as many ColorSequenceKeypoint stops as you want, each at any position from 0 to 1.",
+      },
+      {
+        q: "How do I make a glow effect on Roblox UI?",
+        a: "Add a UIStroke, set a vivid Color, raise Thickness to around 2, and set Transparency around 0.5-0.7. A thick, semi-transparent stroke in an accent color reads as a glow border.",
+      },
+      {
+        q: "Can I do drop shadows in native Roblox UI?",
+        a: "Frames cannot blur natively, so a true soft shadow needs a blurred image asset. You can approximate a shadow with an offset, semi-transparent dark Frame behind your panel, or rely on gradient depth plus a UIStroke edge instead.",
+      },
+    ],
+    relatedGuides: [
+      { slug: "how-to-make-a-roblox-main-menu-gui", title: "How to Make a Roblox Main Menu GUI" },
+    ],
+  },
+  {
     slug: "how-to-make-a-roblox-main-menu-gui",
     title: "How to Make a Roblox Main Menu GUI",
     description:

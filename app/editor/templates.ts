@@ -4,6 +4,7 @@
 // nesting + layout features (UIListLayout / UIGridLayout / gradients).
 
 import type { RobloxClass, SceneNode } from "./catalog";
+import { shade } from "./scene";
 
 export type TemplateCategory = "Menus" | "HUD" | "Shop" | "Settings";
 
@@ -678,7 +679,28 @@ const questTracker = (() => {
   ];
 })();
 
-export const TEMPLATES: Template[] = [
+// Richness treatment: give every filled surface a subtle multi-stop gradient
+// (a lighter top stop + darker bottom stop of its own color) for depth. Nodes
+// that already have a gradient or are transparent are left alone, so bespoke
+// styling (e.g. game-pass-shop's accent strokes) is preserved.
+function enrichScene(scene: SceneNode[]): SceneNode[] {
+  return scene.map((n) => {
+    if (n.gradient || n.transparency >= 1) return n;
+    if (n.cls !== "Frame" && n.cls !== "ScrollingFrame" && n.cls !== "TextButton") return n;
+    return {
+      ...n,
+      gradient: {
+        stops: [
+          { at: 0, color: shade(n.color, 16) },
+          { at: 1, color: shade(n.color, -16) },
+        ],
+        rotation: 45,
+      },
+    };
+  });
+}
+
+const RAW_TEMPLATES: Template[] = [
   {
     slug: "main-menu",
     title: "Roblox Main Menu GUI",
@@ -770,6 +792,12 @@ export const TEMPLATES: Template[] = [
     scene: questTracker,
   },
 ];
+
+// Apply the richness treatment to every template scene.
+export const TEMPLATES: Template[] = RAW_TEMPLATES.map((t) => ({
+  ...t,
+  scene: enrichScene(t.scene),
+}));
 
 export function getTemplate(slug: string): Template | undefined {
   return TEMPLATES.find((t) => t.slug === slug);

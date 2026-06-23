@@ -50,7 +50,7 @@ Multi-stop gradient + UIStroke — both fully native and export-honest:
 | No portfolio → visual proof | ✅ Closed (`/showcase` + Kit pages) |
 | No positioning → "hire vs build" | ✅ Closed (comparison section) |
 | Theme cohesion (shared color/font/shape) | ✅ Closed (3 themes + recolor) |
-| Flat → rich native UI | 🟡 Partial — multi-stop gradient + UIStroke glow added (game-pass-shop); most templates still flat |
+| Flat → rich native UI | 🟡 Gradient depth rolled out to all templates (`enrichScene`); UIStroke glow on game-pass-shop; still not rendered 3D art |
 | Rendered 3D game art (Fiverr-style) | ❌ Fundamental — needs real art assets; native instances can't produce rendered 3D |
 | Social proof (reviews / usage) | ❌ Open |
 
@@ -59,7 +59,8 @@ Multi-stop gradient + UIStroke — both fully native and export-honest:
 - `/` — comparison section + Game UI Kits strip.
 - `/kits/simulator-kit` — flagship: 5 cohesive screens under the sunset theme.
 - `/kits/quest-rpg-kit` — same idea, arctic theme.
-- `/showcase` — full template gallery.
+- `/showcase` — full template gallery (all templates now have gradient depth).
+- `/guides/how-to-design-polished-roblox-ui` — tutorial: gradients, UIStroke glow, depth (copy-paste Luau).
 - `/editor?template=main-menu` → click SETTINGS → Animate: Scale → CodePanel shows `TweenService`.
 
 ## Bottom line
