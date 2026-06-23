@@ -121,6 +121,250 @@ buyGrad.Parent = buy`,
     ],
   },
   {
+    slug: "how-to-make-a-roblox-inventory-gui",
+    title: "How to Make a Roblox Inventory GUI",
+    description:
+      "Build a Roblox inventory GUI with a ScrollingFrame, UIGridLayout for uniform slots, filter tabs, and runtime population from a script — with copy-paste Luau.",
+    category: "HUD",
+    relatedTemplate: "inventory",
+    intro:
+      "An inventory shows everything a player owns as a grid of slots they can tap to equip or use. The shape is a ScrollingFrame full of uniform cells laid out by a UIGridLayout, plus a template slot your script clones once per owned item. This guide builds one in Luau and maps to the inventory template in the editor.",
+    sections: [
+      {
+        heading: "1. ScrollingFrame + UIGridLayout for uniform slots",
+        paragraphs: [
+          "A ScrollingFrame is the scrollable container; a UIGridLayout inside it arranges every child into a uniform grid automatically. Set CellSize and CellPadding once and any number of slots tile correctly.",
+        ],
+        code: `local scroll = Instance.new("ScrollingFrame")
+scroll.Size = UDim2.fromScale(0.6, 0.7)
+scroll.Position = UDim2.fromScale(0.2, 0.15)
+scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+scroll.ScrollBarThickness = 6
+scroll.Parent = gui
+
+local grid = Instance.new("UIGridLayout")
+grid.CellSize = UDim2.fromOffset(90, 90)
+grid.CellPadding = UDim2.fromOffset(8, 8)
+grid.SortOrder = Enum.SortOrder.LayoutOrder
+grid.Parent = scroll`,
+      },
+      {
+        heading: "2. Clone a template slot per item",
+        paragraphs: [
+          "Build one slot Frame (with a UICorner and an ImageLabel for the icon) and keep it as a template. Clone it for each owned item rather than constructing slots inline — your layout code stays tiny and every slot is identical.",
+        ],
+        tip: "Use a naming convention like Slot_<itemId> so your scripts can find, equip, or remove slots by id later.",
+      },
+      {
+        heading: "3. Populate slots from player data",
+        paragraphs: [
+          "Loop the player's owned items, clone the template, set its icon and name, and parent it to the ScrollingFrame. The UIGridLayout positions it automatically and the canvas grows with AutomaticCanvasSize.",
+        ],
+        code: `local function populate(items)
+	for _, item in ipairs(items) do
+		local slot = template:Clone()
+		slot.Name = "Slot_" .. item.id
+		slot.Icon.Image = item.icon
+		slot.Parent = scroll
+	end
+end`,
+      },
+    ],
+    faq: [
+      {
+        q: "How do I add or remove items at runtime?",
+        a: "Clone the template slot and parent it to the ScrollingFrame to add; call Destroy() on the slot to remove. The UIGridLayout reflows the remaining slots automatically.",
+      },
+      {
+        q: "How do I show which item is equipped?",
+        a: "Give the template slot a UIStroke that starts transparent, and toggle its Transparency off on the slot the player taps. A colored stroke reads as a clear selection border.",
+      },
+    ],
+    relatedGuides: [
+      { slug: "how-to-use-uilistlayout-in-roblox", title: "How to Use UIListLayout in Roblox" },
+    ],
+  },
+  {
+    slug: "how-to-make-a-roblox-code-redeem-gui",
+    title: "How to Make a Roblox Code Redeem GUI",
+    description:
+      "Make a Roblox promo/creator code redemption GUI: a TextBox for input, a RemoteEvent to the server, and server-side validation + reward granting — with copy-paste Luau.",
+    category: "Menus",
+    relatedTemplate: "code-redeem",
+    intro:
+      "A code redeem panel lets players type a promo or creator code and receive a reward. The interface is simple — a TextBox plus a redeem button — but the security is one-directional: the client only sends the code, and the server decides whether it is valid and grants the reward. This guide builds both sides in Luau.",
+    sections: [
+      {
+        heading: "1. TextBox input and a redeem button",
+        paragraphs: [
+          "A TextBox collects the code, a TextButton fires the request. On click, read the box's text and send it to the server through a RemoteEvent.",
+        ],
+        code: `local box = Instance.new("TextBox")
+box.Size = UDim2.fromScale(1, 0.12)
+box.PlaceholderText = "Enter code"
+box.Parent = panel
+
+local redeem = Instance.new("TextButton")
+redeem.Size = UDim2.fromScale(1, 0.12)
+redeem.Text = "REDEEM"
+redeem.Parent = panel
+
+local redeemEvent = game:GetService("ReplicatedStorage")
+	:WaitForChild("Remotes"):WaitForChild("RedeemCode")
+redeem.Activated:Connect(function()
+	redeemEvent:FireServer(box.Text)
+end)`,
+      },
+      {
+        heading: "2. Validate codes on the server",
+        paragraphs: [
+          "Keep the list of valid codes and their rewards in a server Script. Normalize the incoming code (uppercase, no spaces), look it up, and ignore anything unknown. The client never sees the list.",
+        ],
+        code: `local codes = {
+	LAUNCHDAY = { coins = 500 },
+	WELCOME = { item = "starter_crate" },
+}
+
+redeemEvent.OnServerEvent:Connect(function(player, raw)
+	local code = string.upper(tostring(raw):gsub("%s+", ""))
+	local reward = codes[code]
+	if not reward then return end -- invalid code: do nothing
+	grantReward(player, reward)
+end)`,
+        tip: "Never trust the client. Only the server knows which codes are valid and must be the one to grant coins or items.",
+      },
+      {
+        heading: "3. Send feedback to the player",
+        paragraphs: [
+          "After granting, fire a RemoteEvent (or return from a RemoteFunction) back to the client so the UI can show 'Reward claimed' or 'Invalid code'. Keep the reward logic on the server and the message on the client.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "Why must the server validate the code?",
+        a: "Clients can be modified by exploiters. If the client decided the reward, anyone could grant themselves anything. The server is the only source of truth for valid codes and granted rewards.",
+      },
+      {
+        q: "How do I expire or single-use codes?",
+        a: "Track redemption per player in a DataStore (or remove the code from the table after a global expiry). Check it server-side before granting.",
+      },
+    ],
+    relatedGuides: [
+      { slug: "how-to-make-a-roblox-shop-gui", title: "How to Make a Roblox Shop GUI" },
+    ],
+  },
+  {
+    slug: "how-to-make-a-roblox-daily-rewards-gui",
+    title: "How to Make a Roblox Daily Rewards GUI",
+    description:
+      "Build a Roblox daily rewards / streak calendar GUI: a 7-day grid with claimed, current and locked states, server-side streak tracking, and a claim RemoteEvent — with Luau.",
+    category: "Menus",
+    relatedTemplate: "daily-rewards",
+    intro:
+      "A daily rewards screen shows a row of day cards — claimed days dimmed, today's ready, future days locked — and a button to claim. The visual states are just background colors; the real logic is server-side: track when the player last claimed and their streak, and only grant a reward if a new day has begun.",
+    sections: [
+      {
+        heading: "1. A 7-day grid with visual states",
+        paragraphs: [
+          "Each day is a Frame colored by its state: claimed (dimmed), current (highlighted), or locked (muted). Lay them out with a UIListLayout or manual positions — the editor's daily-rewards template does this for you.",
+        ],
+      },
+      {
+        heading: "2. Track the streak on the server",
+        paragraphs: [
+          "Store lastClaimTime and streak per player (DataStore). On a claim request, compare server time to the last claim: if less than a day has passed, ignore it; if within two days, advance the streak; otherwise reset it to day 1.",
+        ],
+        code: `local DAY = 86400
+claimEvent.OnServerEvent:Connect(function(player)
+	local data = playerData[player.UserId] -- { last = 0, streak = 0 }
+	local now = os.time()
+	if now - data.last < DAY then return end -- already claimed today
+	data.streak = (now - data.last < 2 * DAY) and data.streak + 1 or 1
+	data.last = now
+	grantDayReward(player, data.streak)
+end)`,
+        tip: "Always use os.time() (server clock) for day boundaries. The client's clock can be wrong or spoofed.",
+      },
+      {
+        heading: "3. Reflect the result in the UI",
+        paragraphs: [
+          "After the server grants, it tells the client the new streak and last-claim day. The client recolors the day cards (mark today claimed, highlight tomorrow) so the calendar stays in sync with the server's truth.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "How do I store the streak between sessions?",
+        a: "Save lastClaimTime and streak in a DataStore keyed by UserId. Load it when the player joins and save after each claim.",
+      },
+      {
+        q: "What happens if a player skips a day?",
+        a: "Your call: reset the streak to 1, or keep it within a grace window (e.g. two days). The code above resets after a two-day gap.",
+      },
+    ],
+    relatedGuides: [
+      { slug: "how-to-make-a-roblox-shop-gui", title: "How to Make a Roblox Shop GUI" },
+    ],
+  },
+  {
+    slug: "how-to-make-a-roblox-quest-tracker-gui",
+    title: "How to Make a Roblox Quest Tracker HUD",
+    description:
+      "Make a Roblox quest tracker HUD: a persistent corner panel with an objective, a live tweened progress bar, and an expand/collapse toggle — with copy-paste Luau.",
+    category: "HUD",
+    relatedTemplate: "quest-tracker",
+    intro:
+      "A quest tracker is a small panel pinned to a corner of the screen that shows the active objective and a progress bar that fills as the player makes progress. It stays visible during gameplay, so it has to be compact. This guide builds the HUD, a smooth progress bar, and a toggle to expand and collapse the details.",
+    sections: [
+      {
+        heading: "1. A compact corner panel",
+        paragraphs: [
+          "Anchor the panel to a corner with AnchorPoint and a scale Position so it sits tight against the edge on every screen size. A TextLabel holds the objective, a nested Frame pair (background + fill) is the progress bar.",
+        ],
+        code: `local panel = Instance.new("Frame")
+panel.AnchorPoint = Vector2.new(1, 0)
+panel.Position = UDim2.fromScale(0.97, 0.06)
+panel.Size = UDim2.fromScale(0.3, 0.16)
+panel.Parent = gui`,
+      },
+      {
+        heading: "2. A progress bar that tweens",
+        paragraphs: [
+          "The bar is a background Frame with a child fill Frame. To update progress, tween the fill's Size on the X scale from its current value to the new ratio — TweenService makes it glide instead of jumping.",
+        ],
+        code: `local TweenService = game:GetService("TweenService")
+
+local function setProgress(fill, current, goal)
+	local ratio = math.clamp(current / goal, 0, 1)
+	local info = TweenInfo.new(0.3, Enum.EasingStyle.Quad)
+	TweenService:Create(fill, info, { Size = UDim2.fromScale(ratio, 1) }):Play()
+end`,
+        tip: "Keep the HUD small and out of the gameplay area. Anchor to a corner and use scale sizing so it lands the same on phone and desktop.",
+      },
+      {
+        heading: "3. Update from game events and collapse details",
+        paragraphs: [
+          "Drive setProgress from your game's events (item collected, enemy defeated) so the bar moves live. Add a toggle button that shows and hides a details panel using a show/hide action — the editor generates that Luau for you, and you can animate it with a scale transition.",
+        ],
+      },
+    ],
+    faq: [
+      {
+        q: "How do I make the progress bar fill smoothly?",
+        a: "Use TweenService:Create on the fill Frame's Size, from its current X scale to the new ratio. A 0.3-second Quad ease looks responsive without being jittery.",
+      },
+      {
+        q: "How do I know when a quest is complete?",
+        a: "When progress reaches the goal, fire a BindableEvent (server-side) or check client-side, then grant the reward, mark the quest done, and hide or recolor the tracker.",
+      },
+    ],
+    relatedGuides: [
+      { slug: "how-to-animate-roblox-guis-with-tweenservice", title: "How to Animate Roblox GUIs with TweenService" },
+    ],
+  },
+  {
     slug: "how-to-make-a-roblox-main-menu-gui",
     title: "How to Make a Roblox Main Menu GUI",
     description:
