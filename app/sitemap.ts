@@ -5,7 +5,6 @@ import { USE_CASES } from "./for/usecases";
 import { KITS } from "./editor/kits";
 
 const BASE = "https://robloxguimaker.app";
-const NOW = new Date().toISOString();
 
 function entry(
   path: string,
@@ -15,7 +14,6 @@ function entry(
   const zh = `${BASE}${opts.zhPath ?? `/zh${path}`}`;
   return {
     url: en,
-    lastModified: NOW,
     changeFrequency: opts.freq,
     priority: opts.pri,
     alternates: {
