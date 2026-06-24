@@ -94,6 +94,17 @@ export function SiteFooter() {
             className="h-10 w-auto"
           />
         </a>
+        <a
+          href="https://www.launchit.site/launches/roblox-gui-maker"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img
+            src="https://www.launchit.site/badges/launchit-light.svg"
+            alt="Featured on Launchit"
+            className="h-[54px] w-auto"
+          />
+        </a>
       </div>
       <div className="border-t border-line py-4 text-center text-xs text-ink-mute">
         © {year} robloxguimaker.app ·{" "}
