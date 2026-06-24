@@ -32,9 +32,27 @@ describe("sitemap", () => {
     expect(new Set(urls).size).toBe(urls.length);
   });
 
-  it("omits unverifiable modification dates", () => {
-    expect(sitemap().every((entry) => entry.lastModified === undefined)).toBe(
-      true
-    );
+  it("includes a verifiable last-modified date for every page", () => {
+    const entries = sitemap();
+    expect(entries.length).toBeGreaterThan(0);
+    for (const entry of entries) {
+      // lastModified is derived from git history (ground truth for when content
+      // changed) — never faked, never omitted.
+      expect(entry.lastModified).toBeInstanceOf(Date);
+      const ms = (entry.lastModified as Date).getTime();
+      expect(isNaN(ms)).toBe(false);
+      // lastmod must never sit in the future.
+      expect(ms).toBeLessThanOrEqual(Date.now());
+    }
+  });
+
+  it("declares a zh alternate only for pages that have a translated route", () => {
+    const withZh = sitemap().filter((entry) => entry.alternates?.languages?.zh);
+    // Only the homepage has a real /zh route today. Declaring zh for untranslated
+    // routes produced hreflang pointing at 404s — this guards against regressions
+    // as /zh/* routes are added incrementally.
+    expect(withZh.map((entry) => entry.url)).toEqual([base]);
+    expect(withZh[0]?.alternates?.languages?.zh).toBe(`${base}/zh`);
+    expect(withZh[0]?.alternates?.languages?.en).toBe(base);
   });
 });
