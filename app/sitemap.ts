@@ -75,8 +75,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
       files: ["app/editor/templates.ts", "app/templates/page.tsx"],
       zh: "/zh/templates",
     }),
-    entry("/kits", { files: ["app/editor/kits.ts", "app/kits/page.tsx"] }),
-    entry("/showcase", { files: ["app/showcase/page.tsx"] }),
+    entry("/kits", {
+      files: ["app/editor/kits.ts", "app/kits/page.tsx"],
+      zh: "/zh/kits",
+    }),
+    entry("/showcase", { files: ["app/showcase/page.tsx"], zh: "/zh/showcase" }),
     entry("/guides", {
       files: ["app/guides/guides-data.ts", "app/guides/page.tsx"],
       zh: "/zh/guides",
@@ -85,7 +88,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       files: ["app/for/usecases.ts", "app/for/page.tsx"],
       zh: "/zh/for",
     }),
-    entry("/about", { files: ["app/about/page.tsx"] }),
+    entry("/about", { files: ["app/about/page.tsx"], zh: "/zh/about" }),
   ];
   const templates = TEMPLATES.map((t) =>
     entry(`/templates/${t.slug}`, {
@@ -106,7 +109,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     })
   );
   const kits = KITS.map((k) =>
-    entry(`/kits/${k.slug}`, { files: ["app/editor/kits.ts"] })
+    entry(`/kits/${k.slug}`, { files: ["app/editor/kits.ts"], zh: `/zh/kits/${k.slug}` })
   );
   return [...fixed, ...templates, ...guides, ...usecases, ...kits];
 }

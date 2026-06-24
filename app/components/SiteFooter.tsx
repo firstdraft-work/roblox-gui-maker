@@ -42,7 +42,7 @@ export function SiteFooter({ locale = "en" }: { locale?: Locale }) {
               </Link>
             </li>
             <li>
-              <Link className="hover:text-ink" href="/about">
+              <Link className="hover:text-ink" href={zh ? "/zh/about" : "/about"}>
                 {zh ? "关于" : "About"}
               </Link>
             </li>

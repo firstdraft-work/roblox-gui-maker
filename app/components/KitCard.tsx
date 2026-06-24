@@ -2,15 +2,18 @@ import Link from "next/link";
 import { ScenePreview } from "../editor/ScenePreview";
 import { kitScene, type Kit } from "../editor/kits";
 import { getTheme } from "../editor/themes";
+import type { Locale } from "../i18n";
 
 // A kit card: preview of its first screen (recolored with the kit theme) plus
 // name, theme swatch, and tagline. Used on the kits gallery and the homepage.
-export function KitCard({ kit }: { kit: Kit }) {
+// locale="en" (default) keeps the original English output.
+export function KitCard({ kit, locale = "en" }: { kit: Kit; locale?: Locale }) {
+  const zh = locale === "zh";
   const preview = kitScene(kit, kit.screens[0].template);
   const theme = getTheme(kit.theme);
   return (
     <Link
-      href={`/kits/${kit.slug}`}
+      href={zh ? `/zh/kits/${kit.slug}` : `/kits/${kit.slug}`}
       className="group rounded-xl overflow-hidden ring-1 ring-line hover:ring-focus transition"
     >
       {preview && <ScenePreview scene={preview} />}
@@ -30,7 +33,9 @@ export function KitCard({ kit }: { kit: Kit }) {
         </div>
         <p className="text-sm text-ink-dim">{kit.tagline}</p>
         <p className="text-xs text-ink-mute mt-2">
-          {kit.screens.length} cohesive screens →
+          {zh
+            ? `${kit.screens.length} 个配套界面 →`
+            : `${kit.screens.length} cohesive screens →`}
         </p>
       </div>
     </Link>

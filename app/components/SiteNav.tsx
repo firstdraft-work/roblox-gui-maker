@@ -13,8 +13,8 @@ type NavItem = {
 const ITEMS: NavItem[] = [
   { en: "Editor", zh: "编辑器", href: "/editor" },
   { en: "Templates", zh: "模板", href: "/templates", zhHref: "/zh/templates", mobile: true },
-  { en: "Kits", zh: "Kit", href: "/kits" },
-  { en: "Showcase", zh: "作品集", href: "/showcase" },
+  { en: "Kits", zh: "Kit", href: "/kits", zhHref: "/zh/kits" },
+  { en: "Showcase", zh: "作品集", href: "/showcase", zhHref: "/zh/showcase" },
   { en: "Guides", zh: "教程", href: "/guides", zhHref: "/zh/guides" },
 ];
 
