@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { Locale } from "../i18n";
 
 // Reciprocal badge for the Launch directory listing (launchsoar.com).
 // Rendered verbatim so the directory's required attributes (data-launch-badge)
@@ -8,7 +9,8 @@ const LAUNCH_BADGE = `<a href="https://launchsoar.com" target="_blank" rel="noop
 // Reciprocal badge for the Indie.Deals directory listing.
 const INDIE_DEALS_BADGE = `<a href="https://indie.deals?ref=https%3A%2F%2Frobloxguimaker.app%2F" target="_blank" rel="noopener noreferrer"><style>.indie-deals-badge{position:relative;overflow:hidden;display:inline-block}.indie-deals-badge::after{content:'';position:absolute;top:0;left:0;width:100%;height:100%;background:linear-gradient(45deg,rgba(255,255,255,0) 0%,rgba(255,255,255,0) 40%,rgba(255,255,255,0.9) 50%,rgba(255,255,255,0) 60%,rgba(255,255,255,0) 100%);transform:translateX(-100%) rotate(45deg);pointer-events:none;transition:transform 0.3s ease-out}.indie-deals-badge:hover::after{animation:indie-deals-shine 1s ease-out}@keyframes indie-deals-shine{0%{transform:translateX(-100%) rotate(45deg)}50%{transform:translateX(0%) rotate(45deg)}100%{transform:translateX(100%) rotate(45deg)}}</style><svg width="120" height="40" viewBox="0 0 120 40" xmlns="http://www.w3.org/2000/svg" class="indie-deals-badge"><defs><linearGradient id="badgeGradient" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#e6f0fc"/></linearGradient></defs><rect width="120" height="40" rx="10" fill="url(#badgeGradient)"/><rect x="0.75" y="0.75" width="118.5" height="38.5" rx="9.25" fill="none" stroke="#0070f3" stroke-width="1.5" stroke-opacity="0.3"/><image href="https://indie.deals/logo_badge.png" x="9.6" y="8" width="24" height="24" preserveAspectRatio="xMidYMid meet" filter="drop-shadow(1px 1px 2px rgba(0,0,0,0.15))"/><text x="80.4" y="15.2" text-anchor="middle" dominant-baseline="middle" font-family="system-ui,-apple-system,sans-serif" font-size="7.2" fill="#4b5563" letter-spacing="0.01em">Find us on</text><text x="80.4" y="26" text-anchor="middle" dominant-baseline="middle" font-family="system-ui,-apple-system,sans-serif" font-size="8.8" font-weight="bold" fill="#0070f3" letter-spacing="0.01em">Indie.Deals</text></svg></a>`;
 
-export function SiteFooter() {
+export function SiteFooter({ locale = "en" }: { locale?: Locale }) {
+  const zh = locale === "zh";
   const year = new Date().getFullYear();
   return (
     <footer className="border-t border-line bg-panel mt-20">
@@ -21,41 +23,42 @@ export function SiteFooter() {
             <span className="font-semibold">Roblox GUI Maker</span>
           </div>
           <p className="text-ink-mute">
-            A free visual builder for Roblox game interfaces. Drag, drop, and
-            export clean Luau you can paste straight into Studio.
+            {zh
+              ? "一个免费的 Roblox 游戏界面可视化构建器。拖拽、导出干净的 Luau,粘进 Studio 就能跑。"
+              : "A free visual builder for Roblox game interfaces. Drag, drop, and export clean Luau you can paste straight into Studio."}
           </p>
         </div>
         <div>
-          <p className="text-ink-dim font-medium mb-2">Tool</p>
+          <p className="text-ink-dim font-medium mb-2">{zh ? "工具" : "Tool"}</p>
           <ul className="space-y-1.5 text-ink-mute">
             <li>
               <Link className="hover:text-ink" href="/editor">
-                Open the editor
+                {zh ? "打开编辑器" : "Open the editor"}
               </Link>
             </li>
             <li>
-              <Link className="hover:text-ink" href="/templates">
-                GUI templates
+              <Link className="hover:text-ink" href={zh ? "/zh/templates" : "/templates"}>
+                {zh ? "GUI 模板" : "GUI templates"}
               </Link>
             </li>
             <li>
               <Link className="hover:text-ink" href="/about">
-                About
+                {zh ? "关于" : "About"}
               </Link>
             </li>
             <li>
               <Link className="hover:text-ink" href="/for">
-                Use cases
+                {zh ? "用例" : "Use cases"}
               </Link>
             </li>
           </ul>
         </div>
         <div>
-          <p className="text-ink-dim font-medium mb-2">About</p>
+          <p className="text-ink-dim font-medium mb-2">{zh ? "关于" : "About"}</p>
           <p className="text-ink-mute">
-            An independent, unofficial tool. Not affiliated with or endorsed by
-            Roblox Corporation. &ldquo;Roblox&rdquo; is a trademark of Roblox
-            Corporation.
+            {zh
+              ? "一个独立的非官方工具,与 Roblox Corporation 无关、也未获其认可。“Roblox”是 Roblox Corporation 的商标。"
+              : "An independent, unofficial tool. Not affiliated with or endorsed by Roblox Corporation. “Roblox” is a trademark of Roblox Corporation."}
           </p>
         </div>
       </div>
@@ -107,14 +110,7 @@ export function SiteFooter() {
         </a>
       </div>
       <div className="border-t border-line py-4 text-center text-xs text-ink-mute">
-        © {year} robloxguimaker.app ·{" "}
-        <Link className="hover:text-ink" href="/">
-          English
-        </Link>{" "}
-        ·{" "}
-        <Link className="hover:text-ink" href="/zh">
-          中文
-        </Link>
+        © {year} robloxguimaker.app
       </div>
     </footer>
   );

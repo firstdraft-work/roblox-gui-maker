@@ -73,20 +73,28 @@ export default function sitemap(): MetadataRoute.Sitemap {
     entry("/editor", { files: ["app/editor/page.tsx"] }),
     entry("/templates", {
       files: ["app/editor/templates.ts", "app/templates/page.tsx"],
+      zh: "/zh/templates",
     }),
     entry("/kits", { files: ["app/editor/kits.ts", "app/kits/page.tsx"] }),
     entry("/showcase", { files: ["app/showcase/page.tsx"] }),
     entry("/guides", {
       files: ["app/guides/guides-data.ts", "app/guides/page.tsx"],
+      zh: "/zh/guides",
     }),
     entry("/for", { files: ["app/for/usecases.ts", "app/for/page.tsx"] }),
     entry("/about", { files: ["app/about/page.tsx"] }),
   ];
   const templates = TEMPLATES.map((t) =>
-    entry(`/templates/${t.slug}`, { files: ["app/editor/templates.ts"] })
+    entry(`/templates/${t.slug}`, {
+      files: ["app/editor/templates.ts"],
+      zh: `/zh/templates/${t.slug}`,
+    })
   );
   const guides = GUIDES.map((g) =>
-    entry(`/guides/${g.slug}`, { files: ["app/guides/guides-data.ts"] })
+    entry(`/guides/${g.slug}`, {
+      files: ["app/guides/guides-data.ts"],
+      zh: `/zh/guides/${g.slug}`,
+    })
   );
   const usecases = USE_CASES.map((u) =>
     entry(`/for/${u.slug}`, { files: ["app/for/usecases.ts"] })

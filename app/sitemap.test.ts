@@ -48,11 +48,23 @@ describe("sitemap", () => {
 
   it("declares a zh alternate only for pages that have a translated route", () => {
     const withZh = sitemap().filter((entry) => entry.alternates?.languages?.zh);
-    // Only the homepage has a real /zh route today. Declaring zh for untranslated
-    // routes produced hreflang pointing at 404s — this guards against regressions
-    // as /zh/* routes are added incrementally.
-    expect(withZh.map((entry) => entry.url)).toEqual([base]);
-    expect(withZh[0]?.alternates?.languages?.zh).toBe(`${base}/zh`);
-    expect(withZh[0]?.alternates?.languages?.en).toBe(base);
+    // Homepage + templates index + every template detail — the /zh routes that
+    // actually resolve after this phase. Set grows as more /zh routes are added.
+    const expectedEnUrls = [
+      base,
+      `${base}/templates`,
+      ...TEMPLATES.map((t) => `${base}/templates/${t.slug}`),
+      `${base}/guides`,
+      ...GUIDES.map((g) => `${base}/guides/${g.slug}`),
+    ];
+    expect(withZh.map((entry) => entry.url).sort()).toEqual(
+      expectedEnUrls.slice().sort()
+    );
+    // Every zh alternate is the /zh-prefixed counterpart of its en URL.
+    for (const entry of withZh) {
+      const path = entry.url.slice(base.length);
+      expect(entry.alternates?.languages?.zh).toBe(`${base}/zh${path}`);
+      expect(entry.alternates?.languages?.en).toBe(entry.url);
+    }
   });
 });
