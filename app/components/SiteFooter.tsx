@@ -47,7 +47,7 @@ export function SiteFooter({ locale = "en" }: { locale?: Locale }) {
               </Link>
             </li>
             <li>
-              <Link className="hover:text-ink" href="/for">
+              <Link className="hover:text-ink" href={zh ? "/zh/for" : "/for"}>
                 {zh ? "用例" : "Use cases"}
               </Link>
             </li>

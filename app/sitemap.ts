@@ -81,7 +81,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       files: ["app/guides/guides-data.ts", "app/guides/page.tsx"],
       zh: "/zh/guides",
     }),
-    entry("/for", { files: ["app/for/usecases.ts", "app/for/page.tsx"] }),
+    entry("/for", {
+      files: ["app/for/usecases.ts", "app/for/page.tsx"],
+      zh: "/zh/for",
+    }),
     entry("/about", { files: ["app/about/page.tsx"] }),
   ];
   const templates = TEMPLATES.map((t) =>
@@ -97,7 +100,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     })
   );
   const usecases = USE_CASES.map((u) =>
-    entry(`/for/${u.slug}`, { files: ["app/for/usecases.ts"] })
+    entry(`/for/${u.slug}`, {
+      files: ["app/for/usecases.ts"],
+      zh: `/zh/for/${u.slug}`,
+    })
   );
   const kits = KITS.map((k) =>
     entry(`/kits/${k.slug}`, { files: ["app/editor/kits.ts"] })

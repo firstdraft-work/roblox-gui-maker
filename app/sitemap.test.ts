@@ -56,6 +56,8 @@ describe("sitemap", () => {
       ...TEMPLATES.map((t) => `${base}/templates/${t.slug}`),
       `${base}/guides`,
       ...GUIDES.map((g) => `${base}/guides/${g.slug}`),
+      `${base}/for`,
+      ...USE_CASES.map((u) => `${base}/for/${u.slug}`),
     ];
     expect(withZh.map((entry) => entry.url).sort()).toEqual(
       expectedEnUrls.slice().sort()
