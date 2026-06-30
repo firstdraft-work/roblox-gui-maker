@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   normalizeRobloxAssetId,
   parseThumbnailResponse,
+  thumbnailProxyUrl,
   thumbnailRequestUrl,
 } from "./image-assets";
 
@@ -26,6 +27,12 @@ describe("Roblox image assets", () => {
   it("builds the official thumbnail request", () => {
     expect(thumbnailRequestUrl("rbxassetid://1818")).toContain(
       "assetIds=1818"
+    );
+  });
+
+  it("builds a same-origin thumbnail proxy request for the browser", () => {
+    expect(thumbnailProxyUrl("rbxassetid://1818")).toBe(
+      "/api/roblox-thumbnail?assetId=1818"
     );
   });
 
