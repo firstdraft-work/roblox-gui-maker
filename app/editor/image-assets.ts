@@ -24,6 +24,12 @@ export function thumbnailRequestUrl(image: string): string {
   return `https://thumbnails.roblox.com/v1/assets?${query}`;
 }
 
+export function thumbnailProxyUrl(image: string): string {
+  const id = assetIdNumber(image);
+  if (!id) throw new Error(`Invalid Roblox asset ID: ${image}`);
+  return `/api/roblox-thumbnail?assetId=${encodeURIComponent(id)}`;
+}
+
 export function parseThumbnailResponse(value: unknown): string | null {
   if (!value || typeof value !== "object") return null;
   const data = (value as { data?: unknown }).data;
@@ -44,9 +50,15 @@ export function resolveThumbnail(image: string): Promise<string | null> {
   const existing = thumbnailCache.get(canonical);
   if (existing) return existing;
 
-  const request = fetch(thumbnailRequestUrl(canonical))
+  const request = fetch(thumbnailProxyUrl(canonical))
     .then((response) => (response.ok ? response.json() : null))
-    .then(parseThumbnailResponse)
+    .then((value) =>
+      value &&
+      typeof value === "object" &&
+      typeof (value as { imageUrl?: unknown }).imageUrl === "string"
+        ? (value as { imageUrl: string }).imageUrl
+        : null
+    )
     .catch(() => null);
   thumbnailCache.set(canonical, request);
   return request;
