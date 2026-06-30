@@ -71,6 +71,8 @@ describe("sitemap", () => {
       const path = entry.url.slice(base.length);
       expect(entry.alternates?.languages?.zh).toBe(`${base}/zh${path}`);
       expect(entry.alternates?.languages?.en).toBe(entry.url);
+      // x-default falls back to the default-language (en) URL.
+      expect(entry.alternates?.languages?.["x-default"]).toBe(entry.url);
     }
   });
 });

@@ -42,9 +42,11 @@ function lastModified(...files: string[]): Date {
   return new Date(Math.max(...files.map((f) => gitLastModifiedFile(f).getTime())));
 }
 
-// A zh alternate is only declared when a translated route actually resolves.
-// Today only the homepage has a /zh version; pass `zh` for each route as it gets
-// translated so the alternate appears automatically — and never 404s.
+// zh alternate is declared only where a translated route actually resolves —
+// home, templates, guides, for, kits, showcase, about and their detail pages
+// (all under app/zh/*). /editor is English-only, so it correctly has no zh.
+// x-default falls back to the default-language (en) URL for visitors whose
+// locale matches neither en nor zh.
 function entry(
   path: string,
   opts: { files: string[]; zh?: string }
@@ -54,7 +56,11 @@ function entry(
     url,
     lastModified: lastModified(...opts.files),
     ...(opts.zh
-      ? { alternates: { languages: { en: url, zh: `${BASE}${opts.zh}` } } }
+      ? {
+          alternates: {
+            languages: { "x-default": url, en: url, zh: `${BASE}${opts.zh}` },
+          },
+        }
       : {}),
   };
 }
